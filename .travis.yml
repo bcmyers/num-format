@@ -3,6 +3,11 @@ rust:
   - stable
   - beta
   - nightly
+cache: cargo
+script:
+  - cargo build --verbose --no-default-features
+  - cargo build --verbose --all-features
+  - cargo test --verbose --all-features
 matrix:
   allow_failures:
     - rust: nightly

@@ -1,24 +1,37 @@
 [package]
 name = "num-format"
 version = "0.1.0"
+
 authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
+categories = [] # TODO
+description = "A Rust crate for producing string-representations of numbers, formatted according to international standards"
+documentation = "https://docs.rs/num-format"
 edition = "2018"
-publish = false
+homepage = "https://github.com/bcmyers/num-format"
+keywords = [] # TODO
+license = "MIT/Apache-2.0"
+publish = false # TODO
+readme = "README.md"
+repository = "https://github.com/bcmyers/num-format"
 
 [dependencies]
-failure = "0.1"
-libc = "0.2"
-lazy_static = "1.2"
-apint = { version = "0.2", optional = true }
+arrayvec = { version = "0.4", default-features = false }
+failure = { version = "0.1", default-features = false, features = ["derive"] }
+itoa = { version = "0.4", default-features = false, features = ["i128"] }
+libc = { version = "0.2", default-features = false }
 num-bigint = { version = "0.2", optional = true }
-num-rational = { version = "0.2", optional = true }
-ramp = { version = "0.5", optional = true }
-rug = { version = "1.2", optional = true }
+serde = { version = "1.0", optional = true }
+
+[features]
+default = ["std"]
+std = ["failure/default"]
+with-serde = ["arrayvec/serde-1", "serde/derive"]
 
 [dev-dependencies]
 criterion = "0.2"
-separator = "0.3"
+lazy_static = "1.2"
+walkdir = "2.2"
 
 [[bench]]
-name = "benchmark"
+name = "bench_usize"
 harness = false

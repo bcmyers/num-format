@@ -1,15 +1,15 @@
-mod parse_data;
-mod types;
-mod write_file;
-mod write_formats;
+use std::fs::File;
+use std::io::Write;
 
-use crate::parse_data::parse_data;
-use crate::write_file::write_file;
-use crate::write_formats::{write_formats, write_formats2};
+use num_format_dev::{create_module, parse_data};
 
-fn main() {
-    let data = parse_data("./cldr-numbers-full/main");
-    write_formats("./temp1.txt", &data);
-    write_formats2("./temp2.txt", &data);
-    write_file("../src/locale2.rs", data);
+const DATA_DIR: &str = "./cldr-numbers-full";
+const OUT_PATH: &str = "../src/format/locale.rs";
+
+fn main() -> Result<(), failure::Error> {
+    let data = parse_data(DATA_DIR)?;
+    let s = create_module(&data)?;
+    let mut f = File::create(OUT_PATH)?;
+    f.write_all(s.as_bytes())?;
+    Ok(())
 }

@@ -1,53 +1,36 @@
 use std::ffi;
 use std::fs;
-use std::io::Read;
 use std::path::Path;
 
+use indexmap::IndexMap;
 use serde::Deserialize;
 use serde_json;
 use walkdir::WalkDir;
 
-use crate::types::{Grouping, Locale, Policy};
+use crate::utils::{Format, Grouping};
 
-#[derive(Debug, Eq, PartialEq, Deserialize)]
-struct PartialLocale {
-    language: String,
-    script: Option<String>,
-    territory: Option<String>,
-    variant: Option<String>,
-}
+const MAX_MINUS_SIGN_LEN: usize = 7;
 
-#[derive(Debug, Eq, PartialEq, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Symbols {
-    decimal: String,
-    group: String,
-    infinity: String,
-    minus_sign: String,
-    nan: String,
-}
-
-pub(crate) fn parse_data<P>(data_dir: P) -> Vec<(Locale, Policy)>
+/// Walks a directory containing CLDR json files and collects the data they contain into a map.
+pub fn parse_data<P>(data_dir: P) -> Result<IndexMap<String, Format>, failure::Error>
 where
     P: AsRef<Path>,
 {
-    let mut data = Vec::new();
+    let mut data: IndexMap<String, Format> = IndexMap::new();
+
+    // Walk the data dir
     for entry in WalkDir::new(data_dir.as_ref()) {
         let entry = entry.unwrap();
-        if !entry.file_type().is_file() {
-            continue;
-        }
-        if entry.file_name() != ffi::OsStr::new("numbers.json") {
+
+        // Skip if we aren't dealing with a "numbers.json" file
+        if !entry.file_type().is_file() || entry.file_name() != ffi::OsStr::new("numbers.json") {
             continue;
         }
 
         // Read file
-        let mut file = fs::File::open(entry.path()).unwrap();
-        let mut contents = String::new();
-        file.read_to_string(&mut contents).unwrap();
+        let contents = fs::read_to_string(entry.path()).unwrap();
 
-        // Deserialize json
-        let value: serde_json::Value = serde_json::from_str(&contents).unwrap();
+        // Get the variant name and identifier
         let identifier = entry
             .path()
             .parent()
@@ -55,57 +38,81 @@ where
             .file_name()
             .unwrap()
             .to_str()
-            .unwrap()
-            .to_string();
-        let value = &value["main"][&identifier];
+            .unwrap();
+        let variant_name = make_variant_name(identifier);
 
-        // Locale
-        let partial = &value["identity"].to_string();
-        let partial: PartialLocale = serde_json::from_str(&partial).unwrap();
-        let identifier = match identifier.as_ref() {
-            "as" => "as_".to_string(),
-            _ => identifier,
-        };
-        let language = match partial.language.as_ref() {
-            "as" => "as_".to_string(),
-            _ => partial.language.clone(),
-        };
-        let locale = Locale {
-            identifier,
-            language,
-            script: partial.script.clone(),
-            territory: partial.territory.clone(),
-            variant: partial.variant.clone(),
-        };
+        // Deserialize the json
+        let value: serde_json::Value = serde_json::from_str(&contents).unwrap();
+        let value = &value["main"][identifier];
 
-        // Symbols
+        // Get the symbols
         let default_numbering_system =
             &value["numbers"]["defaultNumberingSystem"].as_str().unwrap();
         let symbols_lookup = format!("symbols-numberSystem-{}", default_numbering_system);
         let symbols = &value["numbers"][&symbols_lookup].to_string();
         let symbols: Symbols = serde_json::from_str(&symbols).unwrap();
 
-        // Decimal formats
+        // Grouping
         let decimal_formats_lookup =
             format!("decimalFormats-numberSystem-{}", default_numbering_system);
         let decimal_formats = &value["numbers"][&decimal_formats_lookup];
-        let decimal_formats = decimal_formats["standard"]
+        let grp = decimal_formats["standard"]
             .as_str()
             .unwrap()
             .parse::<Grouping>()
             .unwrap();
 
-        // Policy
-        let policy = Policy {
-            decimal: symbols.decimal.clone(),
-            decimal_formats,
-            group: symbols.group.clone(),
-            infinity: symbols.infinity.clone(),
-            minus_sign: symbols.minus_sign.clone(),
-            nan: symbols.nan.clone(),
+        // Format
+        let format = Format {
+            identifier: identifier.to_string(),
+
+            dec: symbols.decimal,
+            grp,
+            inf: symbols.infinity,
+            min: {
+                let s = symbols.minus_sign.to_string();
+                assert!(s.len() <= MAX_MINUS_SIGN_LEN);
+                s
+            },
+            nan: symbols.nan,
+            sep: symbols.group,
         };
 
-        data.push((locale, policy));
+        let _ = data.insert(variant_name, format);
     }
-    data
+    data.sort_by(|k1, _, k2, _| k1.cmp(k2));
+    Ok(data)
+}
+
+fn make_variant_name(identifier: &str) -> String {
+    let mut buf = String::new();
+
+    // Trim whitespace
+    let s = identifier.trim();
+
+    // Push characters into buffer, but replace '-' with '_'
+    for c in s.chars() {
+        if c == '-' {
+            buf.push('_')
+        } else {
+            buf.push(c)
+        }
+    }
+
+    // Special case "as" becuase it's is a keyword in Rust
+    if &buf == "as" {
+        buf.push('_');
+    }
+
+    buf
+}
+
+#[derive(Debug, Eq, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Symbols {
+    decimal: char,
+    group: char,
+    infinity: String,
+    minus_sign: String,
+    nan: String,
 }
