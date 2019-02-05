@@ -173,7 +173,7 @@ at your option.
 #![deny(unused_parens)]
 #![deny(unused_unsafe)]
 #![deny(unused_variables)]
-#![doc(html_root_url = "https://docs.rs/num-format/0.1.2")]
+#![doc(html_root_url = "https://docs.rs/num-format/0.1.3")]
 
 #[cfg(feature = "with-serde")]
 #[macro_use]
