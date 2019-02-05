@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/bcmyers/num-format.svg?branch=master)](https://travis-ci.org/bcmyers/num-format)
 [![Crates.io](https://img.shields.io/crates/v/num-format.svg)](https://crates.io/crates/num-format)
 [![Documentation](https://docs.rs/num-format/badge.svg)](https://docs.rs/num-format/)
-![License](https://img.shields.io/crates/l/num-format.svg)
+![License](https://img.shields.io/crates/l/num_format.svg)
 
 A Rust crate for producing string-representations of numbers, formatted according to international standards,
 e.g.
@@ -173,7 +173,7 @@ at your option.
 #![deny(unused_parens)]
 #![deny(unused_unsafe)]
 #![deny(unused_variables)]
-#![doc(html_root_url = "https://docs.rs/num-format/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/num-format/0.1.1")]
 
 #[cfg(feature = "with-serde")]
 #[macro_use]
