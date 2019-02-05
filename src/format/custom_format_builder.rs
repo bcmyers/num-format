@@ -7,7 +7,8 @@ use crate::format::{CustomFormat, Format, Grouping, Locale};
 /// Type for building [`CustomFormat`]s.
 ///
 /// [`CustomFormat`]: struct.CustomFormat.html
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct CustomFormatBuilder {
     dec: char,
     grp: Grouping,
