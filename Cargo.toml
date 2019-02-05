@@ -1,6 +1,6 @@
 [package]
 name = "num-format"
-version = "0.1.1"
+version = "0.1.2"
 
 authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
 categories = ["encoding", "internationalization", "localization", "no-std", "value-formatting"]
