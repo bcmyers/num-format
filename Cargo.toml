@@ -3,16 +3,21 @@ name = "num-format"
 version = "0.1.0"
 
 authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
-categories = [] # TODO
+categories = ["encoding", "internationalization", "localization", "no-std", "value-formatting"]
 description = "A Rust crate for producing string-representations of numbers, formatted according to international standards"
 documentation = "https://docs.rs/num-format"
 edition = "2018"
+exclude = ["num-format-dev/**/*"]
 homepage = "https://github.com/bcmyers/num-format"
-keywords = [] # TODO
+keywords = ["comma", "human", "international", "number", "separator", "thousands"]
 license = "MIT/Apache-2.0"
-publish = false # TODO
+publish = true
 readme = "README.md"
 repository = "https://github.com/bcmyers/num-format"
+
+[badges]
+maintenance = { status = "actively-developed" }
+travis-ci = { repository = "bcmyers/num-format", branch = "master" }
 
 [dependencies]
 arrayvec = { version = "0.4", default-features = false }
