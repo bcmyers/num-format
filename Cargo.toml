@@ -29,7 +29,7 @@ serde = { version = "1.0", optional = true }
 
 [features]
 default = ["std"]
-std = ["failure/default"]
+std = ["arrayvec/default", "failure/default", "itoa/default", "itoa/i128", "libc/default"]
 with-serde = ["arrayvec/serde-1", "serde/derive"]
 
 [dev-dependencies]
