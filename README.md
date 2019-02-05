@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/bcmyers/num-format.svg?branch=master)](https://travis-ci.org/bcmyers/num-format)
-
 # num-format
 
 [![Build Status](https://travis-ci.org/bcmyers/num-format.svg?branch=master)](https://travis-ci.org/bcmyers/num-format)
@@ -154,5 +152,3 @@ at your option.
 [Unicode Consortium]: https://en.wikipedia.org/wiki/Unicode_Consortium
 [`Vec`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
 [`WriteFormatted`]: trait.WriteFormatted.html
-
-License: MIT/Apache-2.0
