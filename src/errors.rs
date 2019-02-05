@@ -5,7 +5,7 @@ use core::fmt;
 use arrayvec::ArrayString;
 use failure::Fail;
 
-const MAX_ERR_LEN: usize = 256;
+use crate::constants::MAX_ERR_LEN;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Fail)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
