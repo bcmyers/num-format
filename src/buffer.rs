@@ -184,4 +184,41 @@ mod serialization {
             deserializer.deserialize_bytes(BufferVisitor)
         }
     }
+
+    #[cfg(test)]
+    mod tests {
+        use crate::constants::MAX_BUF_LEN;
+        use crate::format::Locale;
+        use crate::Buffer;
+
+        #[test]
+        fn test_buffer_serialization() {
+            let mut buf = Buffer::new();
+            let _ = buf.write_formatted(&1_000, &Locale::en);
+            let s = serde_json::to_string(&buf).unwrap();
+            assert_eq!(&s, "[49,44,48,48,48]");
+        }
+
+        #[test]
+        fn test_buffer_deserialization() {
+            // should pass
+            let buf: Buffer = serde_json::from_str("[49,44,48,48,48]").unwrap();
+            assert_eq!(0, buf.pos);
+            assert_eq!(5, buf.end);
+            assert_eq!(&[49, 44, 48, 48, 48], buf.as_bytes());
+            assert_eq!("1,000", buf.as_str());
+
+            // should fail
+            let mut should_fail = String::new();
+            should_fail.push_str("[0");
+            for _ in 0..MAX_BUF_LEN {
+                should_fail.push_str(",0");
+            }
+            should_fail.push(']');
+            let result: Result<Buffer, serde_json::Error> = serde_json::from_str(&should_fail);
+            if result.is_ok() {
+                panic!("was somehow able to deserialize bytes that were too long")
+            }
+        }
+    }
 }
