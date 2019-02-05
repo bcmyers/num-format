@@ -11,6 +11,7 @@
 
 mod custom_format;
 mod custom_format_builder;
+#[cfg(feature = "std")]
 mod environment;
 mod format;
 mod grouping;
@@ -19,6 +20,7 @@ pub mod utils;
 
 pub use self::custom_format::CustomFormat;
 pub use self::custom_format_builder::CustomFormatBuilder;
+#[cfg(feature = "std")]
 pub use self::environment::Environment;
 pub use self::format::Format;
 pub use self::grouping::Grouping;

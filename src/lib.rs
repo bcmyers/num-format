@@ -56,6 +56,7 @@ it (all the number types in the standard library implement it) with a desired fo
 `no_std` environment.
 
 ```rust
+# use cfg_if::cfg_if; cfg_if! { if #[cfg(feature = "std")] {
 use num_format::ToFormattedString;
 use num_format::format::Locale;
 
@@ -63,6 +64,7 @@ fn main() {
     let s = 1000000.to_formatted_string(&Locale::en);
     assert_eq!(&s, "1,000,000");
 }
+# } else { fn main() {} } }
 ```
 
 ### `Buffer`
@@ -100,6 +102,7 @@ is **no** heap allocation. That said, you can also use this API with types where
 in a `no_std` environment.
 
 ```rust
+# use cfg_if::cfg_if; cfg_if! { if #[cfg(feature = "std")] {
 use num_format::WriteFormatted;
 use num_format::format::Locale;
 
@@ -112,6 +115,7 @@ fn main() {
 
     assert_eq!(&writer, "1,000,000");
 }
+# } else { fn main() {} } }
 ```
 
 # License

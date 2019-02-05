@@ -41,6 +41,7 @@ impl Error {
         self.kind
     }
 
+    #[cfg_attr(not(feature = "std"), allow(dead_code))]
     pub(crate) fn c<S>(msg: S) -> Error
     where
         S: AsRef<str>,

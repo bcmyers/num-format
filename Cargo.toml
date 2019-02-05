@@ -28,6 +28,7 @@ std = ["failure/default"]
 with-serde = ["arrayvec/serde-1", "serde/derive"]
 
 [dev-dependencies]
+cfg-if = "0.1"
 criterion = "0.2"
 lazy_static = "1.2"
 walkdir = "2.2"

@@ -8,10 +8,11 @@ use crate::format::{CustomFormatBuilder, Format, Grouping};
 ///
 /// # Example
 /// ```
-/// use failure;
-/// use num_format::{Buffer, format::{CustomFormat, Grouping}};
+/// use num_format::errors::Error;
+/// use num_format::format::{CustomFormat, Grouping};
+/// use num_format::Buffer;
 ///
-/// fn main() -> Result<(), failure::Error> {
+/// fn main() -> Result<(), Error> {
 ///     let format = CustomFormat::builder()
 ///         .grouping(Grouping::Indian)
 ///         .minus_sign("--")

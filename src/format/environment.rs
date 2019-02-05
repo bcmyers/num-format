@@ -22,14 +22,14 @@ use crate::format::{Format, Grouping, Locale};
 /// fn main() -> Result<(), failure::Error> {
 ///     // Use your system's default locale settings
 ///     let format = Environment::new()?;
-///     let formatted_string = (-1000000).to_formatted_string(&format);
-///     println!("{}", &formatted_string);
+///     let s = (-1000000).to_formatted_string(&format);
+///     println!("{}", &s);
 ///
 ///     // Use your system's locale settings for "en_US.UTF-8"
 ///     env::set_var("LC_ALL", "en_US.UTF-8");
 ///     let format = Environment::new()?;
-///     let formatted_string = (-1000000).to_formatted_string(&format);
-///     assert_eq!("-1,000,000", &formatted_string);
+///     let s = (-1000000).to_formatted_string(&format);
+///     assert_eq!("-1,000,000", &s);
 ///
 ///     Ok(())
 /// }
