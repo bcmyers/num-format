@@ -28,7 +28,9 @@ impl Error {
             s
         };
         Error {
-            kind: ErrorKind::Other(ArrayString::from(s).unwrap()),
+            kind: ErrorKind::Other {
+                msg: ArrayString::from(s).unwrap(),
+            },
         }
     }
 
@@ -51,28 +53,32 @@ impl Error {
             s
         };
         Error {
-            kind: ErrorKind::C(ArrayString::from(s).unwrap()),
+            kind: ErrorKind::C {
+                msg: ArrayString::from(s).unwrap(),
+            },
         }
     }
 
-    pub(crate) fn capacity(cap: usize) -> Error {
+    pub(crate) fn capacity(len: usize, cap: usize) -> Error {
         Error {
-            kind: ErrorKind::Capacity(cap),
+            kind: ErrorKind::Capacity { len, cap },
         }
     }
 
-    pub(crate) fn parse_locale<S>(s: S) -> Error
+    pub(crate) fn parse_locale<S>(input: S) -> Error
     where
         S: AsRef<str>,
     {
-        let s = s.as_ref();
+        let s = input.as_ref();
         let s = if s.len() > MAX_ERR_LEN {
             &s[0..MAX_ERR_LEN]
         } else {
             s
         };
         Error {
-            kind: ErrorKind::ParseLocale(ArrayString::from(s).unwrap()),
+            kind: ErrorKind::ParseLocale {
+                input: ArrayString::from(s).unwrap(),
+            },
         }
     }
 }
@@ -97,10 +103,10 @@ mod standard {
         fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
             use self::ErrorKind::*;
             match self.kind {
-                C(_msg) => None,
-                Capacity(_n) => None,
-                Other(_msg) => None,
-                ParseLocale(_msg) => None,
+                C { .. } => None,
+                Capacity { .. } => None,
+                Other { .. } => None,
+                ParseLocale { .. } => None,
             }
         }
     }

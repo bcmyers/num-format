@@ -22,10 +22,9 @@ impl CustomFormatBuilder {
         Self {
             dec: Locale::en.decimal(),
             grp: Locale::en.grouping(),
-            inf: ArrayString::from(Locale::en.infinity()).map_err(|_| Error::capacity(MAX_INF_LEN)),
-            min: ArrayString::from(Locale::en.minus_sign())
-                .map_err(|_| Error::capacity(MAX_MIN_LEN)),
-            nan: ArrayString::from(Locale::en.nan()).map_err(|_| Error::capacity(MAX_NAN_LEN)),
+            inf: ArrayString::from(Locale::en.infinity()).map_err(|_| unreachable!()),
+            min: ArrayString::from(Locale::en.minus_sign()).map_err(|_| unreachable!()),
+            nan: ArrayString::from(Locale::en.nan()).map_err(|_| unreachable!()),
             sep: Locale::en.separator(),
         }
     }
@@ -63,14 +62,15 @@ impl CustomFormatBuilder {
     where
         F: Format,
     {
+        let inf_str = value.infinity().into_str();
+        let min_str = value.minus_sign().into_str();
+        let nan_str = value.nan().into_str();
+
         self.dec = value.decimal();
         self.grp = value.grouping();
-        self.inf = ArrayString::from(value.infinity().into_str())
-            .map_err(|_| Error::capacity(MAX_INF_LEN));
-        self.min = ArrayString::from(value.minus_sign().into_str())
-            .map_err(|_| Error::capacity(MAX_MIN_LEN));
-        self.nan =
-            ArrayString::from(value.nan().into_str()).map_err(|_| Error::capacity(MAX_NAN_LEN));
+        self.inf = ArrayString::from(inf_str).map_err(|_| unreachable!());
+        self.min = ArrayString::from(min_str).map_err(|_| unreachable!());
+        self.nan = ArrayString::from(nan_str).map_err(|_| unreachable!());
         self.sep = value.separator();
         self
     }
@@ -92,7 +92,7 @@ impl CustomFormatBuilder {
         S: AsRef<str>,
     {
         let s = value.as_ref();
-        self.inf = ArrayString::from(s).map_err(|_| Error::capacity(MAX_INF_LEN));
+        self.inf = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_INF_LEN));
         self
     }
 
@@ -105,7 +105,7 @@ impl CustomFormatBuilder {
         S: AsRef<str>,
     {
         let s = value.as_ref();
-        self.min = ArrayString::from(s).map_err(|_| Error::capacity(MAX_MIN_LEN));
+        self.min = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_MIN_LEN));
         self
     }
 
@@ -118,7 +118,7 @@ impl CustomFormatBuilder {
         S: AsRef<str>,
     {
         let s = value.as_ref();
-        self.nan = ArrayString::from(s).map_err(|_| Error::capacity(MAX_NAN_LEN));
+        self.nan = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_NAN_LEN));
         self
     }
 

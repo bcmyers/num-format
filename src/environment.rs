@@ -74,7 +74,7 @@ impl Environment {
 
         let ptr = unsafe { libc::localeconv() };
         if ptr.is_null() {
-            return Err(Error::c("C function 'localeconv' returned a null pointer"));
+            return Err(Error::c("C function 'localeconv' returned a null pointer."));
         }
 
         let lconv: &libc::lconv = unsafe { ptr.as_ref() }.unwrap();
@@ -93,7 +93,7 @@ impl Environment {
             dec: maybe_dec.unwrap_or_else(|| '.'),
             grp,
             inf: ArrayString::from(Locale::en.infinity()).unwrap(),
-            min: ArrayString::from(min).map_err(|_| Error::capacity(MAX_MIN_LEN))?,
+            min: ArrayString::from(min).map_err(|_| Error::capacity(min.len(), MAX_MIN_LEN))?,
             nan: ArrayString::from(Locale::en.nan()).unwrap(),
             sep: maybe_sep,
         };
@@ -143,7 +143,7 @@ impl Environment {
         S: AsRef<str>,
     {
         let s = value.as_ref();
-        self.inf = ArrayString::from(s).map_err(|_| Error::capacity(MAX_INF_LEN))?;
+        self.inf = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_INF_LEN))?;
         Ok(())
     }
 
@@ -157,7 +157,7 @@ impl Environment {
         S: AsRef<str>,
     {
         let s = value.as_ref();
-        self.nan = ArrayString::from(s).map_err(|_| Error::capacity(MAX_NAN_LEN))?;
+        self.nan = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_NAN_LEN))?;
         Ok(())
     }
 }
@@ -196,7 +196,7 @@ struct SafePointer<'a> {
 impl<'a> SafePointer<'a> {
     fn new(ptr: *const c_char) -> Result<SafePointer<'a>, Error> {
         if ptr.is_null() {
-            return Err(Error::c("received a null pointer"));
+            return Err(Error::c("received a null pointer from C."));
         }
         Ok(SafePointer {
             ptr,
@@ -234,7 +234,7 @@ impl<'a> SafePointer<'a> {
         let s = str::from_utf8(s)
             .map_err(|_| Error::c("could not parse data returned from C into utf-8"))?;
         if s.len() > MAX_MIN_LEN {
-            return Err(Error::capacity(MAX_MIN_LEN));
+            return Err(Error::capacity(s.len(), MAX_MIN_LEN));
         }
         Ok(s)
     }

@@ -22,8 +22,9 @@ impl<'a> InfinityStr<'a> {
     ///
     /// [`InfinityStr`]: struct.InfinityStr.html
     pub fn new(s: &'a str) -> Result<InfinityStr<'a>, Error> {
-        if s.len() > MAX_INF_LEN {
-            return Err(Error::capacity(MAX_INF_LEN));
+        let len = s.len();
+        if len > MAX_INF_LEN {
+            return Err(Error::capacity(len, MAX_INF_LEN));
         }
         Ok(InfinityStr(s))
     }
@@ -61,8 +62,9 @@ impl<'a> MinusSignStr<'a> {
     ///
     /// [`MinusSignStr`]: struct.MinusSignStr.html
     pub fn new(s: &'a str) -> Result<MinusSignStr<'a>, Error> {
-        if s.len() > MAX_MIN_LEN {
-            return Err(Error::capacity(MAX_MIN_LEN));
+        let len = s.len();
+        if len > MAX_MIN_LEN {
+            return Err(Error::capacity(len, MAX_MIN_LEN));
         }
         Ok(MinusSignStr(s))
     }
@@ -100,8 +102,9 @@ impl<'a> NanStr<'a> {
     ///
     /// [`NanStr`]: struct.NanStr.html
     pub fn new(s: &'a str) -> Result<NanStr<'a>, Error> {
-        if s.len() > MAX_NAN_LEN {
-            return Err(Error::capacity(MAX_NAN_LEN));
+        let len = s.len();
+        if len > MAX_NAN_LEN {
+            return Err(Error::capacity(len, MAX_NAN_LEN));
         }
         Ok(NanStr(s))
     }
