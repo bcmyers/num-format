@@ -125,15 +125,21 @@ impl From<Locale> for CustomFormat {
 }
 
 #[cfg(feature = "std")]
-impl From<crate::Environment> for CustomFormat {
-    fn from(env: crate::Environment) -> Self {
-        Self {
-            dec: env.decimal(),
-            grp: env.grouping(),
-            inf: ArrayString::from(env.infinity()).unwrap(),
-            min: ArrayString::from(env.minus_sign()).unwrap(),
-            nan: ArrayString::from(env.nan()).unwrap(),
-            sep: env.separator(),
+mod standard {
+    use arrayvec::ArrayString;
+
+    use crate::{CustomFormat, Environment};
+
+    impl From<Environment> for CustomFormat {
+        fn from(environment: Environment) -> Self {
+            Self {
+                dec: environment.decimal(),
+                grp: environment.grouping(),
+                inf: ArrayString::from(environment.infinity()).unwrap(),
+                min: ArrayString::from(environment.minus_sign()).unwrap(),
+                nan: ArrayString::from(environment.nan()).unwrap(),
+                sep: environment.separator(),
+            }
         }
     }
 }
