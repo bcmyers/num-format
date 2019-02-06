@@ -1,5 +1,5 @@
-use crate::format::utils::{InfinityStr, MinusSignStr, NanStr};
-use crate::format::Grouping;
+use crate::utils::{InfinityStr, MinusSignStr, NanStr};
+use crate::Grouping;
 
 /// Trait that abstracts over [`CustomFormat`], [`Environment`], and [`Locale`].
 ///

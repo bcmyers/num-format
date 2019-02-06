@@ -5,15 +5,14 @@ use core::ops::Deref;
 use core::str;
 
 use crate::constants::MAX_BUF_LEN;
-use crate::format::Format;
-use crate::traits::ToFormattedStr;
+use crate::{Format, ToFormattedStr};
 
 /// A stack-allocated buffer that you can use to get a formatted `&str`
 /// without heap allocation.
 ///
 /// # Example
 /// ```
-/// use num_format::{Buffer, format::Locale};
+/// use num_format::{Buffer, Locale};
 ///
 /// fn main() {
 ///     // Create a stack-allocated buffer...
@@ -188,8 +187,7 @@ mod serialization {
     #[cfg(test)]
     mod tests {
         use crate::constants::MAX_BUF_LEN;
-        use crate::format::Locale;
-        use crate::Buffer;
+        use crate::{Buffer, Locale};
 
         #[test]
         fn test_buffer_serialization() {

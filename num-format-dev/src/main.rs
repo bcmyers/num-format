@@ -4,7 +4,7 @@ use std::io::Write;
 use num_format_dev::{create_module, parse_data};
 
 const DATA_DIR: &str = "./cldr-numbers-full";
-const OUT_PATH: &str = "../src/format/locale.rs";
+const OUT_PATH: &str = "../src/locale.rs";
 
 fn main() -> Result<(), failure::Error> {
     let data = parse_data(DATA_DIR)?;

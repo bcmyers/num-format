@@ -22,7 +22,7 @@ The [`Locale`] type is a programatically generated enum representing formatting 
 by LibreOffice, by IBM in AIX, among others.
 
 ```rust
-use num_format::format::{Format, Locale};
+use num_format::{Format, Locale};
 
 fn main() {
     let format = Locale::en;
@@ -57,8 +57,7 @@ it (all the number types in the standard library implement it) with a desired fo
 
 ```rust
 # use cfg_if::cfg_if; cfg_if! { if #[cfg(feature = "std")] {
-use num_format::ToFormattedString;
-use num_format::format::Locale;
+use num_format::{Locale, ToFormattedString};
 
 fn main() {
     let s = 1000000.to_formatted_string(&Locale::en);
@@ -76,8 +75,7 @@ Although this API is available for all the number types in the standard library,
 for third party types like [`num_bigint::BigInt`] since their maximum size cannot be known in advance.
 
 ```rust
-use num_format::Buffer;
-use num_format::format::Locale;
+use num_format::{Buffer, Locale};
 
 fn main() {
     // Create a stack-allocated buffer...
@@ -103,8 +101,7 @@ in a `no_std` environment.
 
 ```rust
 # use cfg_if::cfg_if; cfg_if! { if #[cfg(feature = "std")] {
-use num_format::WriteFormatted;
-use num_format::format::Locale;
+use num_format::{Locale, WriteFormatted};
 
 fn main() {
     // Create a writer...
@@ -173,7 +170,7 @@ at your option.
 #![deny(unused_parens)]
 #![deny(unused_unsafe)]
 #![deny(unused_variables)]
-#![doc(html_root_url = "https://docs.rs/num-format/0.1.3")]
+#![doc(html_root_url = "https://docs.rs/num-format/0.2.0")]
 
 #[cfg(feature = "with-serde")]
 #[macro_use]
@@ -181,12 +178,39 @@ extern crate serde;
 
 mod buffer;
 mod constants;
+mod custom_format;
+mod custom_format_builder;
+mod environment;
+mod error;
+mod error_kind;
+mod format;
+mod grouping;
 mod impls;
-mod traits;
+mod locale;
+mod to_formatted_str;
+mod to_formatted_string;
+pub mod utils;
+mod write_formatted;
 
 pub use self::buffer::Buffer;
-pub mod errors;
-pub mod format;
-pub use self::traits::ToFormattedStr;
+pub use self::custom_format::CustomFormat;
+pub use self::custom_format_builder::CustomFormatBuilder;
+pub use self::error::Error;
+pub use self::error_kind::ErrorKind;
+pub use self::format::Format;
+pub use self::grouping::Grouping;
+pub use self::locale::Locale;
+pub use self::to_formatted_str::ToFormattedStr;
 #[cfg(feature = "std")]
-pub use self::traits::{ToFormattedString, WriteFormatted};
+pub use standard::*;
+
+#[cfg(feature = "std")]
+mod standard {
+    pub use super::environment::Environment;
+    pub use super::to_formatted_string::ToFormattedString;
+    pub use super::write_formatted::WriteFormatted;
+}
+
+mod sealed {
+    pub trait Sealed {}
+}

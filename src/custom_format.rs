@@ -1,16 +1,14 @@
 use arrayvec::ArrayString;
 
 use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
-use crate::format::utils::{InfinityStr, MinusSignStr, NanStr};
-use crate::format::{CustomFormatBuilder, Format, Grouping};
+use crate::utils::{InfinityStr, MinusSignStr, NanStr};
+use crate::{CustomFormatBuilder, Format, Grouping};
 
-/// Type for representing your own custom formats.
+/// Type for representing your own custom formats. Implements [`Format`].
 ///
 /// # Example
-/// ```
-/// use num_format::errors::Error;
-/// use num_format::format::{CustomFormat, Grouping};
-/// use num_format::Buffer;
+/// ```rust
+/// use num_format::{Buffer, Error, CustomFormat, Grouping};
 ///
 /// fn main() -> Result<(), Error> {
 ///     let format = CustomFormat::builder()
@@ -25,6 +23,9 @@ use crate::format::{CustomFormatBuilder, Format, Grouping};
 ///
 ///     Ok(())
 /// }
+/// ```
+///
+/// [`Format`]: trait.Format.html
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct CustomFormat {

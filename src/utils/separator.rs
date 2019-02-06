@@ -1,5 +1,5 @@
 use crate::constants::MAX_BUF_LEN;
-use crate::format::{Format, Grouping};
+use crate::{Format, Grouping};
 
 #[derive(Debug)]
 pub(crate) struct Separator {

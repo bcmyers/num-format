@@ -1,7 +1,7 @@
 use core::str;
 
 use lazy_static::lazy_static;
-use num_format::format::{CustomFormat, Grouping};
+use num_format::{CustomFormat, Grouping};
 
 lazy_static! {
     pub(crate) static ref POLICIES: [CustomFormat; 5] = {

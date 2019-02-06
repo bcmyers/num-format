@@ -1,6 +1,6 @@
 mod common;
 
-use num_format::{format::CustomFormat, Buffer};
+use num_format::{Buffer, CustomFormat};
 #[cfg(feature = "std")]
 use num_format::{ToFormattedString, WriteFormatted};
 

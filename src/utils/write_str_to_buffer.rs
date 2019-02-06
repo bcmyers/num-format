@@ -1,6 +1,6 @@
 use core::mem;
 
-use crate::format::Grouping;
+use crate::Grouping;
 
 pub(crate) fn write_str_to_buffer<'a>(
     buf: &'a mut Vec<u8>,

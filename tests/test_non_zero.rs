@@ -2,7 +2,7 @@ mod common;
 
 use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
 
-use num_format::{format::CustomFormat, Buffer};
+use num_format::{Buffer, CustomFormat};
 #[cfg(feature = "std")]
 use num_format::{ToFormattedString, WriteFormatted};
 

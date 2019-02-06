@@ -3,11 +3,10 @@ use core::ptr;
 
 use itoa;
 
-use crate::buffer::Buffer;
 use crate::constants::{MAX_BUF_LEN, TABLE};
-use crate::format::Format;
-use crate::impls::utils::{self, Separator};
-use crate::traits::{Sealed, ToFormattedStr};
+use crate::sealed::Sealed;
+use crate::utils::{self, Separator};
+use crate::{Buffer, Format, ToFormattedStr};
 
 macro_rules! impl_signed {
     ($type:ty, $max:expr) => {

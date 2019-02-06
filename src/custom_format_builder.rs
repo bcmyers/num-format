@@ -1,8 +1,7 @@
 use arrayvec::ArrayString;
 
 use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
-use crate::errors::Error;
-use crate::format::{CustomFormat, Format, Grouping, Locale};
+use crate::{CustomFormat, Error, Format, Grouping, Locale};
 
 /// Type for building [`CustomFormat`]s.
 ///
