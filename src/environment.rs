@@ -17,10 +17,9 @@ use crate::{Error, Format, Grouping, Locale};
 /// ```rust
 /// use std::env;
 ///
-/// use failure;
-/// use num_format::{Environment, ToFormattedString};
+/// use num_format::{Environment, Error, ToFormattedString};
 ///
-/// fn main() -> Result<(), failure::Error> {
+/// fn main() -> Result<(), Error> {
 ///     // Use your system's default locale settings
 ///     let format = Environment::new()?;
 ///     let s = (-1000000).to_formatted_string(&format);

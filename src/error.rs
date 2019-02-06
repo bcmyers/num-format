@@ -1,12 +1,11 @@
 use core::fmt;
 
 use arrayvec::ArrayString;
-use failure::Fail;
 
 use crate::constants::MAX_ERR_LEN;
 use crate::ErrorKind;
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Fail)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 /// This crate's error type.
 pub struct Error {
@@ -87,5 +86,31 @@ impl fmt::Display for Error {
 impl From<ErrorKind> for Error {
     fn from(kind: ErrorKind) -> Error {
         Error { kind }
+    }
+}
+
+#[cfg(feature = "std")]
+mod standard {
+    use crate::{Error, ErrorKind};
+
+    impl std::error::Error for Error {
+        fn description(&self) -> &str {
+            use self::ErrorKind::*;
+            match self.kind {
+                C(_msg) => "received unexpected data from C.",
+                Capacity(_n) => "input exceeds capacity.",
+                Other(_msg) => "other miscellaneous error.",
+                ParseLocale(_msg) => "failed to parse input into a Locale.",
+            }
+        }
+        fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+            use self::ErrorKind::*;
+            match self.kind {
+                C(_msg) => None,
+                Capacity(_n) => None,
+                Other(_msg) => None,
+                ParseLocale(_msg) => None,
+            }
+        }
     }
 }
