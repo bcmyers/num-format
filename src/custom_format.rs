@@ -2,7 +2,7 @@ use arrayvec::ArrayString;
 
 use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
-use crate::{CustomFormatBuilder, Format, Grouping};
+use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 
 /// Type for representing your own custom formats. Implements [`Format`].
 ///
@@ -108,5 +108,32 @@ impl Format for CustomFormat {
 
     fn separator(&self) -> Option<char> {
         self.separator()
+    }
+}
+
+impl From<Locale> for CustomFormat {
+    fn from(locale: Locale) -> Self {
+        Self {
+            dec: locale.decimal(),
+            grp: locale.grouping(),
+            inf: ArrayString::from(locale.infinity()).unwrap(),
+            min: ArrayString::from(locale.minus_sign()).unwrap(),
+            nan: ArrayString::from(locale.nan()).unwrap(),
+            sep: locale.separator(),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl From<crate::Environment> for CustomFormat {
+    fn from(env: crate::Environment) -> Self {
+        Self {
+            dec: env.decimal(),
+            grp: env.grouping(),
+            inf: ArrayString::from(env.infinity()).unwrap(),
+            min: ArrayString::from(env.minus_sign()).unwrap(),
+            nan: ArrayString::from(env.nan()).unwrap(),
+            sep: env.separator(),
+        }
     }
 }
