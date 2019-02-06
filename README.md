@@ -23,7 +23,7 @@ The [`Locale`] type is a programatically generated enum representing formatting 
 by LibreOffice, by IBM in AIX, among others.
 
 ```rust
-use num_format::format::{Format, Locale};
+use num_format::{Format, Locale};
 
 fn main() {
     let format = Locale::en;
@@ -57,8 +57,7 @@ it (all the number types in the standard library implement it) with a desired fo
 `no_std` environment.
 
 ```rust
-use num_format::ToFormattedString;
-use num_format::format::Locale;
+use num_format::{Locale, ToFormattedString};
 
 fn main() {
     let s = 1000000.to_formatted_string(&Locale::en);
@@ -75,8 +74,7 @@ Although this API is available for all the number types in the standard library,
 for third party types like [`num_bigint::BigInt`] since their maximum size cannot be known in advance.
 
 ```rust
-use num_format::Buffer;
-use num_format::format::Locale;
+use num_format::{Buffer, Locale};
 
 fn main() {
     // Create a stack-allocated buffer...
@@ -101,8 +99,7 @@ is **no** heap allocation. That said, you can also use this API with types where
 in a `no_std` environment.
 
 ```rust
-use num_format::WriteFormatted;
-use num_format::format::Locale;
+use num_format::{Locale, WriteFormatted};
 
 fn main() {
     // Create a writer...
