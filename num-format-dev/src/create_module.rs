@@ -111,7 +111,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         ///    // When displayed to the screen, it looks like a space.
         ///}
         ///```
-        /// 
+        ///
         /// [Common Locale Data Repository (CLDR)]: https://en.wikipedia.org/wiki/Common_Locale_Data_Repository
         /// [Unicode Consortium]: https://en.wikipedia.org/wiki/Unicode_Consortium
         #[allow(non_camel_case_types, missing_docs)]

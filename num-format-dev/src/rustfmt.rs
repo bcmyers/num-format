@@ -10,6 +10,7 @@ where
     let mut config = Config::default();
     config.set().edition(Edition::Edition2018);
     config.set().emit_mode(EmitMode::Stdout);
+    config.set().max_width(200);
 
     let mut output = Vec::new();
     {
