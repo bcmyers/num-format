@@ -30,6 +30,27 @@
     `num_format::Error` and `num_format::ErrorKind` to work with just plain old `std::error::Error`
     * Thank you [BurntSushi](https://github.com/BurntSushi) for the [suggestion](https://github.com/bcmyers/num-format/issues/3#issuecomment-460615939)
 
+**New features:**
+
+* impl `From<Environment>` and `From<Locale>` for `CustomFormat`
+    * Now you can easiliy turn an `Environment` or a `Locale` into a `CustomFormat`; so it's easy
+    to start with an already complete "base" format and then just tweak it slightly to the custom
+    format you want.
+
+    ```rust
+    use num_format::{CustomFormat, Error, Locale, ToFormattedString};
+
+    fn main() -> Result<(), Error> {
+        let format = CustomFormat::from(Locale::en_IN)
+            .into_builder()
+            .separator(Some(' '))
+            .build()?;
+        let s = 1_000_000.to_formatted_string(&format);
+        assert_eq!(&s, "10 00 000");
+        Ok(())
+    }
+    ```
+
 0.1.2 (2019-02-04)
 ==================
 **Initial release**
