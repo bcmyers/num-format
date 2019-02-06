@@ -94,15 +94,6 @@ mod standard {
     use crate::{Error, ErrorKind};
 
     impl std::error::Error for Error {
-        fn description(&self) -> &str {
-            use self::ErrorKind::*;
-            match self.kind {
-                C(_msg) => "received unexpected data from C.",
-                Capacity(_n) => "input exceeds capacity.",
-                Other(_msg) => "other miscellaneous error.",
-                ParseLocale(_msg) => "failed to parse input into a Locale.",
-            }
-        }
         fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
             use self::ErrorKind::*;
             match self.kind {
