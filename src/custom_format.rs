@@ -124,6 +124,7 @@ impl From<Locale> for CustomFormat {
     }
 }
 
+#[cfg(feature = "std")]
 impl From<crate::Environment> for CustomFormat {
     fn from(env: crate::Environment) -> Self {
         Self {
