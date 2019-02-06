@@ -1,6 +1,6 @@
 [package]
 name = "num-format"
-version = "0.1.3"
+version = "0.2.0"
 
 authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
 categories = ["encoding", "internationalization", "localization", "no-std", "value-formatting"]
@@ -21,7 +21,6 @@ travis-ci = { repository = "bcmyers/num-format", branch = "master" }
 
 [dependencies]
 arrayvec = { version = "0.4", default-features = false }
-failure = { version = "0.1", default-features = false, features = ["derive"] }
 itoa = { version = "0.4", default-features = false, features = ["i128"] }
 libc = { version = "0.2", default-features = false }
 num-bigint = { version = "0.2", optional = true }
@@ -29,7 +28,7 @@ serde = { version = "1.0", optional = true }
 
 [features]
 default = ["std"]
-std = ["arrayvec/default", "failure/default", "itoa/default", "itoa/i128", "libc/default"]
+std = ["arrayvec/default", "itoa/default", "itoa/i128", "libc/default"]
 with-serde = ["arrayvec/serde-1", "serde/derive"]
 
 [dev-dependencies]

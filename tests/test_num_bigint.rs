@@ -3,7 +3,7 @@
 mod common;
 
 use num_bigint::{BigInt, BigUint, Sign};
-use num_format::{format::CustomFormat, ToFormattedString, WriteFormatted};
+use num_format::{CustomFormat, ToFormattedString, WriteFormatted};
 
 use crate::common::POLICIES;
 

@@ -89,16 +89,15 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
 
         use core::str::FromStr;
 
-        use crate::errors::Error;
-        use crate::format::utils::{InfinityStr, MinusSignStr, NanStr};
-        use crate::format::{Format, Grouping};
+        use crate::utils::{InfinityStr, MinusSignStr, NanStr};
+        use crate::{Error, Format, Grouping};
 
         ///<b><u>One of the most important types.</u></b> Represents formats from the
-        ///[Unicode Consortium]'s [Common Locale Data Repository (CLDR)].
+        ///[Unicode Consortium]'s [Common Locale Data Repository (CLDR)]. Implements [`Format`].
         ///
         ///# Example
         ///```
-        ///use num_format::{format::Locale, Buffer};
+        ///use num_format::{Buffer, Locale};
         ///
         ///fn main() {
         ///    // Using the French format from the Unicode Common Locale Data Repository...
@@ -111,7 +110,8 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         ///    // When displayed to the screen, it looks like a space.
         ///}
         ///```
-        /// 
+        ///
+        /// [`Format`]: trait.Format.html
         /// [Common Locale Data Repository (CLDR)]: https://en.wikipedia.org/wiki/Common_Locale_Data_Repository
         /// [Unicode Consortium]: https://en.wikipedia.org/wiki/Unicode_Consortium
         #[allow(non_camel_case_types, missing_docs)]

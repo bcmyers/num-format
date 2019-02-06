@@ -2,7 +2,7 @@
 
 use std::env;
 
-use num_format::{format::Environment, Buffer};
+use num_format::{Buffer, Environment};
 use walkdir::WalkDir;
 
 const LOCALE_DIR: &str = "/usr/share/locale";

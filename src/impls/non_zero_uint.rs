@@ -3,11 +3,10 @@ use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZ
 
 use itoa;
 
-use crate::buffer::Buffer;
 use crate::constants::{MAX_BUF_LEN, TABLE};
-use crate::format::Format;
-use crate::impls::utils::{self, Separator};
-use crate::traits::{Sealed, ToFormattedStr};
+use crate::sealed::Sealed;
+use crate::utils::{self, Separator};
+use crate::{Buffer, Format, ToFormattedStr};
 
 impl ToFormattedStr for NonZeroU8 {
     #[doc(hidden)]

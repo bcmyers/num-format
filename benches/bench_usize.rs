@@ -3,7 +3,7 @@
 use std::time::Duration;
 
 use criterion::{criterion_group, criterion_main, Benchmark, Criterion};
-use num_format::{format::Locale, Buffer, ToFormattedString, WriteFormatted};
+use num_format::{Buffer, Locale, ToFormattedString, WriteFormatted};
 
 fn bench_usize(c: &mut Criterion) {
     let measurement_time = Duration::from_millis(5_000); // Default is 5 seconds

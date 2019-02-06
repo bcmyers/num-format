@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 use core::marker::PhantomData;
 use core::slice;
 use core::str;
@@ -6,20 +8,18 @@ use arrayvec::ArrayString;
 use libc::{self, c_char};
 
 use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
-use crate::errors::Error;
-use crate::format::utils::{InfinityStr, MinusSignStr, NanStr};
-use crate::format::{Format, Grouping, Locale};
+use crate::utils::{InfinityStr, MinusSignStr, NanStr};
+use crate::{Error, Format, Grouping, Locale};
 
-/// Type for representing formats from the `LC_ALL` environment variable.
+/// Type for obtaining your system locale from the `LC_ALL` environment variable. Implements [`Format`].
 ///
 /// # Example
-/// ```
+/// ```rust
 /// use std::env;
 ///
-/// use failure;
-/// use num_format::{format::Environment, ToFormattedString};
+/// use num_format::{Environment, Error, ToFormattedString};
 ///
-/// fn main() -> Result<(), failure::Error> {
+/// fn main() -> Result<(), Error> {
 ///     // Use your system's default locale settings
 ///     let format = Environment::new()?;
 ///     let s = (-1000000).to_formatted_string(&format);
@@ -33,6 +33,9 @@ use crate::format::{Format, Grouping, Locale};
 ///
 ///     Ok(())
 /// }
+/// ```
+///
+/// [`Format`]: trait.Format.html
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct Environment {

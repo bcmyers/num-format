@@ -1,3 +1,5 @@
+#![cfg(feature = "std")]
+
 use std::fmt;
 use std::fs;
 use std::io;
@@ -5,8 +7,7 @@ use std::net;
 use std::os::unix::net::UnixStream;
 use std::process;
 
-use crate::format::Format;
-use crate::traits::ToFormattedString;
+use crate::{Format, ToFormattedString};
 
 /// <b><u>One of the two main traits.</u></b> Gives types in the standard library that implement [`io::Write`]
 /// or [`fmt::Write`], such as `&mut [u8]` and `&mut String`, a [`write_formatted`] method for writing

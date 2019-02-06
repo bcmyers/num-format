@@ -1,10 +1,11 @@
+#![cfg(feature = "std")]
+
 use std::fmt;
 use std::io;
 
-use crate::buffer::Buffer;
 use crate::constants::MAX_BUF_LEN;
-use crate::format::Format;
-use crate::traits::{Sealed, ToFormattedStr};
+use crate::sealed::Sealed;
+use crate::{Buffer, Format, ToFormattedStr};
 
 /// <b><u>One of the two main traits.</u></b> Gives numbers the [`to_formatted_string`] method.
 ///
