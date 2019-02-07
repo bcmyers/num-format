@@ -1,5 +1,9 @@
-0.2.1 (unreleased)
+0.2.1 (2019-02-06)
 ==================
+**Bug fixes:**
+
+    * `WriteFormatted` was being unconditionally implemented on `std::os::unix::net::UnixStream`,
+    which is a unix-only type; so we moved this implementation behind a `#[cfg(unix)]` flag.
 
 0.2.0 (2019-02-06)
 ==================
