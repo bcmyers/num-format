@@ -7,17 +7,17 @@ use libc::c_char;
 use crate::constants::MAX_MIN_LEN;
 use crate::{Error, Grouping};
 
-pub(crate) struct SafePtr<'a> {
+pub(crate) struct Pointer<'a> {
     ptr: *const c_char,
     phantom: PhantomData<&'a ()>,
 }
 
-impl<'a> SafePtr<'a> {
-    pub(crate) fn new(ptr: *const c_char) -> Result<SafePtr<'a>, Error> {
+impl<'a> Pointer<'a> {
+    pub(crate) fn new(ptr: *const c_char) -> Result<Pointer<'a>, Error> {
         if ptr.is_null() {
             return Err(Error::c("received a null pointer from C."));
         }
-        Ok(SafePtr {
+        Ok(Pointer {
             ptr,
             phantom: PhantomData,
         })

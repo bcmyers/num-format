@@ -158,9 +158,7 @@ impl Format for Environment {
 
 #[cfg(unix)]
 mod platform {
-    use libc;
-
-    use crate::utils::SafePtr;
+    use crate::utils;
 
     use super::*;
 
@@ -175,10 +173,10 @@ mod platform {
 
         let lconv: &libc::lconv = unsafe { ptr.as_ref() }.unwrap();
 
-        let dec_ptr = SafePtr::new(lconv.mon_decimal_point)?;
-        let grp_ptr = SafePtr::new(lconv.mon_grouping)?;
-        let min_ptr = SafePtr::new(lconv.negative_sign)?;
-        let sep_ptr = SafePtr::new(lconv.mon_thousands_sep)?;
+        let dec_ptr = utils::Pointer::new(lconv.mon_decimal_point)?;
+        let grp_ptr = utils::Pointer::new(lconv.mon_grouping)?;
+        let min_ptr = utils::Pointer::new(lconv.negative_sign)?;
+        let sep_ptr = utils::Pointer::new(lconv.mon_thousands_sep)?;
 
         let maybe_dec = dec_ptr.as_char()?;
         let grp = grp_ptr.as_grouping()?;
