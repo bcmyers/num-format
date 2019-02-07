@@ -3,6 +3,10 @@ rust:
   - stable
   - beta
   - nightly
+os:
+  - linux
+  - osx
+  - windows
 cache: cargo
 script:
   - cargo test --verbose --no-default-features
