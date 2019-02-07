@@ -156,21 +156,23 @@ at your option.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 // TODO
-// #![deny(dead_code)]
-// #![deny(deprecated)]
-// #![deny(missing_copy_implementations)]
-// #![deny(missing_debug_implementations)]
-// #![deny(missing_docs)]
-// #![deny(trivial_casts)]
-// #![deny(trivial_numeric_casts)]
-// #![deny(unused_extern_crates)]
-// #![deny(unused_imports)]
-// #![deny(unused_macros)]
-// #![deny(unused_mut)]
-// #![deny(unused_results)]
-// #![deny(unused_parens)]
-// #![deny(unused_unsafe)]
-// #![deny(unused_variables)]
+#![allow(
+    dead_code,
+    deprecated,
+    missing_copy_implementations,
+    missing_debug_implementations,
+    missing_docs,
+    trivial_casts,
+    trivial_numeric_casts,
+    unused_extern_crates,
+    unused_imports,
+    unused_macros,
+    unused_mut,
+    unused_results,
+    unused_parens,
+    unused_unsafe,
+    unused_variables
+)]
 #![doc(html_root_url = "https://docs.rs/num-format/0.2.2")]
 
 #[cfg(feature = "with-serde")]
@@ -192,6 +194,9 @@ mod to_formatted_str;
 mod to_formatted_string;
 pub mod utils;
 mod write_formatted;
+
+#[cfg(windows)]
+mod windows;
 
 pub use self::buffer::Buffer;
 pub use self::custom_format::CustomFormat;

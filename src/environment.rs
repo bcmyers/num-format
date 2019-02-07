@@ -200,13 +200,25 @@ mod platform {
 mod platform {
     use super::*;
 
+    use std::ffi::OsStr;
+    use std::marker::PhantomData;
+    use std::os::windows::ffi::OsStrExt;
+
+    use widestring::U16CString;
     use winapi::ctypes::{c_int, c_ulong, wchar_t};
-    use winapi::um::winnls::{
-        GetLocaleInfoEx, GetNumberFormatEx, GetUserDefaultLocaleName, NUMBERFMTW,
-    };
+    use winapi::um::winnls::{GetNumberFormatEx, GetUserDefaultLocaleName, NUMBERFMTW};
+
+    use crate::windows::{self, LOCALE_NAME_SYSTEM_DEFAULT};
 
     pub(crate) fn new_environment() -> Result<Environment, Error> {
         // TODO
+
+        let lp_locale_name =
+            U16CString::from_str("en-US").map_err(|e| Error::new(&e.to_string()))?;
+
+        let lc_type = windows::LOCALE_SGROUPING;
+        let s = get_locale_info_ex(&lp_locale_name, lc_type)?;
+        println!("{}", &s);
 
         let environment = Environment {
             dec: Locale::en.decimal(),
@@ -218,5 +230,67 @@ mod platform {
         };
 
         Ok(environment)
+    }
+
+    fn foo(lc_type: c_ulong) {}
+
+    fn get_locale_info_ex(lp_locale_name: &U16CString, lc_type: c_ulong) -> Result<String, Error> {
+        use core::mem;
+        use core::ptr;
+
+        use winapi::um::winnls::GetLocaleInfoEx;
+
+        let size = unsafe { GetLocaleInfoEx(lp_locale_name.as_ptr(), lc_type, ptr::null_mut(), 0) };
+
+        let mut buf: Vec<wchar_t> = vec![0; 1024];
+
+        let err =
+            unsafe { GetLocaleInfoEx(lp_locale_name.as_ptr(), lc_type, buf.as_mut_ptr(), size) };
+        if err == 0 {
+            return Err(Error::new("TODO: something went wrong"));
+        }
+
+        let windows_string = U16CString::from_vec_with_nul(buf).map_err(|_| Error::new("todo"))?;
+        let s = windows_string.to_string().map_err(|_| Error::new("todo"))?;
+
+        Ok(s)
+    }
+
+    pub struct WindowsString(Vec<wchar_t>);
+
+    impl WindowsString {
+        pub(crate) fn new<S>(s: S) -> Result<WindowsString, Error>
+        where
+            S: AsRef<str>,
+        {
+            let s = s.as_ref();
+            let os_str = OsStr::new(s);
+            let mut vec = os_str.encode_wide().collect::<Vec<wchar_t>>();
+            for b in &vec {
+                if *b == 0 {
+                    return Err(Error::new("TODO: input must not contain any null bytes."));
+                }
+            }
+            vec.push(0);
+            Ok(WindowsString(vec))
+        }
+
+        pub(crate) fn as_ptr(&self) -> *const wchar_t {
+            (&self.0).as_ptr()
+        }
+
+        pub(crate) fn as_mut_ptr(&mut self) -> *mut wchar_t {
+            (&mut self.0).as_mut_ptr()
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn test_environment_windows() {
+            let _ = new_environment().unwrap();
+        }
     }
 }
