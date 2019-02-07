@@ -155,21 +155,22 @@ at your option.
 */
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(dead_code)]
-#![deny(deprecated)]
-#![deny(missing_copy_implementations)]
-#![deny(missing_debug_implementations)]
-#![deny(missing_docs)]
-#![deny(trivial_casts)]
-#![deny(trivial_numeric_casts)]
-#![deny(unused_extern_crates)]
-#![deny(unused_imports)]
-#![deny(unused_macros)]
-#![deny(unused_mut)]
-#![deny(unused_results)]
-#![deny(unused_parens)]
-#![deny(unused_unsafe)]
-#![deny(unused_variables)]
+// TODO
+// #![deny(dead_code)]
+// #![deny(deprecated)]
+// #![deny(missing_copy_implementations)]
+// #![deny(missing_debug_implementations)]
+// #![deny(missing_docs)]
+// #![deny(trivial_casts)]
+// #![deny(trivial_numeric_casts)]
+// #![deny(unused_extern_crates)]
+// #![deny(unused_imports)]
+// #![deny(unused_macros)]
+// #![deny(unused_mut)]
+// #![deny(unused_results)]
+// #![deny(unused_parens)]
+// #![deny(unused_unsafe)]
+// #![deny(unused_variables)]
 #![doc(html_root_url = "https://docs.rs/num-format/0.2.2")]
 
 #[cfg(feature = "with-serde")]
@@ -200,9 +201,9 @@ pub use self::error_kind::ErrorKind;
 pub use self::format::Format;
 pub use self::grouping::Grouping;
 pub use self::locale::Locale;
-pub use self::to_formatted_str::ToFormattedStr;
 #[cfg(feature = "std")]
 pub use self::standard::*;
+pub use self::to_formatted_str::ToFormattedStr;
 
 #[cfg(feature = "std")]
 mod standard {
