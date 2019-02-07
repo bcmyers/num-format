@@ -202,7 +202,7 @@ pub use self::grouping::Grouping;
 pub use self::locale::Locale;
 pub use self::to_formatted_str::ToFormattedStr;
 #[cfg(feature = "std")]
-pub use standard::*;
+pub use self::standard::*;
 
 #[cfg(feature = "std")]
 mod standard {
