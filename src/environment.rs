@@ -47,6 +47,7 @@ pub struct Environment {
     sep: Option<char>,
 }
 
+#[cfg(unix)]
 impl Environment {
     /// Constructs a new [`Environment`].
     ///
@@ -100,7 +101,19 @@ impl Environment {
 
         Ok(environment)
     }
+}
 
+#[cfg(windows)]
+impl Environment {
+    /// Constructs a new [`Environment`].
+    ///
+    /// [`Environment`]: struct.Environment.html
+    pub fn new() -> Result<Environment, Error> {
+        unimplemented!()
+    }
+}
+
+impl Environment {
     /// Returns this format's representation of decimal points.
     pub fn decimal(&self) -> char {
         self.dec
