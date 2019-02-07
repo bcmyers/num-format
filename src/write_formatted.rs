@@ -4,7 +4,6 @@ use std::fmt;
 use std::fs;
 use std::io;
 use std::net;
-use std::os::unix::net::UnixStream;
 use std::process;
 
 use crate::{Format, ToFormattedString};
@@ -77,7 +76,6 @@ macro_rules! impl_for_io_write {
 #[rustfmt::skip] impl WriteFormatted for io::Stdout { impl_for_io_write!(); }
 #[rustfmt::skip] impl WriteFormatted for String { impl_for_fmt_write!(); }
 #[rustfmt::skip] impl WriteFormatted for net::TcpStream { impl_for_io_write!(); }
-#[rustfmt::skip] impl WriteFormatted for UnixStream { impl_for_io_write!(); }
 #[rustfmt::skip] impl WriteFormatted for Vec<u8> { impl_for_io_write!(); }
 #[rustfmt::skip] impl<'a> WriteFormatted for io::StderrLock<'a> { impl_for_io_write!(); }
 #[rustfmt::skip] impl<'a> WriteFormatted for io::StdoutLock<'a> { impl_for_io_write!(); }
@@ -98,11 +96,20 @@ macro_rules! impl_for_io_write {
 #[rustfmt::skip] impl<'a> WriteFormatted for &'a mut io::Stdout { impl_for_io_write!(); }
 #[rustfmt::skip] impl<'a> WriteFormatted for &'a mut String { impl_for_fmt_write!(); }
 #[rustfmt::skip] impl<'a> WriteFormatted for &'a mut net::TcpStream { impl_for_io_write!(); }
-#[rustfmt::skip] impl<'a> WriteFormatted for &'a mut UnixStream { impl_for_io_write!(); }
 #[rustfmt::skip] impl<'a> WriteFormatted for &'a mut Vec<u8> { impl_for_io_write!(); }
 #[rustfmt::skip] impl<'a, 'b> WriteFormatted for &'a mut io::StderrLock<'b> { impl_for_io_write!(); }
 #[rustfmt::skip] impl<'a, 'b> WriteFormatted for &'a mut io::StdoutLock<'b> { impl_for_io_write!(); }
 
 #[rustfmt::skip] impl<'a> WriteFormatted for &'a fs::File { impl_for_io_write!(); }
 #[rustfmt::skip] impl<'a> WriteFormatted for &'a net::TcpStream { impl_for_io_write!(); }
-#[rustfmt::skip] impl<'a> WriteFormatted for &'a UnixStream { impl_for_io_write!(); }
+
+#[cfg(unix)]
+mod unix {
+    use std::os::unix::net::UnixStream;
+
+    use super::*;
+
+    #[rustfmt::skip] impl WriteFormatted for UnixStream { impl_for_io_write!(); }
+    #[rustfmt::skip] impl<'a> WriteFormatted for &'a mut UnixStream { impl_for_io_write!(); }
+    #[rustfmt::skip] impl<'a> WriteFormatted for &'a UnixStream { impl_for_io_write!(); }
+}
