@@ -256,7 +256,23 @@ mod platform {
 mod platform {
     use super::*;
 
+    use winapi::ctypes::{c_int, c_ulong, wchar_t};
+    use winapi::um::winnls::{
+        GetLocaleInfoEx, GetNumberFormatEx, GetUserDefaultLocaleName, NUMBERFMTW,
+    };
+
     pub(crate) fn new_environment() -> Result<Environment, Error> {
-        unimplemented!()
+        // TODO
+
+        let environment = Environment {
+            dec: Locale::en.decimal(),
+            grp: Locale::en.grouping(),
+            inf: ArrayString::from(Locale::en.infinity()).unwrap(),
+            min: ArrayString::from(Locale::en.minus_sign()).unwrap(),
+            nan: ArrayString::from(Locale::en.nan()).unwrap(),
+            sep: Locale::en.separator(),
+        };
+
+        Ok(environment)
     }
 }
