@@ -1,10 +1,12 @@
 #![cfg(feature = "std")]
+#![cfg(unix)]
 
 use std::env;
 
 use num_format::{Buffer, Environment};
 use walkdir::WalkDir;
 
+// TODO: Multi-platform support
 const LOCALE_DIR: &str = "/usr/share/locale";
 
 #[test]
