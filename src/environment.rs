@@ -5,7 +5,7 @@ use core::slice;
 use core::str;
 
 use arrayvec::ArrayString;
-use libc::{self, c_char};
+use libc::c_char;
 
 use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
@@ -47,7 +47,6 @@ pub struct Environment {
     sep: Option<char>,
 }
 
-#[cfg(unix)]
 impl Environment {
     /// Constructs a new [`Environment`].
     ///
@@ -70,50 +69,10 @@ impl Environment {
     /// [`set_infinity`]: struct.Environment.html#method.set_infinity
     /// [`set_nan`]: struct.Environment.html#method.set_nan
     pub fn new() -> Result<Environment, Error> {
-        let empty_slice = &['\0' as c_char];
-        let _ = unsafe { libc::setlocale(libc::LC_MONETARY, empty_slice.as_ptr()) };
-
-        let ptr = unsafe { libc::localeconv() };
-        if ptr.is_null() {
-            return Err(Error::c("C function 'localeconv' returned a null pointer."));
-        }
-
-        let lconv: &libc::lconv = unsafe { ptr.as_ref() }.unwrap();
-
-        let dec_ptr = SafePointer::new(lconv.mon_decimal_point)?;
-        let grp_ptr = SafePointer::new(lconv.mon_grouping)?;
-        let min_ptr = SafePointer::new(lconv.negative_sign)?;
-        let sep_ptr = SafePointer::new(lconv.mon_thousands_sep)?;
-
-        let maybe_dec = dec_ptr.as_char()?;
-        let grp = grp_ptr.as_grouping()?;
-        let min = min_ptr.as_str()?;
-        let maybe_sep = sep_ptr.as_char()?;
-
-        let environment = Environment {
-            dec: maybe_dec.unwrap_or_else(|| '.'),
-            grp,
-            inf: ArrayString::from(Locale::en.infinity()).unwrap(),
-            min: ArrayString::from(min).map_err(|_| Error::capacity(min.len(), MAX_MIN_LEN))?,
-            nan: ArrayString::from(Locale::en.nan()).unwrap(),
-            sep: maybe_sep,
-        };
-
-        Ok(environment)
+        use self::platform;
+        platform::new_environment()
     }
-}
 
-#[cfg(windows)]
-impl Environment {
-    /// Constructs a new [`Environment`].
-    ///
-    /// [`Environment`]: struct.Environment.html
-    pub fn new() -> Result<Environment, Error> {
-        unimplemented!()
-    }
-}
-
-impl Environment {
     /// Returns this format's representation of decimal points.
     pub fn decimal(&self) -> char {
         self.dec
@@ -250,5 +209,54 @@ impl<'a> SafePointer<'a> {
             return Err(Error::capacity(s.len(), MAX_MIN_LEN));
         }
         Ok(s)
+    }
+}
+
+#[cfg(unix)]
+mod platform {
+    use libc;
+
+    use super::*;
+
+    pub(crate) fn new_environment() -> Result<Environment, Error> {
+        let empty_slice = &['\0' as c_char];
+        let _ = unsafe { libc::setlocale(libc::LC_MONETARY, empty_slice.as_ptr()) };
+
+        let ptr = unsafe { libc::localeconv() };
+        if ptr.is_null() {
+            return Err(Error::c("C function 'localeconv' returned a null pointer."));
+        }
+
+        let lconv: &libc::lconv = unsafe { ptr.as_ref() }.unwrap();
+
+        let dec_ptr = SafePointer::new(lconv.mon_decimal_point)?;
+        let grp_ptr = SafePointer::new(lconv.mon_grouping)?;
+        let min_ptr = SafePointer::new(lconv.negative_sign)?;
+        let sep_ptr = SafePointer::new(lconv.mon_thousands_sep)?;
+
+        let maybe_dec = dec_ptr.as_char()?;
+        let grp = grp_ptr.as_grouping()?;
+        let min = min_ptr.as_str()?;
+        let maybe_sep = sep_ptr.as_char()?;
+
+        let environment = Environment {
+            dec: maybe_dec.unwrap_or_else(|| '.'),
+            grp,
+            inf: ArrayString::from(Locale::en.infinity()).unwrap(),
+            min: ArrayString::from(min).map_err(|_| Error::capacity(min.len(), MAX_MIN_LEN))?,
+            nan: ArrayString::from(Locale::en.nan()).unwrap(),
+            sep: maybe_sep,
+        };
+
+        Ok(environment)
+    }
+}
+
+#[cfg(windows)]
+mod platform {
+    use super::*;
+
+    pub(crate) fn new_environment() -> Result<Environment, Error> {
+        unimplemented!()
     }
 }
