@@ -16,7 +16,7 @@ use winapi::um::winnls::GetLocaleInfoEx;
 use winapi::um::winnls::{GetNumberFormatEx, GetUserDefaultLocaleName, NUMBERFMTW};
 
 use self::bindings;
-use crate::{Error, Locale};
+use crate::{Error, Locale, SystemLocale};
 
 impl SystemLocale {
     pub fn new() -> Result<SystemLocale, Error> {
