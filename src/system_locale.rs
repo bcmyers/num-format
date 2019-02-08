@@ -5,7 +5,6 @@ mod windows;
 
 use std::collections::HashSet;
 
-use crate::constants::{MAX_INF_LEN, MAX_NAN_LEN};
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
 use crate::{Error, Format, Grouping};
 
