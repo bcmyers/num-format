@@ -1,3 +1,5 @@
+#![cfg(unix)]
+
 use core::marker::PhantomData;
 use core::slice;
 use core::str;
