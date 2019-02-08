@@ -4,8 +4,6 @@ use std::marker::PhantomData;
 use std::slice;
 use std::str;
 
-use libc::c_char;
-
 use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 use crate::{Error, Grouping, Locale, SystemLocale};
 
@@ -72,12 +70,12 @@ impl SystemLocale {
 }
 
 struct Pointer<'a> {
-    ptr: *const c_char,
+    ptr: *const libc::c_char,
     phantom: PhantomData<&'a ()>,
 }
 
 impl<'a> Pointer<'a> {
-    fn new(ptr: *const c_char) -> Result<Pointer<'a>, Error> {
+    fn new(ptr: *const libc::c_char) -> Result<Pointer<'a>, Error> {
         if ptr.is_null() {
             return Err(Error::c("received a null pointer from C."));
         }

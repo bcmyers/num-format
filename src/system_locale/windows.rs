@@ -15,7 +15,6 @@ use winapi::ctypes::{c_ulong, wchar_t};
 use winapi::um::winnls::GetLocaleInfoEx;
 use winapi::um::winnls::{GetNumberFormatEx, GetUserDefaultLocaleName, NUMBERFMTW};
 
-use self::bindings;
 use crate::{Error, Locale, SystemLocale};
 
 impl SystemLocale {

@@ -3,10 +3,8 @@
 mod unix;
 mod windows;
 
-use arrayvec::ArrayString;
-
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
-use crate::{Error, Format, Grouping};
+use crate::{Format, Grouping};
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
