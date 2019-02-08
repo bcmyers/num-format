@@ -1,11 +1,13 @@
 language: rust
 rust:
+  # TODO
   - stable
-  - beta
-  - nightly
+  # - beta
+  # - nightly
 os:
-  - linux
-  - osx
+  # TODO
+  # - linux
+  # - osx
   - windows
 cache: cargo
 script:
