@@ -33,11 +33,11 @@ fn main() {
 }
 ```
 
-### `Environment`
+### `SystemLocale`
 
-The [`Environment`] type allows you to access your system's locale settings via the `LC_ALL` environment variable.
+The [`SystemLocale`] type allows you to access your system's locale settings via the `LC_ALL` environment variable.
 If you're familiar with C, it pulls system information using the [`setlocale`] and [`localeconv`] functions in the C
-standard library. For more details, see [`Environment`].
+standard library. For more details, see [`SystemLocale`].
 
 ### `CustomFormat`
 
@@ -135,7 +135,6 @@ at your option.
 [`Buffer`]: struct.Buffer.html
 [Common Locale Data Repository]: https://en.wikipedia.org/wiki/Common_Locale_Data_Repository
 [`CustomFormat`]: format/struct.CustomFormat.html
-[`Environment`]: format/struct.Environment.html
 [`File`]: https://doc.rust-lang.org/std/fs/struct.File.html
 [`fmt::Write`]: https://doc.rust-lang.org/std/fmt/fn.write.html
 [`Format`]: format/trait.Format.html
@@ -145,6 +144,7 @@ at your option.
 [`num_bigint::BigInt`]: https://docs.rs/num-bigint/0.2.2/num_bigint/struct.BigInt.html
 [`setlocale`]: https://www.gnu.org/software/libc/manual/html_node/Setting-the-Locale.html
 [`String`]: https://doc.rust-lang.org/std/string/struct.String.html
+[`SystemLocale`]: format/struct.SystemLocale.html
 [The Apache License, Version 2.0]: http://www.apache.org/licenses/LICENSE-2.0
 [The MIT license]: http://opensource.org/licenses/MIT
 [`ToFormattedString`]: trait.ToFormattedString.html
