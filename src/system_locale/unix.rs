@@ -8,6 +8,7 @@ use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 use crate::{Error, Grouping, Locale, SystemLocale};
 
 impl SystemLocale {
+    /// TODO
     pub fn new() -> Result<SystemLocale, Error> {
         let empty_slice = &['\0' as libc::c_char];
         let _ = unsafe { libc::setlocale(libc::LC_MONETARY, empty_slice.as_ptr()) };
@@ -44,6 +45,7 @@ impl SystemLocale {
         Ok(locale)
     }
 
+    /// TODO
     pub fn set_infinity<S>(&mut self, s: S) -> Result<(), Error>
     where
         S: Into<String>,
@@ -56,6 +58,7 @@ impl SystemLocale {
         Ok(())
     }
 
+    /// TODO
     pub fn set_nan<S>(&mut self, s: S) -> Result<(), Error>
     where
         S: Into<String>,
