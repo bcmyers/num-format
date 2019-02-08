@@ -155,8 +155,7 @@ at your option.
 */
 
 #![cfg_attr(not(feature = "std"), no_std)]
-// TODO
-#![allow(
+#![deny(
     dead_code,
     deprecated,
     missing_copy_implementations,
@@ -173,7 +172,7 @@ at your option.
     unused_unsafe,
     unused_variables
 )]
-#![doc(html_root_url = "https://docs.rs/num-format/0.2.2")]
+#![doc(html_root_url = "https://docs.rs/num-format/0.3.0")]
 
 #[cfg(feature = "with-serde")]
 #[macro_use]

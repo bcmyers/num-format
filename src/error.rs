@@ -42,6 +42,7 @@ impl Error {
     }
 
     #[cfg_attr(not(feature = "std"), allow(dead_code))]
+    #[cfg_attr(windows, allow(dead_code))]
     pub(crate) fn c<S>(msg: S) -> Error
     where
         S: AsRef<str>,

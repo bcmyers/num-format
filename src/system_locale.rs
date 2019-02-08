@@ -6,6 +6,7 @@ mod windows;
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
 use crate::{Format, Grouping};
 
+/// TODO
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct SystemLocale {
@@ -18,26 +19,32 @@ pub struct SystemLocale {
 }
 
 impl SystemLocale {
+    /// TODO
     pub fn decimal(&self) -> char {
         self.dec
     }
 
+    /// TODO
     pub fn grouping(&self) -> Grouping {
         self.grp
     }
 
+    /// TODO
     pub fn infinity(&self) -> &str {
         &self.inf
     }
 
+    /// TODO
     pub fn minus_sign(&self) -> &str {
         &self.min
     }
 
+    /// TODO
     pub fn nan(&self) -> &str {
         &self.nan
     }
 
+    /// TODO
     pub fn separator(&self) -> Option<char> {
         self.sep
     }

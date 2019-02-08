@@ -13,13 +13,14 @@ fn run() {
 
     let bindings = bindgen::Builder::default()
         .header(headers)
+        .whitelist_var("LOCALE_NAME_MAX_LENGTH")
         .whitelist_var("LOCALE_NAME_SYSTEM_DEFAULT")
         .whitelist_var("LOCALE_SDECIMAL")
         .whitelist_var("LOCALE_SGROUPING")
-        .whitelist_var("LOCALE_SMONDECIMALSEP")
-        .whitelist_var("LOCALE_SMONGROUPING")
-        .whitelist_var("LOCALE_SMONTHOUSANDSEP")
+        .whitelist_var("LOCALE_SPOSINFINITY")
+        .whitelist_var("LOCALE_SNAN")
         .whitelist_var("LOCALE_SNEGATIVESIGN")
+        .whitelist_var("LOCALE_SNEGINFINITY")
         .whitelist_var("LOCALE_STHOUSAND")
         .generate()
         .expect("unable to generate bindings for windows.h");
@@ -28,6 +29,14 @@ fn run() {
     bindings
         .write_to_file(&out_path)
         .expect("unable to write bindings for windows.h");
+
+    // Note: For development ...
+    // let out_path = Path::new(&root)
+    //     .join("tmp")
+    //     .join("bindings.rs");
+    // bindings
+    //     .write_to_file(&out_path)
+    //     .expect("unable to write bindings for windows.h");
 }
 
 #[cfg(not(windows))]
