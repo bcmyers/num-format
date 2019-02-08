@@ -122,6 +122,8 @@ impl SystemLocale {
     where
         S: Into<String>,
     {
+        use crate::constants::MAX_INF_LEN;
+
         let s = s.into();
         if s.len() > MAX_INF_LEN {
             return Err(Error::new("TODO"));
@@ -136,6 +138,8 @@ impl SystemLocale {
     where
         S: Into<String>,
     {
+        use crate::constants::MAX_NAN_LEN;
+
         let s = s.into();
         if s.len() > MAX_NAN_LEN {
             return Err(Error::new("TODO"));
