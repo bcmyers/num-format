@@ -1,6 +1,11 @@
 #![cfg(windows)]
 
-mod bindings;
+mod bindings {
+    #![allow(non_upper_case_globals)]
+    #![allow(non_camel_case_types)]
+    #![allow(non_snake_case)]
+    include!(concat!(env!("OUT_DIR"), "\\bindings.rs"));
+}
 
 use std::mem;
 use std::ptr;
@@ -13,9 +18,17 @@ use winapi::shared::minwindef::{BOOL, DWORD, LPARAM};
 use winapi::um::winnls;
 use winapi::um::winnt::WCHAR;
 
-use self::bindings::{Request, LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_NAME_MAX_LENGTH};
 use crate::{Error, Grouping, SystemLocale};
 use crate::constants::{MAX_MIN_LEN, MAX_INF_LEN, MAX_NAN_LEN};
+
+lazy_static! {
+    pub(crate) static ref LOCALE_NAME_SYSTEM_DEFAULT: &'static str = {
+        let raw = bindings::LOCALE_NAME_SYSTEM_DEFAULT;
+        unsafe { std::str::from_utf8_unchecked(&raw[0..raw.len() - 1]) }
+    };
+}
+
+pub(crate) const LOCALE_NAME_MAX_LENGTH: usize = bindings::LOCALE_NAME_MAX_LENGTH as usize;
 
 impl SystemLocale {
     /// TODO
@@ -114,6 +127,32 @@ impl std::str::FromStr for SystemLocale {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         SystemLocale::from_name(s)
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+pub(crate) enum Request {
+    Decimal,
+    Grouping,
+    MinusSign,
+    Nan,
+    NegativeInfinity,
+    PositiveInfinity,
+    Separator,
+}
+
+impl From<Request> for DWORD {
+    fn from(request: Request) -> DWORD {
+        use self::Request::*;
+        match request {
+            Decimal => bindings::LOCALE_SDECIMAL,
+            Grouping => bindings::LOCALE_SGROUPING,
+            MinusSign => bindings::LOCALE_SNEGATIVESIGN,
+            Nan => bindings::LOCALE_SNAN,
+            NegativeInfinity => bindings::LOCALE_SNEGINFINITY,
+            PositiveInfinity => bindings::LOCALE_SPOSINFINITY,
+            Separator => bindings::LOCALE_STHOUSAND,
+        }
     }
 }
 
@@ -242,16 +281,6 @@ mod tests {
         }
 
         for locales2 in localess {
-            for locale2 in &locales2 {
-                if !locales.contains(locale2) {
-                    eprintln!("{} in locales2 but not locales1", locale2);
-                }
-            }
-            for locale1 in &locales {
-                if !locales2.contains(locale1) {
-                    eprintln!("{} in locales1 but not locales2", locale1);
-                }
-            }
             assert_eq!(locales, locales2)
         }
     }
