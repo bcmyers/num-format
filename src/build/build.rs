@@ -14,21 +14,20 @@ fn run() {
     let bindings = bindgen::Builder::default()
         .header(headers)
         .whitelist_var("LOCALE_NAME_SYSTEM_DEFAULT")
-        .whitelist_var("LOCALE_NAME_USER_DEFAULT")
         .whitelist_var("LOCALE_SDECIMAL")
-        .whitelist_var("LOCALE_SMONDECIMALSEP")
         .whitelist_var("LOCALE_SGROUPING")
+        .whitelist_var("LOCALE_SMONDECIMALSEP")
         .whitelist_var("LOCALE_SMONGROUPING")
         .whitelist_var("LOCALE_SMONTHOUSANDSEP")
         .whitelist_var("LOCALE_SNEGATIVESIGN")
         .whitelist_var("LOCALE_STHOUSAND")
         .generate()
-        .expect("Unable to generate bindings");
+        .expect("unable to generate bindings for windows.h");
 
     let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("bindings.rs");
     bindings
         .write_to_file(&out_path)
-        .expect("Couldn't write bindings!");
+        .expect("unable to write bindings for windows.h");
 }
 
 #[cfg(not(windows))]

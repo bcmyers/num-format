@@ -3,14 +3,14 @@
 
 use std::env;
 
-use num_format::{Buffer, Environment};
+use num_format::{Buffer, SystemLocale};
 use walkdir::WalkDir;
 
 // TODO: Multi-platform support
 const LOCALE_DIR: &str = "/usr/share/locale";
 
 #[test]
-fn test_environment() {
+fn test_system_locale() {
     let mut file_names = WalkDir::new(LOCALE_DIR)
         .max_depth(1)
         .into_iter()
@@ -23,8 +23,8 @@ fn test_environment() {
     file_names.sort_by(|a, b| a.cmp(b));
     for file_name in file_names {
         env::set_var("LC_ALL", &file_name);
-        let environment = Environment::new().unwrap();
+        let locale = SystemLocale::new().unwrap();
         let mut buf = Buffer::new();
-        buf.write_formatted(&(-100_000), &environment);
+        buf.write_formatted(&(-100_000), &locale);
     }
 }

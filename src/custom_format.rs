@@ -128,17 +128,17 @@ impl From<Locale> for CustomFormat {
 mod standard {
     use arrayvec::ArrayString;
 
-    use crate::{CustomFormat, Environment};
+    use crate::{CustomFormat, SystemLocale};
 
-    impl From<Environment> for CustomFormat {
-        fn from(environment: Environment) -> Self {
+    impl From<SystemLocale> for CustomFormat {
+        fn from(locale: SystemLocale) -> Self {
             Self {
-                dec: environment.decimal(),
-                grp: environment.grouping(),
-                inf: ArrayString::from(environment.infinity()).unwrap(),
-                min: ArrayString::from(environment.minus_sign()).unwrap(),
-                nan: ArrayString::from(environment.nan()).unwrap(),
-                sep: environment.separator(),
+                dec: locale.decimal(),
+                grp: locale.grouping(),
+                inf: ArrayString::from(locale.infinity()).unwrap(),
+                min: ArrayString::from(locale.minus_sign()).unwrap(),
+                nan: ArrayString::from(locale.nan()).unwrap(),
+                sep: locale.separator(),
             }
         }
     }

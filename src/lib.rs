@@ -183,20 +183,17 @@ mod buffer;
 mod constants;
 mod custom_format;
 mod custom_format_builder;
-mod environment;
 mod error;
 mod error_kind;
 mod format;
 mod grouping;
 mod impls;
 mod locale;
+mod system_locale;
 mod to_formatted_str;
 mod to_formatted_string;
 pub mod utils;
 mod write_formatted;
-
-#[cfg(windows)]
-mod windows;
 
 pub use self::buffer::Buffer;
 pub use self::custom_format::CustomFormat;
@@ -212,7 +209,7 @@ pub use self::to_formatted_str::ToFormattedStr;
 
 #[cfg(feature = "std")]
 mod standard {
-    pub use super::environment::Environment;
+    pub use super::system_locale::SystemLocale;
     pub use super::to_formatted_string::ToFormattedString;
     pub use super::write_formatted::WriteFormatted;
 }

@@ -3,18 +3,17 @@ name = "num-format"
 version = "0.2.2"
 
 authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
+build = "src/build/build.rs"
 categories = ["encoding", "internationalization", "localization", "no-std", "value-formatting"]
 description = "A Rust crate for producing string-representations of numbers, formatted according to international standards"
 documentation = "https://docs.rs/num-format"
 edition = "2018"
-exclude = ["num-format-dev/**/*"]
 homepage = "https://github.com/bcmyers/num-format"
 keywords = ["comma", "internationalization", "number", "separator", "thousands"]
 license = "MIT/Apache-2.0"
 publish = true
 readme = "README.md"
 repository = "https://github.com/bcmyers/num-format"
-build = "src/build/build.rs"
 
 [badges]
 maintenance = { status = "actively-developed" }
@@ -23,20 +22,22 @@ travis-ci = { repository = "bcmyers/num-format", branch = "master" }
 [dependencies]
 arrayvec = { version = "0.4", default-features = false }
 itoa = { version = "0.4", default-features = false, features = ["i128"] }
-libc = { version = "0.2", default-features = false }
 num-bigint = { version = "0.2", optional = true }
 serde = { version = "1.0", optional = true }
 
-[target.'cfg(target_os = "windows")'.dependencies]
-winapi = { version = "0.3", features = ["winnls"] }
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winbase"] }
 widestring = "0.4"
 
-[build-dependencies]
+[target.'cfg(windows)'.build-dependencies]
 bindgen = "0.47"
 
 [features]
 default = ["std"]
-std = ["arrayvec/default", "itoa/default", "itoa/i128", "libc/default"]
+std = ["arrayvec/default", "itoa/default", "itoa/i128"]
 with-serde = ["arrayvec/serde-1", "serde/derive"]
 
 [dev-dependencies]
