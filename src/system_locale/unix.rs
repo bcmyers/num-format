@@ -7,7 +7,7 @@ use std::str;
 use libc::c_char;
 
 use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
-use crate::{Error, Locale, SystemLocale, Grouping};
+use crate::{Error, Grouping, Locale, SystemLocale};
 
 impl SystemLocale {
     pub fn new() -> Result<SystemLocale, Error> {

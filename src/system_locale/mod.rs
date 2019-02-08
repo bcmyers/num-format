@@ -4,7 +4,6 @@ mod unix;
 mod windows;
 
 use arrayvec::ArrayString;
-use libc::c_char;
 
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
 use crate::{Error, Format, Grouping};

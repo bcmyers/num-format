@@ -7,8 +7,8 @@ mod bindings {
     include!(concat!(env!("OUT_DIR"), "\\bindings.rs"));
 }
 
-use core::mem;
-use core::ptr;
+use std::mem;
+use std::ptr;
 
 use widestring::U16CString;
 use winapi::ctypes::{c_ulong, wchar_t};
