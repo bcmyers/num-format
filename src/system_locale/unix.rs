@@ -1,75 +1,61 @@
 #![cfg(unix)]
 
+use std::collections::HashSet;
 use std::marker::PhantomData;
 use std::slice;
 use std::str;
 
-use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
+use crate::constants::MAX_MIN_LEN;
 use crate::{Error, Grouping, Locale, SystemLocale};
 
-impl SystemLocale {
-    /// TODO
-    pub fn new() -> Result<SystemLocale, Error> {
-        let empty_slice = &['\0' as libc::c_char];
-        let _ = unsafe { libc::setlocale(libc::LC_MONETARY, empty_slice.as_ptr()) };
+pub(crate) fn available_names() -> Result<HashSet<String>, Error> {
+    // TODO
+    unimplemented!()
+}
 
-        let ptr = unsafe { libc::localeconv() };
-        if ptr.is_null() {
-            return Err(Error::c("C function 'localeconv' returned a null pointer."));
-        }
+pub(crate) fn default() -> Result<SystemLocale, Error> {
+    let empty_slice = &['\0' as libc::c_char];
+    let _ = unsafe { libc::setlocale(libc::LC_MONETARY, empty_slice.as_ptr()) };
 
-        let lconv: &libc::lconv = unsafe { ptr.as_ref() }.unwrap();
-
-        let dec_ptr = Pointer::new(lconv.mon_decimal_point)?;
-        let grp_ptr = Pointer::new(lconv.mon_grouping)?;
-        let min_ptr = Pointer::new(lconv.negative_sign)?;
-        let sep_ptr = Pointer::new(lconv.mon_thousands_sep)?;
-
-        let maybe_dec = dec_ptr.as_char()?;
-        let grp = grp_ptr.as_grouping()?;
-        let min = min_ptr.as_str()?;
-        if min.len() > MAX_MIN_LEN {
-            return Err(Error::new("TODO"));
-        }
-        let maybe_sep = sep_ptr.as_char()?;
-
-        let locale = SystemLocale {
-            dec: maybe_dec.unwrap_or_else(|| '.'),
-            grp,
-            inf: Locale::en.infinity().to_string(),
-            min: min.to_string(),
-            nan: Locale::en.nan().to_string(),
-            sep: maybe_sep,
-        };
-
-        Ok(locale)
+    let ptr = unsafe { libc::localeconv() };
+    if ptr.is_null() {
+        return Err(Error::c("C function 'localeconv' returned a null pointer."));
     }
 
-    /// TODO
-    pub fn set_infinity<S>(&mut self, s: S) -> Result<(), Error>
-    where
-        S: Into<String>,
-    {
-        let s = s.into();
-        if s.len() > MAX_INF_LEN {
-            return Err(Error::new("TODO"));
-        }
-        self.nan = s;
-        Ok(())
-    }
+    let lconv: &libc::lconv = unsafe { ptr.as_ref() }.unwrap();
 
-    /// TODO
-    pub fn set_nan<S>(&mut self, s: S) -> Result<(), Error>
-    where
-        S: Into<String>,
-    {
-        let s = s.into();
-        if s.len() > MAX_NAN_LEN {
-            return Err(Error::new("TODO"));
-        }
-        self.nan = s;
-        Ok(())
+    let dec_ptr = Pointer::new(lconv.mon_decimal_point)?;
+    let grp_ptr = Pointer::new(lconv.mon_grouping)?;
+    let min_ptr = Pointer::new(lconv.negative_sign)?;
+    let sep_ptr = Pointer::new(lconv.mon_thousands_sep)?;
+
+    let maybe_dec = dec_ptr.as_char()?;
+    let grp = grp_ptr.as_grouping()?;
+    let min = min_ptr.as_str()?;
+    if min.len() > MAX_MIN_LEN {
+        return Err(Error::new("TODO"));
     }
+    let maybe_sep = sep_ptr.as_char()?;
+
+    let locale = SystemLocale {
+        dec: maybe_dec.unwrap_or_else(|| '.'),
+        grp,
+        inf: Locale::en.infinity().to_string(),
+        min: min.to_string(),
+        nan: Locale::en.nan().to_string(),
+        sep: maybe_sep,
+    };
+
+    Ok(locale)
+}
+
+pub(crate) fn from_name<S>(name: S) -> Result<SystemLocale, Error>
+where
+    S: AsRef<str>,
+{
+    // TODO
+    let _ = name.as_ref();
+    unimplemented!()
 }
 
 struct Pointer<'a> {

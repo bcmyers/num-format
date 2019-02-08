@@ -3,8 +3,11 @@
 mod unix;
 mod windows;
 
+use std::collections::HashSet;
+
+use crate::constants::{MAX_INF_LEN, MAX_NAN_LEN};
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
-use crate::{Format, Grouping};
+use crate::{Error, Format, Grouping};
 
 /// TODO
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -19,6 +22,71 @@ pub struct SystemLocale {
 }
 
 impl SystemLocale {
+    /// TODO
+    pub fn new() -> Result<SystemLocale, Error> {
+        SystemLocale::default()
+    }
+
+    /// TODO
+    pub fn default() -> Result<SystemLocale, Error> {
+        #[cfg(unix)]
+        {
+            return unix::default();
+        }
+
+        #[cfg(windows)]
+        {
+            return windows::default();
+        }
+
+        #[cfg(not(unix))]
+        #[cfg(not(windows))]
+        {
+            return Err(Error::new("TODO"));
+        }
+    }
+
+    /// TODO
+    pub fn from_name<S>(name: S) -> Result<SystemLocale, Error>
+    where
+        S: AsRef<str>,
+    {
+        #[cfg(unix)]
+        {
+            return unix::from_name(name);
+        }
+
+        #[cfg(windows)]
+        {
+            return windows::from_name(name);
+        }
+
+        #[cfg(not(unix))]
+        #[cfg(not(windows))]
+        {
+            return Err(Error::new("TODO"));
+        }
+    }
+
+    /// TODO
+    pub fn available_names() -> Result<HashSet<String>, Error> {
+        #[cfg(unix)]
+        {
+            return unix::available_names();
+        }
+
+        #[cfg(windows)]
+        {
+            return windows::available_names();
+        }
+
+        #[cfg(not(unix))]
+        #[cfg(not(windows))]
+        {
+            return Ok(HashSet::default());
+        }
+    }
+
     /// TODO
     pub fn decimal(&self) -> char {
         self.dec
@@ -48,6 +116,34 @@ impl SystemLocale {
     pub fn separator(&self) -> Option<char> {
         self.sep
     }
+
+    #[cfg(unix)]
+    /// TODO
+    pub fn set_infinity<S>(&mut self, s: S) -> Result<(), Error>
+    where
+        S: Into<String>,
+    {
+        let s = s.into();
+        if s.len() > MAX_INF_LEN {
+            return Err(Error::new("TODO"));
+        }
+        self.nan = s;
+        Ok(())
+    }
+
+    #[cfg(unix)]
+    /// TODO
+    pub fn set_nan<S>(&mut self, s: S) -> Result<(), Error>
+    where
+        S: Into<String>,
+    {
+        let s = s.into();
+        if s.len() > MAX_NAN_LEN {
+            return Err(Error::new("TODO"));
+        }
+        self.nan = s;
+        Ok(())
+    }
 }
 
 impl Format for SystemLocale {
@@ -73,5 +169,13 @@ impl Format for SystemLocale {
 
     fn separator(&self) -> Option<char> {
         self.separator()
+    }
+}
+
+impl std::str::FromStr for SystemLocale {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        SystemLocale::from_name(s)
     }
 }
