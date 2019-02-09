@@ -107,8 +107,7 @@ impl<'a> Pointer<'a> {
             [3, 2] => Ok(Grouping::Indian),
             [] => Ok(Grouping::Posix),
             _ => {
-                eprintln!("unexpected grouping: {:?}", s);
-                Err(Error::c("received unexpected grouping code from C"))
+                Err(Error::c(&format!("received unexpected grouping code from C: {:?}", s)))
             },
         }
     }
