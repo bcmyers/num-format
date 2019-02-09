@@ -1,22 +1,26 @@
+// TODO: Add support for LOCALE_NAME_USER_DEFAULT
+
 #![cfg(windows)]
 
 mod bindings {
     //! Bindings to windows.h with definitions for...
     //!
-    //! * LOCALE_NAME_MAX_LENGTH
-    //! * LOCALE_NAME_SYSTEM_DEFAULT
-    //! * LOCALE_SDECIMAL
-    //! * LOCALE_SGROUPING
-    //! * LOCALE_SPOSINFINITY
-    //! * LOCALE_SNAME
-    //! * LOCALE_SNAN
-    //! * LOCALE_SNEGATIVESIGN
-    //! * LOCALE_SNEGINFINITY
-    //! * LOCALE_STHOUSAND
+    //! * `LOCALE_NAME_MAX_LENGTH`
+    //! * `LOCALE_NAME_SYSTEM_DEFAULT`
+    //! * `LOCALE_SDECIMAL`
+    //! * `LOCALE_SGROUPING`
+    //! * `LOCALE_SPOSINFINITY`
+    //! * `LOCALE_SNAME`
+    //! * `LOCALE_SNAN`
+    //! * `LOCALE_SNEGATIVESIGN`
+    //! * `LOCALE_SNEGINFINITY`
+    //! * `LOCALE_STHOUSAND`
+    //!
+    //! See build.rs.
 
-    #![allow(non_upper_case_globals)]
     #![allow(non_camel_case_types)]
     #![allow(non_snake_case)]
+    #![allow(non_upper_case_globals)]
     include!(concat!(env!("OUT_DIR"), "\\bindings.rs"));
 }
 
@@ -27,7 +31,9 @@ use std::sync::{Arc, Mutex};
 
 use lazy_static::lazy_static;
 use widestring::{U16CStr, U16CString};
+use winapi::ctypes::c_int;
 use winapi::shared::minwindef::{BOOL, DWORD, LPARAM};
+use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::winnls;
 use winapi::um::winnt::WCHAR;
 
@@ -35,13 +41,13 @@ use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 use crate::{Error, Grouping, SystemLocale};
 
 lazy_static! {
-    pub(crate) static ref LOCALE_NAME_SYSTEM_DEFAULT: &'static str = {
+    static ref LOCALE_NAME_SYSTEM_DEFAULT: Result<&'static str, Error> = {
         let raw = bindings::LOCALE_NAME_SYSTEM_DEFAULT;
-        unsafe { std::str::from_utf8_unchecked(&raw[0..raw.len() - 1]) }
+        std::str::from_utf8(&raw[0..raw.len() - 1]).map_err(|_| Error::new("TODO"))
     };
 }
 
-pub(crate) const LOCALE_NAME_MAX_LENGTH: usize = bindings::LOCALE_NAME_MAX_LENGTH as usize;
+const LOCALE_NAME_MAX_LENGTH: usize = bindings::LOCALE_NAME_MAX_LENGTH as usize;
 
 pub(crate) fn available_names() -> Result<HashSet<String>, Error> {
     // call safe wrapper for EnumSystemLocalesEx
@@ -50,7 +56,7 @@ pub(crate) fn available_names() -> Result<HashSet<String>, Error> {
 }
 
 pub(crate) fn default() -> Result<SystemLocale, Error> {
-    from_name(&*LOCALE_NAME_SYSTEM_DEFAULT)
+    LOCALE_NAME_SYSTEM_DEFAULT.and_then(|s| from_name(s))
 }
 
 pub(crate) fn from_name<S>(name: S) -> Result<SystemLocale, Error>
@@ -86,15 +92,13 @@ where
     let grp = {
         let grp_string = get_locale_info_ex(name, Request::Grouping)?;
         match grp_string.as_ref() {
-            "3;0" => Grouping::Standard,
-            "3" => Grouping::Standard,
-            "3;2;0" => Grouping::Indian,
-            "3;2" => Grouping::Indian,
+            "3;0" | "3" => Grouping::Standard,
+            "3;2;0" | "3;2" => Grouping::Indian,
             "" => Grouping::Posix,
             _ => {
                 return Err(Error::windows(format!(
-                "for the locale {:?}, windows returned a group value of {:?}, which num-format \
-                does not currently support. if you need support this group value, please file \
+                "for the locale {:?}, windows returned a grouping value of {:?}, which num-format \
+                does not currently support. if you need support this grouping value, please file \
                 an issue at https://github.com/bcmyers/num-format.",
                 name, &grp_string)));
             }
@@ -152,8 +156,8 @@ where
                 return Err(Error::windows(format!(
                     "for the locale {:?}, windows returned a separator value of {:?}, which is \
                     longer than one character, which num-format currently does not support. if you \
-                    separator values longer than one character, please file an issue at \
-                    https://github.com/bcmyers/num-format.",
+                    need support for separator values longer than one character, please file an \
+                    issue at https://github.com/bcmyers/num-format.",
                     name,
                     &sep_string
                 )));
@@ -162,9 +166,10 @@ where
     };
 
     // we already have the name unless unless it was LOCALE_NAME_SYSTEM_DEFAULT, a special
-    // string that doesn't correspond to our concept of name. in this special case, we have
-    // to ask windows for the user-friendly name.
-    let name = if &name == &*LOCALE_NAME_SYSTEM_DEFAULT {
+    // case that doesn't correspond to our concept of name. in this special case, we have
+    // to ask windows for the user-friendly name. the unwrap is OK, because we would never
+    // have reached this point if LOCALE_NAME_SYSTEM_DEFAULT were an error.
+    let name = if &name == LOCALE_NAME_SYSTEM_DEFAULT.as_ref().unwrap() {
         get_locale_info_ex(name, Request::Name)?
     } else {
         name.to_string()
@@ -215,7 +220,7 @@ impl From<Request> for DWORD {
 /// Safe wrapper for EnumSystemLocalesEx.
 /// See https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-enumsystemlocalesex.
 fn enum_system_locales_ex() -> Result<HashSet<String>, Error> {
-    // global variables needed because we need to populate a hashset inside a C callback function.
+    // global variables needed because we need to populate a HashSet inside a C callback function.
     lazy_static! {
         static ref OUTER_MUTEX: Arc<Mutex<()>> = Arc::new(Mutex::new(()));
         static ref INNER_MUTEX: Arc<Mutex<HashSet<String>>> =
@@ -258,10 +263,14 @@ fn enum_system_locales_ex() -> Result<HashSet<String>, Error> {
             let mut inner_guard = INNER_MUTEX.lock().unwrap();
             inner_guard.clear();
         }
-        let err =
+        let ret =
             unsafe { winnls::EnumSystemLocalesEx(Some(lpLocaleEnumProcEx), 0, 0, ptr::null_mut()) };
-        if err == 0 {
-            return Err(Error::new("TODO"));
+        if ret == 0 {
+            let err = unsafe { GetLastError() };
+            return Err(Error::windows(format!(
+                "EnumSystemLocalesEx failed with error code: {}",
+                err
+            )));
         }
         let set = {
             let inner_guard = INNER_MUTEX.lock().unwrap();
@@ -277,10 +286,45 @@ fn enum_system_locales_ex() -> Result<HashSet<String>, Error> {
 /// Safe wrapper for GetLocaleInfoEx.
 /// See https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-getlocaleinfoex.
 fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Error> {
-    const BUF_LEN: usize = 256;
+    const BUF_LEN: usize = 1024;
+
+    // inner function that represents actual call to GetLocaleInfoEx (will be used twice below)
+    #[allow(non_snake_case)]
+    fn inner(
+        lpLocaleName: *const WCHAR,
+        LCType: DWORD,
+        buf_ptr: *mut WCHAR,
+        size: c_int,
+    ) -> Result<c_int, Error> {
+        let size = unsafe { winnls::GetLocaleInfoEx(lpLocaleName, LCType, buf_ptr, size) };
+        if size == 0 {
+            let err = unsafe { GetLastError() };
+            return Err(Error::windows(format!(
+                "GetLocaleInfoEx failed with error code: {}",
+                err
+            )));
+        } else if size < 0 {
+            return Err(Error::windows(format!(
+                "GetLocaleInfoEx unexpectedly returned a negative value of {}",
+                size
+            )));
+        }
+        // cast is OK because we've already checked that size is positive
+        if size as usize > BUF_LEN {
+            return Err(Error::windows(format!(
+                "GetLocaleInfoEx wants to write a string of {} WCHARs, which num-format does not \
+                 currently support (current max is {}). if you would like num-format to support \
+                 GetLocaleInfoEx writing longer strings, please please file an issue at \
+                 https://github.com/bcmyers/num-format.",
+                size, BUF_LEN,
+            )));
+        }
+        Ok(size)
+    }
 
     // turn locale_name into windows string
-    let locale_name = U16CString::from_str(locale_name).map_err(|_| Error::new("TODO1"))?;
+    let locale_name = U16CString::from_str(locale_name)
+        .map_err(|_| Error::windows("locale name may not contain an interior null byte."))?;
 
     #[allow(non_snake_case)]
     let lpLocaleName = locale_name.as_ptr();
@@ -288,29 +332,26 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
     #[allow(non_snake_case)]
     let LCType = DWORD::from(request);
 
-    // call GetLocaleInfoEx once with a null pointer in order to get the size of the data
-    // it will return once we call it a second time. needed in order to check that size won't
-    // exceed our buffer size.
-    let size = unsafe { winnls::GetLocaleInfoEx(lpLocaleName, LCType, ptr::null_mut(), 0) };
-    if size <= 0 {
-        return Err(Error::new("TODO2"));
-    }
-    // cast is OK because `size` is a c_int (i32) and we've already checked that it's positive
-    if size as usize > BUF_LEN {
-        return Err(Error::new("TODO3"));
-    }
+    // first call to GetLocaleInfoEx to get size of the data it will write.
+    let size = inner(lpLocaleName, LCType, ptr::null_mut(), 0)?;
 
-    // call GetLocaleInfoEx a second time with a pointer to our buffer.
+    // second call to GetLocaleInfoEx to write data into our buffer.
     let mut buf: [WCHAR; BUF_LEN] = unsafe { mem::uninitialized() };
-    let err = unsafe { winnls::GetLocaleInfoEx(lpLocaleName, LCType, buf.as_mut_ptr(), size) };
-    if err == 0 {
-        return Err(Error::new("TODO4"));
+    let written = inner(lpLocaleName, LCType, buf.as_mut_ptr(), size)?;
+    if written != size {
+        return Err(Error::windows(
+            "unexpected return value from GetLocaleInfoEx.",
+        ));
     }
 
-    let s = U16CStr::from_slice_with_nul(&buf[..size as usize])
-        .map_err(|_| Error::new("TODO5"))?
+    let s = U16CStr::from_slice_with_nul(&buf[..written as usize])
+        .map_err(|_| {
+            Error::windows("data written by GetLocaleInfoEx unexpectedly missing null byte.")
+        })?
         .to_string()
-        .map_err(|_| Error::new("TODO6"))?;
+        .map_err(|_| {
+            Error::windows("data written by GetLocaleInfoEx unexpectedly contains invalid UTF-16.")
+        })?;
 
     Ok(s)
 }
