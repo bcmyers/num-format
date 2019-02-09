@@ -13,19 +13,17 @@ use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 /// fn main() -> Result<(), Error> {
 ///     let format = CustomFormat::builder()
 ///         .grouping(Grouping::Indian)
-///         .minus_sign("--")
-///         .separator(Some('.'))
+///         .minus_sign("🙌")
+///         .separator(Some('😀'))
 ///         .build()?;
-///
+///    
 ///     let mut buf = Buffer::new();
 ///     buf.write_formatted(&(-1000000), &format);
-///     assert_eq!("--10.00.000", buf.as_str());
+///     assert_eq!("🙌10😀00😀000", buf.as_str());
 ///
 ///     Ok(())
 /// }
 /// ```
-///
-/// [`Format`]: trait.Format.html
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct CustomFormat {

@@ -85,7 +85,7 @@ fn main() {
 # Picking a format
 
 Formatting options (e.g. which thousands separator to use, what the minus sign looks like, etc.) are 
-represented by the [`Format`] trait. This crate offers three concrete implementations of the 
+represented by the [`Format`] trait. This crate offers **three** concrete implementations of the 
 [`Format`] trait...
 
 ### `Locale`
@@ -122,8 +122,10 @@ system's locale information. It has a very similar API to [`Locale`].
 * On Windows, the [`GetLocaleInfoEx`] and [`EnumSystemLocalesEx`] APIs are used.
 
 ```rust
+# #[cfg(feature = "std")]
 use num_format::SystemLocale;
 
+# #[cfg(feature = "std")]
 fn main() {
     let locale = SystemLocale::default().unwrap();
     println!("My system's default locale is...");
@@ -135,9 +137,11 @@ fn main() {
 
     match SystemLocale::from_name("en_US") {
         Ok(_) => println!("My system has the 'en_US' locale."),
-        Err(_) => println!("The 'en_US' locale is not included with my system"),
+        Err(_) => println!("The 'en_US' locale is not included with my system."),
     }
 }
+# #[cfg(not(feature = "std"))]
+# fn main() {}
 ```
 
 ### `CustomFormat`

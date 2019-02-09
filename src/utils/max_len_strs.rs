@@ -8,17 +8,17 @@ use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 use crate::Error;
 
 /// Simple wrapper type for a `&str` to make sure its length is less than the maximum for
-/// an infinity symbol (64 bytes).
+/// an infinity symbol (128 bytes).
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct InfinityStr<'a>(&'a str);
 
 impl<'a> InfinityStr<'a> {
     /// Constructs an [`InfinityStr`], ensuring that the length is less than the maximum for
-    /// an infinity symbol (64 bytes).
+    /// an infinity symbol (128 bytes).
     ///
     /// # Errors
     ///
-    /// Returns an error if the provided `&str`'s length is more than 64 bytes.
+    /// Returns an error if the provided `&str`'s length is more than 128 bytes.
     ///
     /// [`InfinityStr`]: struct.InfinityStr.html
     pub fn new(s: &'a str) -> Result<InfinityStr<'a>, Error> {
