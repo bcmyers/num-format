@@ -82,7 +82,7 @@ fn main() {
 ## Picking a format
 
 Formatting options (e.g. which thousands separator to use, what the minus sign looks like, etc.) are
-represented by the [`Format`] trait. This crate offers three concrete implementations of the
+represented by the [`Format`] trait. This crate offers **three** concrete implementations of the
 [`Format`] trait...
 
 #### `Locale`
@@ -113,7 +113,8 @@ fn main() {
 #### `SystemLocale`
 
 The [`SystemLocale`] type is another type that implements [`Format`]. It allows you to access your
-system's locale information. It has a very similar API to [`Locale`].
+system's locale information. It has a very similar API to [`Locale`]. It is not available in
+`no_std` environments.
 
 * On Unix systems, the [`setlocale`] and [`localeconv`] APIs are used to speak with your OS.
 * On Windows, the [`GetLocaleInfoEx`] and [`EnumSystemLocalesEx`] APIs are used.
@@ -132,7 +133,7 @@ fn main() {
 
     match SystemLocale::from_name("en_US") {
         Ok(_) => println!("My system has the 'en_US' locale."),
-        Err(_) => println!("The 'en_US' locale is not included with my system"),
+        Err(_) => println!("The 'en_US' locale is not included with my system."),
     }
 }
 ```

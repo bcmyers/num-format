@@ -542,8 +542,8 @@ const AVAILABLE_NAMES: [&'static str; 538usize] = [
     "zh-Hant-MO",
     "zu",
 ];
-#[doc = r"<b><u>One of the most important types.</u></b> Represents formats from the"]
-#[doc = r"[Unicode Consortium]'s [Common Locale Data Repository (CLDR)]. Implements [`Format`]."]
+#[doc = r"<b><u>A key type</u></b>. Represents formats from the [Unicode Consortium]'s "]
+#[doc = r"[Common Locale Data Repository (CLDR)]. Implements [`Format`]."]
 #[doc = r""]
 #[doc = r"# Example"]
 #[doc = r"```"]

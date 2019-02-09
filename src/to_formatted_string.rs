@@ -7,7 +7,7 @@ use crate::constants::MAX_BUF_LEN;
 use crate::sealed::Sealed;
 use crate::{Buffer, Format, ToFormattedStr};
 
-/// <b><u>One of the two main traits.</u></b> Gives numbers the [`to_formatted_string`] method.
+/// <b><u>A key trait</u></b>. Gives numbers the [`to_formatted_string`] method.
 ///
 /// This trait is sealed; so you may not implement it on your own types.
 ///

@@ -7,8 +7,8 @@ use core::str;
 use crate::constants::MAX_BUF_LEN;
 use crate::{Format, ToFormattedStr};
 
-/// A stack-allocated buffer that you can use to get a formatted `&str`
-/// without heap allocation.
+/// <b><u>A key type</u></b>. Represents a stack-allocated buffer you can use to get a 
+/// formatted `&str` without heap allocation.
 ///
 /// # Example
 /// ```

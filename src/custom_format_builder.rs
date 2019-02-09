@@ -34,7 +34,7 @@ impl CustomFormatBuilder {
     /// # Errors
     ///
     /// Return an error if:
-    /// - The "infinity sign" is longer than 64 bytes
+    /// - The "infinity sign" is longer than 128 bytes
     /// - The "minus sign" is longer than 7 bytes
     /// - The "nan symbol" is longer than 64 bytes
     ///
@@ -83,7 +83,7 @@ impl CustomFormatBuilder {
         self
     }
 
-    /// Sets the string used for infinity. Note: If the length is greater than 64 bytes
+    /// Sets the string used for infinity. Note: If the length is greater than 128 bytes
     /// [`build`] will return an error (see [`build`]).
     ///
     /// [`build`]: struct.CustomFormatBuilder.html#method.build

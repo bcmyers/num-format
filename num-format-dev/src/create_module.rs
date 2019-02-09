@@ -110,8 +110,8 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
 
         const AVAILABLE_NAMES: [&'static str; #names2_len] = [#(#names2),*];
 
-        ///<b><u>One of the most important types.</u></b> Represents formats from the
-        ///[Unicode Consortium]'s [Common Locale Data Repository (CLDR)]. Implements [`Format`].
+        ///<b><u>A key type</u></b>. Represents formats from the [Unicode Consortium]'s 
+        ///[Common Locale Data Repository (CLDR)]. Implements [`Format`].
         ///
         ///# Example
         ///```

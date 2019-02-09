@@ -8,7 +8,7 @@ use std::process;
 
 use crate::{Format, ToFormattedString};
 
-/// <b><u>One of the two main traits.</u></b> Gives types in the standard library that implement [`io::Write`]
+/// <b><u>A key trait</u></b>. Gives types in the standard library that implement [`io::Write`]
 /// or [`fmt::Write`], such as `&mut [u8]` and `&mut String`, a [`write_formatted`] method for writing
 /// formatted numbers.
 ///

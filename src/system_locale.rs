@@ -8,7 +8,10 @@ use std::collections::HashSet;
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
 use crate::{Error, Format, Grouping};
 
-/// TODO
+/// <b><u>A key type</u></b>. Allows you to access your OS's locale information. Implements
+/// [`Format`]
+/// 
+/// [`Format`]: trait.Format.html
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct SystemLocale {

@@ -116,7 +116,8 @@ fn main() {
 ### `SystemLocale`
 
 The [`SystemLocale`] type is another type that implements [`Format`]. It allows you to access your 
-system's locale information. It has a very similar API to [`Locale`].
+system's locale information. It has a very similar API to [`Locale`]. It is not available in
+`no_std` environments.
 
 * On Unix systems, the [`setlocale`] and [`localeconv`] APIs are used to speak with your OS.
 * On Windows, the [`GetLocaleInfoEx`] and [`EnumSystemLocalesEx`] APIs are used.
