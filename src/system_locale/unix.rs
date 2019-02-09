@@ -103,20 +103,26 @@ impl<'a> Pointer<'a> {
         let len = unsafe { libc::strlen(self.ptr) };
         let s = unsafe { slice::from_raw_parts(self.ptr as *const u8, len) };
         match s {
+            [3] => Ok(Grouping::Standard),
             [3, 3] => Ok(Grouping::Standard),
             [3, 2] => Ok(Grouping::Indian),
             [] => Ok(Grouping::Posix),
-            _ => {
-                Err(Error::c(&format!("received unexpected grouping code from C: {:?}", s)))
-            },
+            _ => Err(Error::c(&format!(
+                "received unexpected grouping code from C: {:?}",
+                s
+            ))),
         }
     }
 
     fn as_str(&self) -> Result<&str, Error> {
         let len = unsafe { libc::strlen(self.ptr) };
         let s = unsafe { slice::from_raw_parts(self.ptr as *const u8, len) };
-        let s = str::from_utf8(s)
-            .map_err(|_| Error::c("could not parse data returned from C into utf-8"))?;
+        let s = str::from_utf8(s).map_err(|_| {
+            Error::c(&format!(
+                "could not parse data returned from C into utf-8: {:?}",
+                s
+            ))
+        })?;
         if s.len() > MAX_MIN_LEN {
             return Err(Error::capacity(s.len(), MAX_MIN_LEN));
         }
