@@ -4,7 +4,9 @@
 #[test]
 fn test_system_locale_unix() {
     use std::env;
-    use num_format::{ToFormattedString, SystemLocale};
+    use std::process::Command;
+    use std::collections::HashSet;
+    use num_format::{SystemLocale, ToFormattedString};
 
     let n = -100_000isize;
 
@@ -20,4 +22,22 @@ fn test_system_locale_unix() {
 
         assert_eq!(s1, s2);
     }
+
+    let from_command_line = {
+        let output = Command::new("locale").arg("-a").output().unwrap();
+        if !output.status.success() {
+            panic!()
+        }
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        stdout.lines().map(|s| s.trim().to_string()).collect::<HashSet<String>>()
+    };
+
+    assert_eq!(names, from_command_line);
+}
+
+#[cfg(windows)]
+#[test]
+fn test_system_locale_windows() {
+    let names = SystemLocale::available_names().unwrap();
+    assert!(!names.is_empty());
 }

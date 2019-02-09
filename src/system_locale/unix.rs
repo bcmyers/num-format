@@ -2,51 +2,62 @@
 
 use std::collections::HashSet;
 use std::marker::PhantomData;
-use std::path::Path;
 use std::slice;
 use std::str;
-
-use walkdir::WalkDir;
 
 use crate::constants::MAX_MIN_LEN;
 use crate::{Error, Grouping, Locale, SystemLocale};
 
 pub(crate) fn available_names() -> HashSet<String> {
-    const LOCALE_DIR: &str = "/usr/share/locale";
+    fn first_attempt() -> Option<HashSet<String>> {
+        use std::process::Command;
 
-    let names = WalkDir::new(LOCALE_DIR)
-        .max_depth(1)
-        .into_iter()
-        .filter_map(|entry| {
-            let entry = entry.ok()?;
-            let metadata = entry.metadata().ok()?;
-            if metadata.is_dir() {
-                let path = entry.path().join("LC_NUMERIC");
-                if path.exists() {
-                    return Some(entry.file_name().to_str().unwrap().to_string());
-                }
-                let path = entry.path().join("LC_MONETARY");
-                if path.exists() {
-                    return Some(entry.file_name().to_str().unwrap().to_string());
-                }
-            }
-            None
-        })
-        .collect::<HashSet<String>>();
+        let output = Command::new("locale").arg("-a").output().ok()?;
+        if !output.status.success() {
+            return None
+        }
+        let stdout = std::str::from_utf8(&output.stdout).ok()?;
+        let set = stdout.lines().map(|s| s.trim().to_string()).collect::<HashSet<String>>();
+        Some(set)
+    }
 
-    names
+    fn second_attempt() -> HashSet<String> {
+        use walkdir::WalkDir;
+
+        const LOCALE_DIR: &str = "/usr/share/locale";
+
+        let mut names = WalkDir::new(LOCALE_DIR)
+            .max_depth(1)
+            .into_iter()
+            .filter_map(|entry| {
+                let entry = entry.ok()?;
+                let metadata = entry.metadata().ok()?;
+                if metadata.is_dir() {
+                    let path = entry.path().join("LC_NUMERIC");
+                    if path.exists() {
+                        return Some(entry.file_name().to_str().unwrap().to_string());
+                    }
+                    let path = entry.path().join("LC_MONETARY");
+                    if path.exists() {
+                        return Some(entry.file_name().to_str().unwrap().to_string());
+                    }
+                }
+                None
+            })
+            .collect::<HashSet<String>>();
+        let _ = names.insert("C".into());
+        let _ = names.insert("POSIX".into());
+        names
+    }
+
+    match first_attempt() {
+        Some(set) => set,
+        None => second_attempt()
+    }
 }
 
 pub(crate) fn default() -> Result<SystemLocale, Error> {
     new(None)
-}
-
-pub(crate) fn from_file<P>(path: P) -> Result<SystemLocale, Error>
-where
-    P: AsRef<Path>,
-{
-    let _ = path;
-    unimplemented!()
 }
 
 pub(crate) fn from_name<S>(name: S) -> Result<SystemLocale, Error>

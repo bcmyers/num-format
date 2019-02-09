@@ -4,8 +4,6 @@ mod unix;
 mod windows;
 
 use std::collections::HashSet;
-#[cfg(unix)]
-use std::path::Path;
 
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
 use crate::{Error, Format, Grouping};
@@ -46,15 +44,6 @@ impl SystemLocale {
         {
             return Err(Error::new("TODO"));
         }
-    }
-
-    #[cfg(unix)]
-    /// TODO
-    pub fn from_file<P>(path: P) -> Result<SystemLocale, Error>
-    where
-        P: AsRef<Path>,
-    {
-        unix::from_file(path)
     }
 
     /// TODO
