@@ -123,16 +123,16 @@ use num_format::SystemLocale;
 
 fn main() {
     let locale = SystemLocale::default().unwrap();
-    println!("My system's default locale is...")
-    println!("{:#?}" &locale);
+    println!("My system's default locale is...");
+    println!("{:#?}", &locale);
 
     let available = SystemLocale::available_names().unwrap();
     println!("My available locale names are...");
     println!("{:#?}", available);
 
     match SystemLocale::from_name("en_US") {
-        Ok(_) => println!("My system has the "en_US" locale."),
-        Err(_) => println!("The "en_US" locale is not included with my system"),
+        Ok(_) => println!("My system has the 'en_US' locale."),
+        Err(_) => println!("The 'en_US' locale is not included with my system"),
     }
 }
 ```
