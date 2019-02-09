@@ -3,6 +3,7 @@
 use std::collections::HashSet;
 use std::ffi::{CStr, CString};
 use std::marker::PhantomData;
+use std::ptr;
 use std::slice;
 use std::str;
 
@@ -72,8 +73,27 @@ where
 }
 
 fn new(name: Option<&str>) -> Result<SystemLocale, Error> {
-    let name = setlocale(name)?;
+    // TODO: need a lock?
+
+    // save current locale settings
+    let start = setlocale(Action::Get)?;
+
+    // temporarily set locale settings to what we want
+    let name = {
+        match name {
+            Some(name) => setlocale(Action::SetFromName(name))?,
+            None => setlocale(Action::SetFromEnvironment)?,
+        }
+    };
+
+    // get the locale information
     let lconv = localeconv()?;
+
+    // revert locale settings back to their original settings
+    let end = setlocale(Action::SetFromName(&start))?;
+    debug_assert_eq!(&start, &end);
+
+    // return the locale information
     Ok(SystemLocale {
         dec: lconv.dec,
         grp: lconv.grp,
@@ -85,39 +105,11 @@ fn new(name: Option<&str>) -> Result<SystemLocale, Error> {
     })
 }
 
-fn setlocale(name: Option<&str>) -> Result<String, Error> {
-    let name_ptr = match name {
-        Some(s) => {
-            let c_string = CString::new(s).map_err(|_| Error::new("TODO"))?;
-            unsafe { libc::setlocale(libc::LC_ALL, c_string.as_ptr()) }
-        }
-        None => {
-            let c_string = &['\0' as libc::c_char];
-            unsafe { libc::setlocale(libc::LC_ALL, c_string.as_ptr()) }
-        }
-    };
-
-    if name_ptr.is_null() {
-        return Err(Error::new("TODO"));
-    }
-
-    let name_c_str = unsafe { CStr::from_ptr(name_ptr) };
-    let name = name_c_str
-        .to_str()
-        .map_err(|_| Error::new("TODO"))?
-        .to_string();
-
-    Ok(name)
-}
-
-struct Lconv {
-    dec: char,
-    grp: Grouping,
-    min: String,
-    sep: Option<char>,
-}
-
+// TODO: note on how this is a safe wrapper
 fn localeconv() -> Result<Lconv, Error> {
+    // Note: We do **not** free ptr, as "the localeconv() function returns a pointer to a static
+    // object which may be altered by later calls to setlocale(3) or localeconv()."
+    // See https://www.freebsd.org/cgi/man.cgi?query=localeconv.
     let ptr = unsafe { libc::localeconv() };
     if ptr.is_null() {
         return Err(Error::unix("'localeconv' returned a null pointer."));
@@ -134,7 +126,7 @@ fn localeconv() -> Result<Lconv, Error> {
     let grp = grp_ptr.as_grouping()?;
     let min = min_ptr.as_str()?;
     if min.len() > MAX_MIN_LEN {
-        return Err(Error::new("TODO"));
+        return Err(Error::unix("TODO"));
     }
     let maybe_sep = sep_ptr.as_char()?;
 
@@ -148,6 +140,52 @@ fn localeconv() -> Result<Lconv, Error> {
     Ok(locale)
 }
 
+// TODO: note on how this is a safe wrapper
+fn setlocale<'a>(action: Action<'a>) -> Result<String, Error> {
+    // TODO: Note on why we don't free the pointer.
+    let ptr = match action {
+        Action::Get => unsafe { libc::setlocale(libc::LC_ALL, ptr::null()) },
+        Action::SetFromEnvironment => {
+            let cstring = CString::new("").unwrap();
+            unsafe { libc::setlocale(libc::LC_ALL, cstring.as_ptr()) }
+        }
+        Action::SetFromName(name) => {
+            let cstring = CString::new(name).map_err(|_| Error::unix("TODO1"))?;
+            unsafe { libc::setlocale(libc::LC_ALL, cstring.as_ptr()) }
+        }
+    };
+    if ptr.is_null() {
+        match action {
+            Action::SetFromName(name) => {
+                return Err(Error::unix(format!("locale name {} unavailable.", name)));
+            }
+            _ => return Err(Error::unix("TODO2")),
+        }
+    }
+    let cstr = unsafe { CStr::from_ptr(ptr) };
+    let output = cstr
+        .to_str()
+        .map_err(|_| Error::unix("value returned from libc::setlocale contains invalid UTF-8."))?
+        .to_string();
+    Ok(output)
+}
+
+#[derive(Clone, Debug)]
+enum Action<'a> {
+    Get,
+    SetFromEnvironment,
+    SetFromName(&'a str),
+}
+
+#[derive(Clone, Debug)]
+struct Lconv {
+    dec: char,
+    grp: Grouping,
+    min: String,
+    sep: Option<char>,
+}
+
+#[derive(Debug)]
 struct Pointer<'a> {
     ptr: *const libc::c_char,
     phantom: PhantomData<&'a ()>,
@@ -167,7 +205,7 @@ impl<'a> Pointer<'a> {
     fn as_char(&self) -> Result<Option<char>, Error> {
         let s = unsafe { CStr::from_ptr(self.ptr) }
             .to_str()
-            .map_err(|_| Error::new("TODO"))?;
+            .map_err(|_| Error::unix("TODO"))?;
         if s.chars().count() > 1 {
             return Err(Error::unix(
                 "received C string of length greater than 1 when C string of length 1 was expected",
@@ -193,10 +231,25 @@ impl<'a> Pointer<'a> {
     fn as_str(&self) -> Result<&str, Error> {
         let s = unsafe { CStr::from_ptr(self.ptr) }
             .to_str()
-            .map_err(|_| Error::new("TODO"))?;
+            .map_err(|_| Error::unix("TODO"))?;
         if s.len() > MAX_MIN_LEN {
             return Err(Error::capacity(s.len(), MAX_MIN_LEN));
         }
         Ok(s)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::SystemLocale;
+
+    #[test]
+    fn test_system_locale_unix_setlocale() {
+        let locale = SystemLocale::default().unwrap();
+        println!("{:#?}", &locale);
+        let locale = SystemLocale::from_name("en_US").unwrap();
+        println!("{:#?}", &locale);
+        let locale = SystemLocale::from_name("fr_FR").unwrap();
+        println!("{:#?}", &locale);
     }
 }
