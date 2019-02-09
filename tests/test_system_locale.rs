@@ -30,7 +30,7 @@ fn test_system_locale_unix() {
         if !output.status.success() {
             panic!()
         }
-        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stdout = std::str::from_utf8(&output.stdout).unwrap();
         stdout
             .lines()
             .map(|s| s.trim().to_string())
@@ -45,4 +45,7 @@ fn test_system_locale_unix() {
 fn test_system_locale_windows() {
     let names = SystemLocale::available_names().unwrap();
     assert!(!names.is_empty());
+    for name in &names {
+        let _ = SystemLocale::from_name(name).unwrap();
+    }
 }
