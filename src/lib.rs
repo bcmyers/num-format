@@ -99,12 +99,9 @@ use num_format::{Grouping, Locale};
 
 fn main() {
     let locale = Locale::en;
-    assert_eq!(locale.decimal(), '.');
     assert_eq!(locale.grouping(), Grouping::Standard);
-    assert_eq!(locale.infinity(), "∞");
     assert_eq!(locale.minus_sign(), "-");
     assert_eq!(locale.name(), "en");
-    assert_eq!(locale.nan(), "NaN");
     assert_eq!(locale.separator(), Some(','));
 
     let locale2 = Locale::from_name("en").unwrap();
