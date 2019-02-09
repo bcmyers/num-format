@@ -1,12 +1,14 @@
 #![cfg(feature = "std")]
 
+use num_format::SystemLocale;
+
 #[cfg(unix)]
 #[test]
 fn test_system_locale_unix() {
+    use num_format::ToFormattedString;
+    use std::collections::HashSet;
     use std::env;
     use std::process::Command;
-    use std::collections::HashSet;
-    use num_format::{SystemLocale, ToFormattedString};
 
     let n = -100_000isize;
 
@@ -29,7 +31,10 @@ fn test_system_locale_unix() {
             panic!()
         }
         let stdout = String::from_utf8_lossy(&output.stdout);
-        stdout.lines().map(|s| s.trim().to_string()).collect::<HashSet<String>>()
+        stdout
+            .lines()
+            .map(|s| s.trim().to_string())
+            .collect::<HashSet<String>>()
     };
 
     assert_eq!(names, from_command_line);

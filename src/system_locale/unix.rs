@@ -14,10 +14,13 @@ pub(crate) fn available_names() -> HashSet<String> {
 
         let output = Command::new("locale").arg("-a").output().ok()?;
         if !output.status.success() {
-            return None
+            return None;
         }
         let stdout = std::str::from_utf8(&output.stdout).ok()?;
-        let set = stdout.lines().map(|s| s.trim().to_string()).collect::<HashSet<String>>();
+        let set = stdout
+            .lines()
+            .map(|s| s.trim().to_string())
+            .collect::<HashSet<String>>();
         Some(set)
     }
 
@@ -52,7 +55,7 @@ pub(crate) fn available_names() -> HashSet<String> {
 
     match first_attempt() {
         Some(set) => set,
-        None => second_attempt()
+        None => second_attempt(),
     }
 }
 
