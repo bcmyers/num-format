@@ -42,7 +42,7 @@ pub(crate) fn from_name<S>(name: S) -> Result<SystemLocale, Error>
 where
     S: AsRef<str>,
 {
-    let mut name = name.as_ref();
+    let name = name.as_ref();
     if name.len() > LOCALE_NAME_MAX_LENGTH - 1 {
         return Err(Error::new("TODO"));
     }
@@ -100,8 +100,8 @@ where
         }
     };
 
-    let name = if name == &*LOCALE_NAME_SYSTEM_DEFAULT {
-        get_locale_info_ex(name, Request::Name)?;
+    let name = if &name == &*LOCALE_NAME_SYSTEM_DEFAULT {
+        get_locale_info_ex(name, Request::Name)?
     } else {
         name.to_string()
     };
