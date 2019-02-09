@@ -60,7 +60,7 @@ where
     let name = name.as_ref();
 
     if name.len() > LOCALE_NAME_MAX_LENGTH - 1 {
-        return Err(Error::windows(format(
+        return Err(Error::windows(format!(
             "locale names on windows may not exceed {} bytes (including a null byte).",
             LOCALE_NAME_MAX_LENGTH,
         )));
@@ -74,10 +74,11 @@ where
         if dec_string.chars().count() != 1 {
             return Err(Error::windows(format!(
                 "for the locale {:?}, windows returned a decimal value of {:?}, which is not one \
-                character long. num-format currently does not support this. if you need support \
-                for decimals of different lengths than one character, please file an issue at \
-                https://github.com/bcmyers/num-format."
-                name, &dec_string)));
+                 character long. num-format currently does not support this. if you need support \
+                 for decimals of different lengths than one character, please file an issue at \
+                 https://github.com/bcmyers/num-format.",
+                name, &dec_string
+            )));
         }
         dec_string.chars().nth(0).unwrap()
     };
@@ -94,50 +95,53 @@ where
                 return Err(Error::windows(format!(
                 "for the locale {:?}, windows returned a group value of {:?}, which num-format \
                 does not currently support. if you need support this group value, please file \
-                an issue at https://github.com/bcmyers/num-format."
+                an issue at https://github.com/bcmyers/num-format.",
                 name, &grp_string)));
             }
         }
     };
 
-    let inf = {
-        let inf_string = get_locale_info_ex(name, Request::PositiveInfinity)?;
-        if inf_string.len() > MAX_INF_LEN {
-            return Err(Error::windows(format!(
+    let inf =
+        {
+            let inf_string = get_locale_info_ex(name, Request::PositiveInfinity)?;
+            if inf_string.len() > MAX_INF_LEN {
+                return Err(Error::windows(format!(
                 "for the locale {:?}, windows returned an infinity sign of length {} bytes, \
                 which exceeds the maximum length for infinity signs that num-format currently \
                 supports ({} bytes). if you need support longer infinity signs, please file an \
-                issue at https://github.com/bcmyers/num-format."
+                issue at https://github.com/bcmyers/num-format.",
                 name, inf_string.len(), MAX_INF_LEN)));
-        }
-        inf_string
-    };
+            }
+            inf_string
+        };
 
-    let min = {
-        let min_string = get_locale_info_ex(name, Request::MinusSign)?;
-        if min_string.len() > MAX_MIN_LEN {
-            return Err(Error::windows(format!(
+    let min =
+        {
+            let min_string = get_locale_info_ex(name, Request::MinusSign)?;
+            if min_string.len() > MAX_MIN_LEN {
+                return Err(Error::windows(format!(
                 "for the locale {:?}, windows returned a minus sign of length {} bytes, \
                 which exceeds the maximum length for minus signs that num-format currently \
                 supports ({} bytes). if you need support longer minus signs, please file an issue \
-                at https://github.com/bcmyers/num-format."
+                at https://github.com/bcmyers/num-format.",
                 name, min_string.len(), MAX_MIN_LEN)));
-        }
-        min_string
-    };
+            }
+            min_string
+        };
 
-    let nan = {
-        let nan_string = get_locale_info_ex(name, Request::Nan)?;
-        if nan_string.len() > MAX_NAN_LEN {
-            return Err(Error::windows(format!(
+    let nan =
+        {
+            let nan_string = get_locale_info_ex(name, Request::Nan)?;
+            if nan_string.len() > MAX_NAN_LEN {
+                return Err(Error::windows(format!(
                 "for the locale {:?}, windows returned a NaN value of length {} bytes, \
                 which exceeds the maximum length for NaN values that num-format currently \
                 supports ({} bytes). if you need support longer NaN values, please file an issue \
-                at https://github.com/bcmyers/num-format."
+                at https://github.com/bcmyers/num-format.",
                 name, nan_string.len(), MAX_NAN_LEN)));
-        }
-        nan_string
-    };
+            }
+            nan_string
+        };
 
     let sep = {
         let sep_string = get_locale_info_ex(name, Request::Separator)?;
@@ -303,7 +307,7 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
         return Err(Error::new("TODO4"));
     }
 
-    let s = U16CStr::from_slice_with_nul(&buf[..size])
+    let s = U16CStr::from_slice_with_nul(&buf[..size as usize])
         .map_err(|_| Error::new("TODO5"))?
         .to_string()
         .map_err(|_| Error::new("TODO6"))?;
