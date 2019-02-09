@@ -75,7 +75,7 @@ where
 fn new(name: Option<&str>) -> Result<SystemLocale, Error> {
     // TODO: need a lock?
 
-    // save current locale settings
+    // save current locale name
     let start = setlocale(Action::Get)?;
 
     // temporarily set locale settings to what we want
@@ -89,11 +89,11 @@ fn new(name: Option<&str>) -> Result<SystemLocale, Error> {
     // get the locale information
     let lconv = localeconv()?;
 
-    // revert locale settings back to their original settings
+    // revert locale name back to the original
     let end = setlocale(Action::SetFromName(&start))?;
     debug_assert_eq!(&start, &end);
 
-    // return the locale information
+    // return
     Ok(SystemLocale {
         dec: lconv.dec,
         grp: lconv.grp,
@@ -236,20 +236,5 @@ impl<'a> Pointer<'a> {
             return Err(Error::capacity(s.len(), MAX_MIN_LEN));
         }
         Ok(s)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::SystemLocale;
-
-    #[test]
-    fn test_system_locale_unix_setlocale() {
-        let locale = SystemLocale::default().unwrap();
-        println!("{:#?}", &locale);
-        let locale = SystemLocale::from_name("en_US").unwrap();
-        println!("{:#?}", &locale);
-        let locale = SystemLocale::from_name("fr_FR").unwrap();
-        println!("{:#?}", &locale);
     }
 }
