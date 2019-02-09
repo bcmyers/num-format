@@ -172,9 +172,9 @@ fn main() -> Result<(), Error> {
 
 | Available features | What to put in your `Cargo.toml`                              |
 | :----------------- | :------------------------------------------------------------ |
-| `no_std`           | `num-format = { version = "0.1", default-features = false }`  |
-| `num-bigint`       | `num-format = { version = "0.1", features = ["num-bigint"] }` |
-| `serde`            | `num-format = { version = "0.1", features = ["with-serde"] }` |
+| `no_std`           | `num-format = { version = "0.3", default-features = false }`  |
+| `num-bigint`       | `num-format = { version = "0.3", features = ["num-bigint"] }` |
+| `serde`            | `num-format = { version = "0.3", features = ["with-serde"] }` |
 
 # License
 

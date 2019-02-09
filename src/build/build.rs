@@ -30,14 +30,6 @@ fn run() {
     bindings
         .write_to_file(&out_path)
         .expect("unable to write bindings for windows.h");
-
-    // Note: For development ...
-    // let out_path = Path::new(&root)
-    //     .join("tmp")
-    //     .join("bindings.rs");
-    // bindings
-    //     .write_to_file(&out_path)
-    //     .expect("unable to write bindings for windows.h");
 }
 
 #[cfg(not(windows))]
