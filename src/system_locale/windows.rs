@@ -42,7 +42,7 @@ pub(crate) fn from_name<S>(name: S) -> Result<SystemLocale, Error>
 where
     S: AsRef<str>,
 {
-    let name = name.as_ref();
+    let mut name = name.as_ref();
     if name.len() > LOCALE_NAME_MAX_LENGTH - 1 {
         return Err(Error::new("TODO"));
     }
@@ -100,11 +100,18 @@ where
         }
     };
 
+    let name = if name == &*LOCALE_NAME_SYSTEM_DEFAULT {
+        get_locale_info_ex(name, Request::Name)?;
+    } else {
+        name.to_string()
+    };
+
     let locale = SystemLocale {
         dec,
         grp,
         inf,
         min,
+        name,
         nan,
         sep,
     };
@@ -117,6 +124,7 @@ pub enum Request {
     Decimal,
     Grouping,
     MinusSign,
+    Name,
     Nan,
     NegativeInfinity,
     PositiveInfinity,
@@ -130,6 +138,7 @@ impl From<Request> for DWORD {
             Decimal => bindings::LOCALE_SDECIMAL,
             Grouping => bindings::LOCALE_SGROUPING,
             MinusSign => bindings::LOCALE_SNEGATIVESIGN,
+            Name => bindings::LOCALE_SNAME,
             Nan => bindings::LOCALE_SNAN,
             NegativeInfinity => bindings::LOCALE_SNEGINFINITY,
             PositiveInfinity => bindings::LOCALE_SPOSINFINITY,

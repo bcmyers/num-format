@@ -18,6 +18,7 @@ fn run() {
         .whitelist_var("LOCALE_SDECIMAL")
         .whitelist_var("LOCALE_SGROUPING")
         .whitelist_var("LOCALE_SPOSINFINITY")
+        .whitelist_var("LOCALE_SNAME")
         .whitelist_var("LOCALE_SNAN")
         .whitelist_var("LOCALE_SNEGATIVESIGN")
         .whitelist_var("LOCALE_SNEGINFINITY")

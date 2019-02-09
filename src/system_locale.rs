@@ -4,6 +4,8 @@ mod unix;
 mod windows;
 
 use std::collections::HashSet;
+#[cfg(unix)]
+use std::path::Path;
 
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
 use crate::{Error, Format, Grouping};
@@ -16,6 +18,7 @@ pub struct SystemLocale {
     grp: Grouping,
     inf: String,
     min: String,
+    name: String,
     nan: String,
     sep: Option<char>,
 }
@@ -45,6 +48,15 @@ impl SystemLocale {
         }
     }
 
+    #[cfg(unix)]
+    /// TODO
+    pub fn from_file<P>(path: P) -> Result<SystemLocale, Error>
+    where
+        P: AsRef<Path>,
+    {
+        unix::from_file(path)
+    }
+
     /// TODO
     pub fn from_name<S>(name: S) -> Result<SystemLocale, Error>
     where
@@ -71,7 +83,7 @@ impl SystemLocale {
     pub fn available_names() -> Result<HashSet<String>, Error> {
         #[cfg(unix)]
         {
-            return unix::available_names();
+            return Ok(unix::available_names());
         }
 
         #[cfg(windows)]
@@ -104,6 +116,11 @@ impl SystemLocale {
     /// TODO
     pub fn minus_sign(&self) -> &str {
         &self.min
+    }
+
+    /// TODO
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     /// TODO
