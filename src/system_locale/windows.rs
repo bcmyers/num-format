@@ -1,6 +1,19 @@
 #![cfg(windows)]
 
 mod bindings {
+    //! Bindings to windows.h with definitions for...
+    //!
+    //! * LOCALE_NAME_MAX_LENGTH
+    //! * LOCALE_NAME_SYSTEM_DEFAULT
+    //! * LOCALE_SDECIMAL
+    //! * LOCALE_SGROUPING
+    //! * LOCALE_SPOSINFINITY
+    //! * LOCALE_SNAME
+    //! * LOCALE_SNAN
+    //! * LOCALE_SNEGATIVESIGN
+    //! * LOCALE_SNEGINFINITY
+    //! * LOCALE_STHOUSAND
+
     #![allow(non_upper_case_globals)]
     #![allow(non_camel_case_types)]
     #![allow(non_snake_case)]
@@ -31,6 +44,8 @@ lazy_static! {
 pub(crate) const LOCALE_NAME_MAX_LENGTH: usize = bindings::LOCALE_NAME_MAX_LENGTH as usize;
 
 pub(crate) fn available_names() -> Result<HashSet<String>, Error> {
+    // call safe wrapper for EnumSystemLocalesEx
+    // see https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-enumsystemlocalesex
     enum_system_locales_ex()
 }
 
@@ -43,14 +58,26 @@ where
     S: AsRef<str>,
 {
     let name = name.as_ref();
+
     if name.len() > LOCALE_NAME_MAX_LENGTH - 1 {
-        return Err(Error::new("TODO"));
+        return Err(Error::windows(format(
+            "locale names on windows may not exceed {} bytes (including a null byte).",
+            LOCALE_NAME_MAX_LENGTH,
+        )));
     }
 
     let dec = {
+        // call safe wrapper for GetLocaleInfoEx
+        // see https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-getlocaleinfoex
         let dec_string = get_locale_info_ex(name, Request::Decimal)?;
+
         if dec_string.chars().count() != 1 {
-            return Err(Error::new("TODO"));
+            return Err(Error::windows(format!(
+                "for the locale {:?}, windows returned a decimal value of {:?}, which is not one \
+                character long. num-format currently does not support this. if you need support \
+                for decimals of different lengths than one character, please file an issue at \
+                https://github.com/bcmyers/num-format."
+                name, &dec_string)));
         }
         dec_string.chars().nth(0).unwrap()
     };
@@ -63,14 +90,25 @@ where
             "3;2;0" => Grouping::Indian,
             "3;2" => Grouping::Indian,
             "" => Grouping::Posix,
-            _ => return Err(Error::new("TODO")),
+            _ => {
+                return Err(Error::windows(format!(
+                "for the locale {:?}, windows returned a group value of {:?}, which num-format \
+                does not currently support. if you need support this group value, please file \
+                an issue at https://github.com/bcmyers/num-format."
+                name, &grp_string)));
+            }
         }
     };
 
     let inf = {
         let inf_string = get_locale_info_ex(name, Request::PositiveInfinity)?;
         if inf_string.len() > MAX_INF_LEN {
-            return Err(Error::new("TODO: INF FAILED"));
+            return Err(Error::windows(format!(
+                "for the locale {:?}, windows returned an infinity sign of length {} bytes, \
+                which exceeds the maximum length for infinity signs that num-format currently \
+                supports ({} bytes). if you need support longer infinity signs, please file an \
+                issue at https://github.com/bcmyers/num-format."
+                name, inf_string.len(), MAX_INF_LEN)));
         }
         inf_string
     };
@@ -78,7 +116,12 @@ where
     let min = {
         let min_string = get_locale_info_ex(name, Request::MinusSign)?;
         if min_string.len() > MAX_MIN_LEN {
-            return Err(Error::new("TODO"));
+            return Err(Error::windows(format!(
+                "for the locale {:?}, windows returned a minus sign of length {} bytes, \
+                which exceeds the maximum length for minus signs that num-format currently \
+                supports ({} bytes). if you need support longer minus signs, please file an issue \
+                at https://github.com/bcmyers/num-format."
+                name, min_string.len(), MAX_MIN_LEN)));
         }
         min_string
     };
@@ -86,7 +129,12 @@ where
     let nan = {
         let nan_string = get_locale_info_ex(name, Request::Nan)?;
         if nan_string.len() > MAX_NAN_LEN {
-            return Err(Error::new("TODO: NAN FAILED"));
+            return Err(Error::windows(format!(
+                "for the locale {:?}, windows returned a NaN value of length {} bytes, \
+                which exceeds the maximum length for NaN values that num-format currently \
+                supports ({} bytes). if you need support longer NaN values, please file an issue \
+                at https://github.com/bcmyers/num-format."
+                name, nan_string.len(), MAX_NAN_LEN)));
         }
         nan_string
     };
@@ -96,10 +144,22 @@ where
         match sep_string.chars().count() {
             0 => None,
             1 => Some(sep_string.chars().nth(0).unwrap()),
-            _ => return Err(Error::new("TODO")),
+            _ => {
+                return Err(Error::windows(format!(
+                    "for the locale {:?}, windows returned a separator value of {:?}, which is \
+                    longer than one character, which num-format currently does not support. if you \
+                    separator values longer than one character, please file an issue at \
+                    https://github.com/bcmyers/num-format.",
+                    name,
+                    &sep_string
+                )));
+            }
         }
     };
 
+    // we already have the name unless unless it was LOCALE_NAME_SYSTEM_DEFAULT, a special
+    // string that doesn't correspond to our concept of name. in this special case, we have
+    // to ask windows for the user-friendly name.
     let name = if &name == &*LOCALE_NAME_SYSTEM_DEFAULT {
         get_locale_info_ex(name, Request::Name)?
     } else {
@@ -119,6 +179,7 @@ where
     Ok(locale)
 }
 
+/// Enum representing all the things we know how to ask Windows for via the GetLocaleInfoEx API.
 #[derive(Copy, Clone, Debug)]
 pub enum Request {
     Decimal,
@@ -147,19 +208,24 @@ impl From<Request> for DWORD {
     }
 }
 
+/// Safe wrapper for EnumSystemLocalesEx.
+/// See https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-enumsystemlocalesex.
 fn enum_system_locales_ex() -> Result<HashSet<String>, Error> {
+    // global variables needed because we need to populate a hashset inside a C callback function.
     lazy_static! {
         static ref OUTER_MUTEX: Arc<Mutex<()>> = Arc::new(Mutex::new(()));
         static ref INNER_MUTEX: Arc<Mutex<HashSet<String>>> =
             Arc::new(Mutex::new(HashSet::default()));
     }
 
+    // callback function.
     #[allow(non_snake_case)]
     unsafe extern "system" fn lpLocaleEnumProcEx(
         lpLocaleName: *mut WCHAR,
         _: DWORD,
         _: LPARAM,
     ) -> BOOL {
+        // will be called continuously by windows until 0 is returned
         const CONTINUE: BOOL = 1;
         const STOP: BOOL = 0;
 
@@ -204,17 +270,23 @@ fn enum_system_locales_ex() -> Result<HashSet<String>, Error> {
     Ok(set)
 }
 
+/// Safe wrapper for GetLocaleInfoEx.
+/// See https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-getlocaleinfoex.
 fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Error> {
     const BUF_LEN: usize = 256;
 
+    // turn locale_name into windows string
     let locale_name = U16CString::from_str(locale_name).map_err(|_| Error::new("TODO1"))?;
 
     #[allow(non_snake_case)]
     let lpLocaleName = locale_name.as_ptr();
 
     #[allow(non_snake_case)]
-    let LCType = request.into();
+    let LCType = DWORD::from(request);
 
+    // call GetLocaleInfoEx once with a null pointer in order to get the size of the data
+    // it will return once we call it a second time. needed in order to check that size won't
+    // exceed our buffer size.
     let size = unsafe { winnls::GetLocaleInfoEx(lpLocaleName, LCType, ptr::null_mut(), 0) };
     if size <= 0 {
         return Err(Error::new("TODO2"));
@@ -224,13 +296,14 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
         return Err(Error::new("TODO3"));
     }
 
+    // call GetLocaleInfoEx a second time with a pointer to our buffer.
     let mut buf: [WCHAR; BUF_LEN] = unsafe { mem::uninitialized() };
     let err = unsafe { winnls::GetLocaleInfoEx(lpLocaleName, LCType, buf.as_mut_ptr(), size) };
     if err == 0 {
         return Err(Error::new("TODO4"));
     }
 
-    let s = U16CStr::from_slice_with_nul(&buf[..])
+    let s = U16CStr::from_slice_with_nul(&buf[..size])
         .map_err(|_| Error::new("TODO5"))?
         .to_string()
         .map_err(|_| Error::new("TODO6"))?;

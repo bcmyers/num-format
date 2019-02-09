@@ -41,25 +41,6 @@ impl Error {
         self.kind
     }
 
-    #[cfg_attr(not(feature = "std"), allow(dead_code))]
-    #[cfg_attr(windows, allow(dead_code))]
-    pub(crate) fn c<S>(msg: S) -> Error
-    where
-        S: AsRef<str>,
-    {
-        let s = msg.as_ref();
-        let s = if s.len() > MAX_ERR_LEN {
-            &s[0..MAX_ERR_LEN]
-        } else {
-            s
-        };
-        Error {
-            kind: ErrorKind::C {
-                msg: ArrayString::from(s).unwrap(),
-            },
-        }
-    }
-
     pub(crate) fn capacity(len: usize, cap: usize) -> Error {
         Error {
             kind: ErrorKind::Capacity { len, cap },
@@ -79,6 +60,44 @@ impl Error {
         Error {
             kind: ErrorKind::ParseLocale {
                 input: ArrayString::from(s).unwrap(),
+            },
+        }
+    }
+
+    #[cfg_attr(not(feature = "std"), allow(dead_code))]
+    #[cfg_attr(windows, allow(dead_code))]
+    pub(crate) fn unix<S>(msg: S) -> Error
+    where
+        S: AsRef<str>,
+    {
+        let s = msg.as_ref();
+        let s = if s.len() > MAX_ERR_LEN {
+            &s[0..MAX_ERR_LEN]
+        } else {
+            s
+        };
+        Error {
+            kind: ErrorKind::Unix {
+                msg: ArrayString::from(s).unwrap(),
+            },
+        }
+    }
+
+    #[cfg_attr(not(feature = "std"), allow(dead_code))]
+    #[cfg_attr(unix, allow(dead_code))]
+    pub(crate) fn windows<S>(msg: S) -> Error
+    where
+        S: AsRef<str>,
+    {
+        let s = msg.as_ref();
+        let s = if s.len() > MAX_ERR_LEN {
+            &s[0..MAX_ERR_LEN]
+        } else {
+            s
+        };
+        Error {
+            kind: ErrorKind::Windows {
+                msg: ArrayString::from(s).unwrap(),
             },
         }
     }
@@ -104,10 +123,11 @@ mod standard {
         fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
             use self::ErrorKind::*;
             match self.kind {
-                C { .. } => None,
                 Capacity { .. } => None,
                 Other { .. } => None,
                 ParseLocale { .. } => None,
+                Unix { .. } => None,
+                Windows { .. } => None,
             }
         }
     }

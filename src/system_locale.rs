@@ -10,7 +10,7 @@ use crate::{Error, Format, Grouping};
 
 /// <b><u>A key type</u></b>. Allows you to access your OS's locale information. Implements
 /// [`Format`]
-/// 
+///
 /// [`Format`]: trait.Format.html
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]

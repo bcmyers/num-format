@@ -120,7 +120,7 @@ struct Lconv {
 fn localeconv() -> Result<Lconv, Error> {
     let ptr = unsafe { libc::localeconv() };
     if ptr.is_null() {
-        return Err(Error::c("C function 'localeconv' returned a null pointer."));
+        return Err(Error::unix("'localeconv' returned a null pointer."));
     }
 
     let lconv: &libc::lconv = unsafe { ptr.as_ref() }.unwrap();
@@ -156,7 +156,7 @@ struct Pointer<'a> {
 impl<'a> Pointer<'a> {
     fn new(ptr: *const libc::c_char) -> Result<Pointer<'a>, Error> {
         if ptr.is_null() {
-            return Err(Error::c("received a null pointer from C."));
+            return Err(Error::unix("received a null pointer from C."));
         }
         Ok(Pointer {
             ptr,
@@ -169,7 +169,7 @@ impl<'a> Pointer<'a> {
             .to_str()
             .map_err(|_| Error::new("TODO"))?;
         if s.chars().count() > 1 {
-            return Err(Error::c(
+            return Err(Error::unix(
                 "received C string of length greater than 1 when C string of length 1 was expected",
             ));
         }
@@ -183,7 +183,7 @@ impl<'a> Pointer<'a> {
             [3] | [3, 3] => Ok(Grouping::Standard),
             [3, 2] => Ok(Grouping::Indian),
             [] => Ok(Grouping::Posix),
-            _ => Err(Error::c(&format!(
+            _ => Err(Error::unix(&format!(
                 "received unexpected grouping code from C: {:?}",
                 s
             ))),

@@ -4,7 +4,7 @@
 [![Documentation](https://docs.rs/num-format/badge.svg)](https://docs.rs/num-format/)
 ![License](https://img.shields.io/crates/l/num_format.svg)
 
-A Rust crate for producing string-representations of numbers, formatted according to international 
+A Rust crate for producing string-representations of numbers, formatted according to international
 standards, e.g.
 
 * `"1,000,000"` for US English
@@ -17,9 +17,9 @@ standards, e.g.
 
 ### `ToFormattedString`
 
-Using the [`ToFormattedString`] trait is the simplist API, just call [`to_formatted_string`] on a 
-type that implements it (all the number types in the standard library implement it) with a desired 
-format (see [picking a format] below). That said, using [`ToFormattedString`] will always heap 
+Using the [`ToFormattedString`] trait is the simplist API, just call [`to_formatted_string`] on a
+type that implements it (all the number types in the standard library implement it) with a desired
+format (see [picking a format] below). That said, using [`ToFormattedString`] will always heap
 allocate; so it is the slowest of the three APIs and cannot be used in a `no_std` environment.
 
 ```rust
@@ -84,14 +84,14 @@ fn main() {
 
 # Picking a format
 
-Formatting options (e.g. which thousands separator to use, what the minus sign looks like, etc.) are 
-represented by the [`Format`] trait. This crate offers **three** concrete implementations of the 
+Formatting options (e.g. which thousands separator to use, what the minus sign looks like, etc.) are
+represented by the [`Format`] trait. This crate offers **three** concrete implementations of the
 [`Format`] trait...
 
 ### `Locale`
 
 The [`Locale`] type is a programatically generated enum representing formatting standards from the
-[Common Locale Data Repository], which is maintained by the [Unicode Consortium] and used by 
+[Common Locale Data Repository], which is maintained by the [Unicode Consortium] and used by
 Apple in macOS and iOS, by LibreOffice, by IBM in AIX, among others.
 
 ```rust
@@ -115,7 +115,7 @@ fn main() {
 
 ### `SystemLocale`
 
-The [`SystemLocale`] type is another type that implements [`Format`]. It allows you to access your 
+The [`SystemLocale`] type is another type that implements [`Format`]. It allows you to access your
 system's locale information. It has a very similar API to [`Locale`]. It is not available in
 `no_std` environments.
 
@@ -159,7 +159,7 @@ fn main() -> Result<(), Error> {
         .minus_sign("🙌")
         .separator(Some('😀'))
         .build()?;
-    
+
     let mut buf = Buffer::new();
     buf.write_formatted(&(-1000000), &format);
     assert_eq!("🙌10😀00😀000", buf.as_str());

@@ -2,11 +2,18 @@
 ==================
 **Breaking changes:**
 
-* TODO
+* `Environment` was renamed to `SystemLocale`.
+* `ErrorKind::C` was renamed to `ErrorKind::Unix`.
+* `ErrorKind::Windows` was added.
 
 **Bug fixes:**
 
-* TODO
+* num-format now works on Windows!
+
+**Enhancements:**
+
+* Methods `available_names`, `from_name`, and `name` were added to both `Locale` and `SystemLocale`.
+* Several error messages now provide more detail about what exactly went wrong.
 
 0.2.1 (2019-02-06)
 ==================
@@ -19,8 +26,8 @@ which is a unix-only type; so we moved this implementation behind a `#[cfg(unix)
 ==================
 **Breaking changes:**
 
-* Flatten module structure 
-    * We decided to flatten the module structure of num-format to both improve code readabiity 
+* Flatten module structure
+    * We decided to flatten the module structure of num-format to both improve code readabiity
     and to simplify the importing of types by users. Unfortunately this is a breaking change.
     * The `num_format::format` and `num_format::errors` modules have been removed and all
     of their containing types have been moved to the crate root.

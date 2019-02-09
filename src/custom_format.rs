@@ -24,7 +24,7 @@ use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 ///     Ok(())
 /// }
 /// ```
-/// 
+///
 /// [`Format`]: trait.Format.html
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
