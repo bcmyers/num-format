@@ -43,7 +43,11 @@ use crate::{Error, Grouping, SystemLocale};
 lazy_static! {
     static ref LOCALE_NAME_SYSTEM_DEFAULT: Result<&'static str, Error> = {
         let raw = bindings::LOCALE_NAME_SYSTEM_DEFAULT;
-        std::str::from_utf8(&raw[0..raw.len() - 1]).map_err(|_| Error::new("TODO"))
+        std::str::from_utf8(&raw[0..raw.len() - 1]).map_err(|_| {
+            Error::windows(
+                "LOCALE_NAME_SYSTEM_DEFAULT from windows.h unexpectedly contains invalid UTF-8.",
+            )
+        })
     };
 }
 
@@ -362,7 +366,8 @@ mod tests {
 
     #[test]
     fn test_system_locale_windows_constructors() {
-        let _ = default().unwrap();
+        let locale = default().unwrap();
+        println!("DEFAULT LOCALE NAME: {}", locale.name());
         let _ = from_name("en-US").unwrap();
         let names = available_names().unwrap();
         for name in &names {
