@@ -1,6 +1,5 @@
 #![cfg(all(feature = "std", any(unix, windows)))]
 
-mod nix;
 mod unix;
 mod windows;
 
@@ -35,29 +34,7 @@ impl SystemLocale {
 }
 
 cfg_if! {
-    if #[cfg(windows)] {
-        impl SystemLocale {
-            /// TODO
-            pub fn default() -> Result<SystemLocale, Error> {
-                windows::default()
-            }
-
-            /// TODO
-            pub fn from_name<S>(name: S) -> Result<SystemLocale, Error>
-            where
-                S: Into<String>,
-            {
-                windows::from_name(name)
-            }
-        }
-    } else if #[cfg(any(
-        target_os = "dragonfly",
-        target_os = "freebsd",
-        target_os = "ios",
-        target_os = "macos",
-        target_os = "openbsd",
-        target_os = "netbsd"
-    ))] {
+    if #[cfg(unix)] {
         impl SystemLocale {
             /// TODO
             pub fn default() -> Result<SystemLocale, Error> {
@@ -71,12 +48,17 @@ cfg_if! {
             {
                 unix::from_name(name)
             }
+
+            /// TODO
+            pub fn available_names() -> Result<HashSet<String>, Error> {
+                Ok(unix::available_names())
+            }
         }
     } else {
         impl SystemLocale {
             /// TODO
             pub fn default() -> Result<SystemLocale, Error> {
-                nix::default()
+                windows::default()
             }
 
             /// TODO
@@ -84,23 +66,10 @@ cfg_if! {
             where
                 S: Into<String>,
             {
-                nix::from_name(name)
+                windows::from_name(name)
             }
-        }
-    }
-}
 
-cfg_if! {
-    if #[cfg(unix)] {
-        impl SystemLocale {
-            /// TODO
-            pub fn available_names() -> Result<HashSet<String>, Error> {
-                Ok(nix::available_names())
-            }
-        }
-    } else {
-        impl SystemLocale {
-            /// TODO
+            // TODO
             pub fn available_names() -> Result<HashSet<String>, Error> {
                 windows::available_names()
             }

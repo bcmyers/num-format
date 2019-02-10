@@ -115,6 +115,7 @@ impl From<ErrorKind> for Error {
     }
 }
 
+#[cfg(feature = "std")]
 impl From<std::ffi::NulError> for Error {
     fn from(_: std::ffi::NulError) -> Error {
         Error {

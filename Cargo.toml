@@ -16,7 +16,7 @@ repository = "https://github.com/bcmyers/num-format"
 
 build = "src/build/build.rs"
 exclude = ["num-format-dev"]
-include = ["src/build/nix.h", "src/build/unix.h", "src/build/windows.h"]
+include = ["src/build/linux.h", "src/build/unix.h", "src/build/windows.h"]
 
 [badges]
 maintenance = { status = "actively-developed" }
