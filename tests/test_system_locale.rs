@@ -46,6 +46,6 @@ fn test_system_locale_windows() {
     let names = SystemLocale::available_names().unwrap();
     assert!(!names.is_empty());
     for name in &names {
-        let _ = SystemLocale::from_name(name).unwrap();
+        let _ = SystemLocale::from_name(name.as_ref()).unwrap();
     }
 }
