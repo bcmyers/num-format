@@ -3,7 +3,6 @@ name = "num-format"
 version = "0.3.0"
 
 authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
-build = "src/build/build.rs"
 categories = ["encoding", "internationalization", "localization", "no-std", "value-formatting"]
 description = "A Rust crate for producing string-representations of numbers, formatted according to international standards"
 documentation = "https://docs.rs/num-format"
@@ -14,6 +13,10 @@ license = "MIT/Apache-2.0"
 publish = true
 readme = "README.md"
 repository = "https://github.com/bcmyers/num-format"
+
+build = "src/build/build.rs"
+exclude = ["num-format-dev"]
+include = ["src/build/unix.h", "src/build/windows.h"]
 
 [badges]
 maintenance = { status = "actively-developed" }
