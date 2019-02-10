@@ -2,6 +2,9 @@
 **/*.rs.bk
 **/data/
 Cargo.lock
-.vscode/
+
 .DS_Store
+.vscode/
+
+/bindings
 /tmp

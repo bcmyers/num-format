@@ -21,7 +21,7 @@ mod bindings {
     #![allow(non_camel_case_types)]
     #![allow(non_snake_case)]
     #![allow(non_upper_case_globals)]
-    include!(concat!(env!("OUT_DIR"), "\\bindings.rs"));
+    include!(concat!(env!("OUT_DIR"), "\\windows.rs"));
 }
 
 use std::collections::HashSet;
@@ -65,9 +65,9 @@ pub(crate) fn default() -> Result<SystemLocale, Error> {
 
 pub(crate) fn from_name<S>(name: S) -> Result<SystemLocale, Error>
 where
-    S: AsRef<str>,
+    S: Into<String>,
 {
-    let name = name.as_ref();
+    let name: String = name.into();
 
     if name.len() > LOCALE_NAME_MAX_LENGTH - 1 {
         return Err(Error::windows(format!(
@@ -79,7 +79,7 @@ where
     let dec = {
         // call safe wrapper for GetLocaleInfoEx
         // see https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-getlocaleinfoex
-        let dec_string = get_locale_info_ex(name, Request::Decimal)?;
+        let dec_string = get_locale_info_ex(&name, Request::Decimal)?;
 
         if dec_string.chars().count() != 1 {
             return Err(Error::windows(format!(
@@ -87,14 +87,14 @@ where
                  character long. num-format currently does not support this. if you need support \
                  for decimals of different lengths than one character, please file an issue at \
                  https://github.com/bcmyers/num-format.",
-                name, &dec_string
+                &name, &dec_string
             )));
         }
         dec_string.chars().nth(0).unwrap()
     };
 
     let grp = {
-        let grp_string = get_locale_info_ex(name, Request::Grouping)?;
+        let grp_string = get_locale_info_ex(&name, Request::Grouping)?;
         match grp_string.as_ref() {
             "3;0" | "3" => Grouping::Standard,
             "3;2;0" | "3;2" => Grouping::Indian,
@@ -104,55 +104,55 @@ where
                 "for the locale {:?}, windows returned a grouping value of {:?}, which num-format \
                 does not currently support. if you need support this grouping value, please file \
                 an issue at https://github.com/bcmyers/num-format.",
-                name, &grp_string)));
+                &name, &grp_string)));
             }
         }
     };
 
     let inf =
         {
-            let inf_string = get_locale_info_ex(name, Request::PositiveInfinity)?;
+            let inf_string = get_locale_info_ex(&name, Request::PositiveInfinity)?;
             if inf_string.len() > MAX_INF_LEN {
                 return Err(Error::windows(format!(
                 "for the locale {:?}, windows returned an infinity sign of length {} bytes, \
                 which exceeds the maximum length for infinity signs that num-format currently \
                 supports ({} bytes). if you need support longer infinity signs, please file an \
                 issue at https://github.com/bcmyers/num-format.",
-                name, inf_string.len(), MAX_INF_LEN)));
+                &name, inf_string.len(), MAX_INF_LEN)));
             }
             inf_string
         };
 
     let min =
         {
-            let min_string = get_locale_info_ex(name, Request::MinusSign)?;
+            let min_string = get_locale_info_ex(&name, Request::MinusSign)?;
             if min_string.len() > MAX_MIN_LEN {
                 return Err(Error::windows(format!(
                 "for the locale {:?}, windows returned a minus sign of length {} bytes, \
                 which exceeds the maximum length for minus signs that num-format currently \
                 supports ({} bytes). if you need support longer minus signs, please file an issue \
                 at https://github.com/bcmyers/num-format.",
-                name, min_string.len(), MAX_MIN_LEN)));
+                &name, min_string.len(), MAX_MIN_LEN)));
             }
             min_string
         };
 
     let nan =
         {
-            let nan_string = get_locale_info_ex(name, Request::Nan)?;
+            let nan_string = get_locale_info_ex(&name, Request::Nan)?;
             if nan_string.len() > MAX_NAN_LEN {
                 return Err(Error::windows(format!(
                 "for the locale {:?}, windows returned a NaN value of length {} bytes, \
                 which exceeds the maximum length for NaN values that num-format currently \
                 supports ({} bytes). if you need support longer NaN values, please file an issue \
                 at https://github.com/bcmyers/num-format.",
-                name, nan_string.len(), MAX_NAN_LEN)));
+                &name, nan_string.len(), MAX_NAN_LEN)));
             }
             nan_string
         };
 
     let sep = {
-        let sep_string = get_locale_info_ex(name, Request::Separator)?;
+        let sep_string = get_locale_info_ex(&name, Request::Separator)?;
         match sep_string.chars().count() {
             0 => None,
             1 => Some(sep_string.chars().nth(0).unwrap()),
@@ -162,7 +162,7 @@ where
                     longer than one character, which num-format currently does not support. if you \
                     need support for separator values longer than one character, please file an \
                     issue at https://github.com/bcmyers/num-format.",
-                    name,
+                    &name,
                     &sep_string
                 )));
             }
@@ -174,9 +174,9 @@ where
     // to ask windows for the user-friendly name. the unwrap is OK, because we would never
     // have reached this point if LOCALE_NAME_SYSTEM_DEFAULT were an error.
     let name = if &name == LOCALE_NAME_SYSTEM_DEFAULT.as_ref().unwrap() {
-        get_locale_info_ex(name, Request::Name)?
+        get_locale_info_ex(&name, Request::Name)?
     } else {
-        name.to_string()
+        name
     };
 
     let locale = SystemLocale {

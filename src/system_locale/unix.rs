@@ -1,10 +1,18 @@
 #![cfg(unix)]
 
+mod bindings {
+    //! Bindings to locale.h and xlocale.h. See build.rs.
+    #![allow(non_camel_case_types)]
+    #![allow(non_snake_case)]
+    #![allow(non_upper_case_globals)]
+    #![allow(trivial_casts)]
+    include!(concat!(env!("OUT_DIR"), "/unix.rs"));
+}
+
 use std::collections::HashSet;
 use std::ffi::{CStr, CString};
 use std::marker::PhantomData;
 use std::ptr;
-use std::slice;
 use std::str;
 
 use crate::constants::MAX_MIN_LEN;
@@ -26,6 +34,7 @@ pub(crate) fn available_names() -> HashSet<String> {
         Some(set)
     }
 
+    // TODO: Test that these give the same output
     fn second_attempt() -> HashSet<String> {
         use walkdir::WalkDir;
 
@@ -62,38 +71,80 @@ pub(crate) fn available_names() -> HashSet<String> {
 }
 
 pub(crate) fn default() -> Result<SystemLocale, Error> {
-    new(None)
+    new::<String>(None)
 }
 
 pub(crate) fn from_name<S>(name: S) -> Result<SystemLocale, Error>
 where
-    S: AsRef<str>,
+    S: Into<String>,
 {
-    new(Some(name.as_ref()))
+    new(Some(name))
 }
 
-fn new(name: Option<&str>) -> Result<SystemLocale, Error> {
-    // TODO: need a lock?
+fn new<S>(name: Option<S>) -> Result<SystemLocale, Error> where S: Into<String> {
+    let name = name.map(|s| s.into());
 
-    // save current locale name
-    let start = setlocale(Action::Get)?;
+    // create a new locale object
+    let name_cstring = match name {
+        Some(ref name) => CString::new(name.as_bytes()).map_err(|_| Error::unix("TODO"))?,
+        None => CString::new("").unwrap(),
+    };
+    let mask = (bindings::LC_NUMERIC_MASK | bindings::LC_MONETARY_MASK) as std::os::raw::c_int;
+    let new_locale = unsafe {
+        bindings::newlocale(
+            mask,
+            name_cstring.as_ptr(),
+            ptr::null_mut(),
+        )
+    };
+    if new_locale.is_null() {
+        return Err(Error::unix("TODO"));
+    }
 
-    // temporarily set locale settings to what we want
-    let name = {
-        match name {
-            Some(name) => setlocale(Action::SetFromName(name))?,
-            None => setlocale(Action::SetFromEnvironment)?,
-        }
+    // use the new locale object, while saving the initial one
+    let initial_locale = unsafe { bindings::uselocale(new_locale) };
+
+    // get the lconv
+    let lconv = match localeconv() {
+        Ok(lconv) => lconv,
+        Err(e) => {
+            // free the new locale object
+            let _ = unsafe { bindings::freelocale(new_locale) };
+            return Err(e);
+        },
     };
 
-    // get the locale information
-    let lconv = localeconv()?;
+    // get the name
+    let name = match name {
+        Some(name) => name,
+        None => {
+            // TODO: Free?
+            let name_ptr = unsafe { bindings::querylocale(mask, new_locale) };
+            if name_ptr.is_null() {
+                // free the new locale object
+                let _ = unsafe { bindings::freelocale(new_locale) };
+                return Err(Error::unix("TODO"));
+            }
+            let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
+            match name_cstr.to_str() {
+                Ok(s) => s.to_string(),
+                Err(_) => {
+                    // free the new locale object
+                    let _ = unsafe { bindings::freelocale(new_locale) };
+                    return Err(Error::unix("TODO"));
+                }
+            }
+        },
+    };
 
-    // revert locale name back to the original
-    let end = setlocale(Action::SetFromName(&start))?;
-    debug_assert_eq!(&start, &end);
+    // reset to the initial locale object
+    if !initial_locale.is_null() {
+        let _ = unsafe { bindings::uselocale(initial_locale) };
+    }
 
-    // return
+    // free the new locale object
+    let _ = unsafe { bindings::freelocale(new_locale) };
+
     Ok(SystemLocale {
         dec: lconv.dec,
         grp: lconv.grp,
@@ -110,12 +161,12 @@ fn localeconv() -> Result<Lconv, Error> {
     // Note: We do **not** free ptr, as "the localeconv() function returns a pointer to a static
     // object which may be altered by later calls to setlocale(3) or localeconv()."
     // See https://www.freebsd.org/cgi/man.cgi?query=localeconv.
-    let ptr = unsafe { libc::localeconv() };
+    let ptr = unsafe { bindings::localeconv() };
     if ptr.is_null() {
         return Err(Error::unix("'localeconv' returned a null pointer."));
     }
 
-    let lconv: &libc::lconv = unsafe { ptr.as_ref() }.unwrap();
+    let lconv: &bindings::lconv = unsafe { ptr.as_ref() }.unwrap();
 
     let dec_ptr = Pointer::new(lconv.mon_decimal_point)?;
     let grp_ptr = Pointer::new(lconv.mon_grouping)?;
@@ -140,43 +191,6 @@ fn localeconv() -> Result<Lconv, Error> {
     Ok(locale)
 }
 
-// TODO: note on how this is a safe wrapper
-fn setlocale<'a>(action: Action<'a>) -> Result<String, Error> {
-    // TODO: Note on why we don't free the pointer.
-    let ptr = match action {
-        Action::Get => unsafe { libc::setlocale(libc::LC_ALL, ptr::null()) },
-        Action::SetFromEnvironment => {
-            let cstring = CString::new("").unwrap();
-            unsafe { libc::setlocale(libc::LC_ALL, cstring.as_ptr()) }
-        }
-        Action::SetFromName(name) => {
-            let cstring = CString::new(name).map_err(|_| Error::unix("TODO1"))?;
-            unsafe { libc::setlocale(libc::LC_ALL, cstring.as_ptr()) }
-        }
-    };
-    if ptr.is_null() {
-        match action {
-            Action::SetFromName(name) => {
-                return Err(Error::unix(format!("locale name {} unavailable.", name)));
-            }
-            _ => return Err(Error::unix("TODO2")),
-        }
-    }
-    let cstr = unsafe { CStr::from_ptr(ptr) };
-    let output = cstr
-        .to_str()
-        .map_err(|_| Error::unix("value returned from libc::setlocale contains invalid UTF-8."))?
-        .to_string();
-    Ok(output)
-}
-
-#[derive(Clone, Debug)]
-enum Action<'a> {
-    Get,
-    SetFromEnvironment,
-    SetFromName(&'a str),
-}
-
 #[derive(Clone, Debug)]
 struct Lconv {
     dec: char,
@@ -187,12 +201,12 @@ struct Lconv {
 
 #[derive(Debug)]
 struct Pointer<'a> {
-    ptr: *const libc::c_char,
+    ptr: *const std::os::raw::c_char,
     phantom: PhantomData<&'a ()>,
 }
 
 impl<'a> Pointer<'a> {
-    fn new(ptr: *const libc::c_char) -> Result<Pointer<'a>, Error> {
+    fn new(ptr: *const std::os::raw::c_char) -> Result<Pointer<'a>, Error> {
         if ptr.is_null() {
             return Err(Error::unix("received a null pointer from C."));
         }
@@ -215,9 +229,8 @@ impl<'a> Pointer<'a> {
     }
 
     fn as_grouping(&self) -> Result<Grouping, Error> {
-        let len = unsafe { libc::strlen(self.ptr) };
-        let s = unsafe { slice::from_raw_parts(self.ptr as *const u8, len) };
-        match s {
+        let s = unsafe { CStr::from_ptr(self.ptr) };
+        match s.to_bytes() {
             [3] | [3, 3] => Ok(Grouping::Standard),
             [3, 2] => Ok(Grouping::Indian),
             [] => Ok(Grouping::Posix),

@@ -52,7 +52,7 @@ impl SystemLocale {
     /// TODO
     pub fn from_name<S>(name: S) -> Result<SystemLocale, Error>
     where
-        S: AsRef<str>,
+        S: Into<String>,
     {
         #[cfg(unix)]
         {

@@ -15,10 +15,10 @@ fn test_system_locale_unix() {
     let names = SystemLocale::available_names().unwrap();
 
     for name in &names {
-        let locale1 = SystemLocale::from_name(name).unwrap();
+        let locale1 = SystemLocale::from_name(name.to_string()).unwrap();
         let s1 = n.to_formatted_string(&locale1);
 
-        env::set_var("LC_ALL", name);
+        env::set_var("LC_ALL", name.to_string());
         let locale2 = SystemLocale::new().unwrap();
         let s2 = n.to_formatted_string(&locale2);
 
