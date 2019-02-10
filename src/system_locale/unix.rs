@@ -3,6 +3,7 @@
 use std::collections::HashSet;
 use std::ffi::{CStr, CString};
 use std::marker::PhantomData;
+use std::os::raw::c_int;
 use std::ptr;
 use std::str;
 
@@ -33,7 +34,7 @@ where
         Some(ref name) => CString::new(name.as_bytes())?,
         None => CString::new("").unwrap(),
     };
-    let mask = (bindings::LC_NUMERIC_MASK | bindings::LC_MONETARY_MASK) as std::os::raw::c_int;
+    let mask = (bindings::LC_NUMERIC_MASK | bindings::LC_MONETARY_MASK) as c_int;
     let new_locale = unsafe { bindings::newlocale(mask, name_cstring.as_ptr(), ptr::null_mut()) };
     if new_locale.is_null() {
         return Err(Error::unix(
@@ -54,7 +55,7 @@ where
         }
     };
 
-    let name = get_name(name)?;
+    let name = get_name(mask, name, new_locale)?;
 
     // reset to the initial locale object
     if !initial_locale.is_null() {
@@ -102,8 +103,12 @@ cfg_if! {
             include!(concat!(env!("OUT_DIR"), "/xlocale.rs"));
         }
 
-        fn get_name(name: Option<String>) -> Result<String, Error> {
-            match name {
+        fn get_name(
+            mask: c_int,
+            name: Option<String>,
+            new_locale: bindings::locale_t
+        ) -> Result<String, Error> {
+            let name = match name {
                 Some(name) => name,
                 None => {
                     // don't think we need to free this pointer
@@ -127,7 +132,8 @@ cfg_if! {
                         }
                     }
                 }
-            }
+            };
+            Ok(name)
         }
     } else {
         mod bindings {
@@ -147,7 +153,11 @@ cfg_if! {
             include!(concat!(env!("OUT_DIR"), "/locale.rs"));
         }
 
-        fn get_name(name: Option<String>) -> Result<String, Error> {
+        fn get_name(
+            _: c_int,
+            name: Option<String>,
+            _: bindings::locale_t
+        ) -> Result<String, Error> {
             let name = match name {
                 Some(name) => name,
                 None => "TODO".to_string(),

@@ -14,7 +14,7 @@ cfg_if! {
 
             let bindings = Builder::default()
                 .header(headers)
-                .rust_target(RustTarget::Stable_1_0)
+                .rust_target(RustTarget::Stable_1_28)
                 .whitelist_var("LOCALE_NAME_MAX_LENGTH")
                 .whitelist_var("LOCALE_NAME_SYSTEM_DEFAULT")
                 .whitelist_var("LOCALE_SDECIMAL")
@@ -64,7 +64,7 @@ cfg_if! {
 
             let bindings = Builder::default()
                 .header(headers)
-                .rust_target(RustTarget::Stable_1_0)
+                .rust_target(RustTarget::Stable_1_28)
                 .whitelist_function("freelocale")
                 .whitelist_function("newlocale")
                 .whitelist_function("querylocale")
@@ -100,7 +100,7 @@ cfg_if! {
 
             let bindings = Builder::default()
                 .header(headers)
-                .rust_target(RustTarget::Stable_1_0)
+                .rust_target(RustTarget::Stable_1_28)
                 .whitelist_function("freelocale")
                 .whitelist_function("newlocale")
                 .whitelist_function("uselocale")
