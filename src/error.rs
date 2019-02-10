@@ -115,6 +115,14 @@ impl From<ErrorKind> for Error {
     }
 }
 
+impl From<std::ffi::NulError> for Error {
+    fn from(_: std::ffi::NulError) -> Error {
+        Error {
+            kind: ErrorKind::InteriorNulByte,
+        }
+    }
+}
+
 #[cfg(feature = "std")]
 mod standard {
     use crate::{Error, ErrorKind};
@@ -124,6 +132,7 @@ mod standard {
             use self::ErrorKind::*;
             match self.kind {
                 Capacity { .. } => None,
+                InteriorNulByte { .. } => None,
                 Other { .. } => None,
                 ParseLocale { .. } => None,
                 Unix { .. } => None,

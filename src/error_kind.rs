@@ -16,6 +16,9 @@ pub enum ErrorKind {
         cap: usize,
     },
 
+    /// locale name may not contain an iterior nul byte
+    InteriorNulByte,
+
     /// Other miscellaneous error.
     Other {
         /// Additional details.
@@ -50,6 +53,7 @@ impl fmt::Display for ErrorKind {
                 "attempted to write input of length {} bytes into buffer with capacity {} bytes.",
                 len, cap
             ),
+            InteriorNulByte => write!(f, "locale name may not contain an interior nul byte."),
             Other { msg } => write!(f, "miscellaneous error: {}", msg),
             ParseLocale { input } => {
                 write!(f, "failed to parse input into a Locale. input: {}", input)

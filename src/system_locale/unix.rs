@@ -8,7 +8,16 @@
 ))]
 
 mod bindings {
-    //! Bindings to locale.h and xlocale.h. See build.rs.
+    //! Bindings to xlocale.h.
+    //!
+    //! * `freelocale`
+    //! * `LC_MONETARY_MASK`
+    //! * `LC_NUMERIC_MASK`
+    //! * `newlocale`
+    //! * `querylocale`
+    //! * `uselocale`
+    //!
+    //! See build.rs.
     #![allow(non_camel_case_types)]
     #![allow(non_snake_case)]
     #![allow(non_upper_case_globals)]
@@ -41,13 +50,15 @@ where
 
     // create a new locale object
     let name_cstring = match name {
-        Some(ref name) => CString::new(name.as_bytes()).map_err(|_| Error::unix("TODO"))?,
+        Some(ref name) => CString::new(name.as_bytes())?,
         None => CString::new("").unwrap(),
     };
     let mask = (bindings::LC_NUMERIC_MASK | bindings::LC_MONETARY_MASK) as std::os::raw::c_int;
     let new_locale = unsafe { bindings::newlocale(mask, name_cstring.as_ptr(), ptr::null_mut()) };
     if new_locale.is_null() {
-        return Err(Error::unix("TODO"));
+        return Err(Error::unix(
+            "newlocale unexpectedly returned a null pointer.",
+        ));
     }
 
     // use the new locale object, while saving the initial one
@@ -67,12 +78,14 @@ where
     let name = match name {
         Some(name) => name,
         None => {
-            // TODO: Free?
+            // don't think we need to free this pointer
             let name_ptr = unsafe { bindings::querylocale(mask, new_locale) };
             if name_ptr.is_null() {
                 // free the new locale object
                 let _ = unsafe { bindings::freelocale(new_locale) };
-                return Err(Error::unix("TODO"));
+                return Err(Error::unix(
+                    "querylocale unexpectedly return a null pointer.",
+                ));
             }
             let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
             match name_cstr.to_str() {
@@ -80,7 +93,9 @@ where
                 Err(_) => {
                     // free the new locale object
                     let _ = unsafe { bindings::freelocale(new_locale) };
-                    return Err(Error::unix("TODO"));
+                    return Err(Error::unix(
+                        "querylocale unexpected returns string with invalid UTF-8.",
+                    ));
                 }
             }
         }

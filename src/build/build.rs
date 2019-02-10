@@ -87,6 +87,41 @@ cfg_if! {
                     .expect("unable to write bindings for xlocale.h");
             }
         }
+    } else #[cfg(all(feature = "std", unix))] {
+        fn main() {
+            // use std::env;
+            // use std::path::Path;
+
+            // use bindgen::{Builder, RustTarget};
+
+            // let root = env::var("CARGO_MANIFEST_DIR").unwrap();
+            // let headers_path = Path::new(&root).join("src").join("build").join("nix.h");
+            // let headers = headers_path.to_str().unwrap();
+
+            // let bindings = Builder::default()
+            //     .header(headers)
+            //     .rust_target(RustTarget::Stable_1_0)
+            //     .whitelist_function("freelocale")
+            //     .whitelist_function("newlocale")
+            //     .whitelist_function("uselocale")
+            //     .whitelist_var("LC_MONETARY_MASK")
+            //     .whitelist_var("LC_NUMERIC_MASK")
+            //     .generate()
+            //     .expect("unable to generate bindings for locale.h");
+
+            // let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("nix.rs");
+            // bindings
+            //     .write_to_file(&out_path)
+            //     .expect("unable to write bindings for locale.h");
+
+            // let development_dir = Path::new(&root).join("bindings");
+            // if development_dir.exists() {
+            //     let out_path = development_dir.join("nix.rs");
+            //     bindings
+            //         .write_to_file(&out_path)
+            //         .expect("unable to write bindings for locale.h");
+            // }
+        }
     } else {
         fn main() {}
     }

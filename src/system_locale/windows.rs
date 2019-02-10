@@ -327,8 +327,7 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
     }
 
     // turn locale_name into windows string
-    let locale_name = U16CString::from_str(locale_name)
-        .map_err(|_| Error::windows("locale name may not contain an interior null byte."))?;
+    let locale_name = U16CString::from_str(locale_name)?;
 
     #[allow(non_snake_case)]
     let lpLocaleName = locale_name.as_ptr();
