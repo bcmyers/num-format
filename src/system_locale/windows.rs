@@ -371,7 +371,7 @@ mod tests {
         let _ = from_name("en-US").unwrap();
         let names = available_names().unwrap();
         for name in &names {
-            let _ = from_name(name).unwrap();
+            let _ = from_name(name.as_ref()).unwrap();
         }
     }
 

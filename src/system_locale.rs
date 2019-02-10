@@ -1,9 +1,12 @@
-#![cfg(feature = "std")]
+#![cfg(all(feature = "std", any(unix, windows)))]
 
+mod nix;
 mod unix;
 mod windows;
 
 use std::collections::HashSet;
+
+use cfg_if::cfg_if;
 
 use crate::utils::{InfinityStr, MinusSignStr, NanStr};
 use crate::{Error, Format, Grouping};
@@ -29,67 +32,83 @@ impl SystemLocale {
     pub fn new() -> Result<SystemLocale, Error> {
         SystemLocale::default()
     }
+}
 
-    /// TODO
-    pub fn default() -> Result<SystemLocale, Error> {
-        #[cfg(unix)]
-        {
-            return unix::default();
+cfg_if! {
+    if #[cfg(windows)] {
+        impl SystemLocale {
+            /// TODO
+            pub fn default() -> Result<SystemLocale, Error> {
+                windows::default()
+            }
+
+            /// TODO
+            pub fn from_name<S>(name: S) -> Result<SystemLocale, Error>
+            where
+                S: Into<String>,
+            {
+                windows::from_name(name)
+            }
         }
+    } else if #[cfg(any(
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "ios",
+        target_os = "macos",
+        target_os = "openbsd",
+        target_os = "netbsd"
+    ))] {
+        impl SystemLocale {
+            /// TODO
+            pub fn default() -> Result<SystemLocale, Error> {
+                unix::default()
+            }
 
-        #[cfg(windows)]
-        {
-            return windows::default();
+            /// TODO
+            pub fn from_name<S>(name: S) -> Result<SystemLocale, Error>
+            where
+                S: Into<String>,
+            {
+                unix::from_name(name)
+            }
         }
+    } else {
+        impl SystemLocale {
+            /// TODO
+            pub fn default() -> Result<SystemLocale, Error> {
+                nix::default()
+            }
 
-        #[cfg(not(unix))]
-        #[cfg(not(windows))]
-        {
-            return Err(Error::new("TODO"));
-        }
-    }
-
-    /// TODO
-    pub fn from_name<S>(name: S) -> Result<SystemLocale, Error>
-    where
-        S: Into<String>,
-    {
-        #[cfg(unix)]
-        {
-            return unix::from_name(name);
-        }
-
-        #[cfg(windows)]
-        {
-            return windows::from_name(name);
-        }
-
-        #[cfg(not(unix))]
-        #[cfg(not(windows))]
-        {
-            return Err(Error::new("TODO"));
-        }
-    }
-
-    /// TODO
-    pub fn available_names() -> Result<HashSet<String>, Error> {
-        #[cfg(unix)]
-        {
-            return Ok(unix::available_names());
-        }
-
-        #[cfg(windows)]
-        {
-            return windows::available_names();
-        }
-
-        #[cfg(not(unix))]
-        #[cfg(not(windows))]
-        {
-            return Ok(HashSet::default());
+            /// TODO
+            pub fn from_name<S>(name: S) -> Result<SystemLocale, Error>
+            where
+                S: Into<String>,
+            {
+                nix::from_name(name)
+            }
         }
     }
+}
 
+cfg_if! {
+    if #[cfg(unix)] {
+        impl SystemLocale {
+            /// TODO
+            pub fn available_names() -> Result<HashSet<String>, Error> {
+                Ok(nix::available_names())
+            }
+        }
+    } else {
+        impl SystemLocale {
+            /// TODO
+            pub fn available_names() -> Result<HashSet<String>, Error> {
+                windows::available_names()
+            }
+        }
+    }
+}
+
+impl SystemLocale {
     /// TODO
     pub fn decimal(&self) -> char {
         self.dec

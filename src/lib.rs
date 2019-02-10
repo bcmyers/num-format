@@ -264,6 +264,7 @@ pub use self::to_formatted_str::ToFormattedStr;
 
 #[cfg(feature = "std")]
 mod standard {
+    #[cfg(any(unix, windows))]
     pub use super::system_locale::SystemLocale;
     pub use super::to_formatted_string::ToFormattedString;
     pub use super::write_formatted::WriteFormatted;
