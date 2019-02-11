@@ -166,11 +166,25 @@ cfg_if! {
             name: Option<String>,
             _: bindings::locale_t
         ) -> Result<String, Error> {
-            let name = match name {
-                Some(name) => name,
-                None => "TODO".to_string(),
-            };
-            Ok(name)
+            use std::env;
+
+            if let Some(name) = name {
+                return Ok(name);
+            }
+
+            if let Ok(name) = env::var("LC_ALL") {
+                return Ok(name);
+            }
+
+            if let Ok(name) = env::var("LC_NUMERIC") {
+                return Ok(name)
+            }
+
+            if let Ok(name) = env::var("LC_MONETARY") {
+                return Ok(name)
+            }
+
+            Err(Error::unix("TODO"))
         }
     }
 }
