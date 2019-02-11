@@ -184,7 +184,7 @@ cfg_if! {
                 return Ok(name)
             }
 
-            Err(Error::unix("TODO"))
+            Err(Error::unix("TODO4"))
         }
     }
 }
@@ -262,7 +262,7 @@ pub(crate) fn localeconv() -> Result<Lconv, Error> {
     let grp = grp_ptr.as_grouping()?;
     let min = min_ptr.as_str()?;
     if min.len() > MAX_MIN_LEN {
-        return Err(Error::unix("TODO"));
+        return Err(Error::unix("TODO1"));
     }
     let maybe_sep = sep_ptr.as_char()?;
 
@@ -304,7 +304,7 @@ impl<'a> Pointer<'a> {
     fn as_char(&self) -> Result<Option<char>, Error> {
         let s = unsafe { CStr::from_ptr(self.ptr) }
             .to_str()
-            .map_err(|_| Error::unix("TODO"))?;
+            .map_err(|_| Error::unix("TODO2"))?;
         if s.chars().count() > 1 {
             return Err(Error::unix(
                 "received C string of length greater than 1 when C string of length 1 was expected",
@@ -329,7 +329,7 @@ impl<'a> Pointer<'a> {
     fn as_str(&self) -> Result<&str, Error> {
         let s = unsafe { CStr::from_ptr(self.ptr) }
             .to_str()
-            .map_err(|_| Error::unix("TODO"))?;
+            .map_err(|_| Error::unix("TODO3"))?;
         if s.len() > MAX_MIN_LEN {
             return Err(Error::capacity(s.len(), MAX_MIN_LEN));
         }

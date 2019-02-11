@@ -6,7 +6,7 @@ pub struct Error;
 impl Error {
     /// TODO
     pub fn new(msg: &str) -> Error {
-        panic!("TODO: {}", msg)
+        panic!("TODO: other: {}", msg)
     }
 
     #[allow(dead_code)]
@@ -16,7 +16,7 @@ impl Error {
 
     #[allow(dead_code)]
     pub(crate) fn unix(msg: &str) -> Error {
-        panic!("TODO: {}", msg)
+        panic!("TODO: unix: {}", msg)
     }
 
     #[allow(dead_code)]
@@ -24,7 +24,7 @@ impl Error {
     where
         S: AsRef<str>,
     {
-        panic!("TODO: {}", msg.as_ref())
+        panic!("TODO: windows: {}", msg.as_ref())
     }
 }
 
