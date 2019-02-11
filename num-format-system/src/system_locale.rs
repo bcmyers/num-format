@@ -67,7 +67,7 @@ cfg_if! {
                 windows::from_name(name)
             }
 
-            // TODO
+            /// TODO
             pub fn available_names() -> Result<HashSet<String>, Error> {
                 windows::available_names()
             }
