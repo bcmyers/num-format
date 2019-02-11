@@ -46,61 +46,6 @@ impl Error {
             kind: ErrorKind::Capacity { len, cap },
         }
     }
-
-    pub(crate) fn parse_locale<S>(input: S) -> Error
-    where
-        S: AsRef<str>,
-    {
-        let s = input.as_ref();
-        let s = if s.len() > MAX_ERR_LEN {
-            &s[0..MAX_ERR_LEN]
-        } else {
-            s
-        };
-        Error {
-            kind: ErrorKind::ParseLocale {
-                input: ArrayString::from(s).unwrap(),
-            },
-        }
-    }
-
-    #[cfg_attr(not(feature = "std"), allow(dead_code))]
-    #[cfg_attr(windows, allow(dead_code))]
-    pub(crate) fn unix<S>(msg: S) -> Error
-    where
-        S: AsRef<str>,
-    {
-        let s = msg.as_ref();
-        let s = if s.len() > MAX_ERR_LEN {
-            &s[0..MAX_ERR_LEN]
-        } else {
-            s
-        };
-        Error {
-            kind: ErrorKind::Unix {
-                msg: ArrayString::from(s).unwrap(),
-            },
-        }
-    }
-
-    #[cfg_attr(not(feature = "std"), allow(dead_code))]
-    #[cfg_attr(unix, allow(dead_code))]
-    pub(crate) fn windows<S>(msg: S) -> Error
-    where
-        S: AsRef<str>,
-    {
-        let s = msg.as_ref();
-        let s = if s.len() > MAX_ERR_LEN {
-            &s[0..MAX_ERR_LEN]
-        } else {
-            s
-        };
-        Error {
-            kind: ErrorKind::Windows {
-                msg: ArrayString::from(s).unwrap(),
-            },
-        }
-    }
 }
 
 impl fmt::Display for Error {
@@ -116,15 +61,6 @@ impl From<ErrorKind> for Error {
 }
 
 #[cfg(feature = "std")]
-impl From<std::ffi::NulError> for Error {
-    fn from(_: std::ffi::NulError) -> Error {
-        Error {
-            kind: ErrorKind::InteriorNulByte,
-        }
-    }
-}
-
-#[cfg(feature = "std")]
 mod standard {
     use crate::{Error, ErrorKind};
 
@@ -133,11 +69,7 @@ mod standard {
             use self::ErrorKind::*;
             match self.kind {
                 Capacity { .. } => None,
-                InteriorNulByte { .. } => None,
                 Other { .. } => None,
-                ParseLocale { .. } => None,
-                Unix { .. } => None,
-                Windows { .. } => None,
             }
         }
     }

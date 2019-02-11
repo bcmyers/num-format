@@ -1,0 +1,15 @@
+[package]
+name = "num-format-common"
+version = "0.3.0"
+
+edition = "2018"
+publish = false # TODO
+
+[dependencies]
+arrayvec = { version = "0.4", default-features = false }
+serde = { version = "1.0", optional = true }
+
+[features]
+default = ["std"]
+std = ["arrayvec/default"]
+with-serde = ["arrayvec/serde-1", "serde/derive"]

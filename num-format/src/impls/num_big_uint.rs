@@ -5,8 +5,8 @@ use std::str;
 use num_bigint::BigUint;
 
 use crate::constants::MAX_MIN_LEN;
+use crate::helpers::write_str_to_buffer;
 use crate::sealed::Sealed;
-use crate::utils::write_str_to_buffer;
 use crate::{Format, Grouping, ToFormattedString};
 
 impl ToFormattedString for BigUint {

@@ -1,7 +1,7 @@
 use cfg_if::cfg_if;
 
 cfg_if! {
-    if #[cfg(all(feature = "std", windows))] {
+    if #[cfg(windows)] {
         fn main() {
             use std::env;
             use std::path::Path;
@@ -33,7 +33,7 @@ cfg_if! {
                 .write_to_file(&out_path)
                 .expect("unable to write bindings for windows.h");
 
-            let development_dir = Path::new(&root).join("bindings");
+            let development_dir = Path::new(&root).parent().unwrap().join("bindings");
             if development_dir.exists() {
                 let out_path = development_dir.join("windows.rs");
                 bindings
@@ -41,16 +41,13 @@ cfg_if! {
                     .expect("unable to write bindings for windows.h");
             }
         }
-    } else if #[cfg(all(
-        feature = "std",
-        any(
-            target_os = "dragonfly",
-            target_os = "freebsd",
-            target_os = "ios",
-            target_os = "macos",
-            target_os = "openbsd",
-            target_os = "netbsd"
-        )
+    } else if #[cfg(any(
+        target_os = "dragonfly",
+        target_os = "freebsd",
+        target_os = "ios",
+        target_os = "macos",
+        target_os = "openbsd",
+        target_os = "netbsd"
     ))] {
         fn main() {
             use std::env;
@@ -75,11 +72,12 @@ cfg_if! {
                 .expect("unable to generate bindings for xlocale.h");
 
             let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("xlocale.rs");
+            eprintln!("{:?}", &out_path);
             bindings
                 .write_to_file(&out_path)
                 .expect("unable to write bindings for xlocale.h");
 
-            let development_dir = Path::new(&root).join("bindings");
+            let development_dir = Path::new(&root).parent().unwrap().join("bindings");
             if development_dir.exists() {
                 let out_path = development_dir.join("xlocale.rs");
                 bindings
@@ -87,7 +85,7 @@ cfg_if! {
                     .expect("unable to write bindings for xlocale.h");
             }
         }
-    } else if #[cfg(all(feature = "std", unix))] {
+    } else if #[cfg(unix)] {
         fn main() {
             use std::env;
             use std::path::Path;
@@ -114,7 +112,7 @@ cfg_if! {
                 .write_to_file(&out_path)
                 .expect("unable to write bindings for locale.h");
 
-            let development_dir = Path::new(&root).join("bindings");
+            let development_dir = Path::new(&root).parent().unwrap().join("bindings");
             if development_dir.exists() {
                 let out_path = development_dir.join("locale.rs");
                 bindings

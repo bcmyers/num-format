@@ -110,11 +110,11 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
 
         const AVAILABLE_NAMES: [&'static str; #names2_len] = [#(#names2),*];
 
-        ///<b><u>A key type</u></b>. Represents formats from the [Unicode Consortium]'s 
+        ///<b><u>A key type</u></b>. Represents formats from the [Unicode Consortium]'s
         ///[Common Locale Data Repository (CLDR)]. Implements [`Format`].
         ///
         ///# Example
-        ///```
+        ///```ignore
         ///use num_format::{Buffer, Locale};
         ///
         ///fn main() {
@@ -133,7 +133,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         /// [Common Locale Data Repository (CLDR)]: https://en.wikipedia.org/wiki/Common_Locale_Data_Repository
         /// [Unicode Consortium]: https://en.wikipedia.org/wiki/Unicode_Consortium
         #[allow(non_camel_case_types, missing_docs)]
-        #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+        #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
         #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
         pub enum Locale {
             #(#variant_names),*
@@ -144,13 +144,13 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
             /// same things as [`Locale::from_str`].
             ///
             /// # Errors
-            /// 
+            ///
             /// Returns an error if the name provided cannot be
             /// parsed into a [`Locale`].
             ///
             /// [`Locale`]: enum.Locale.html
             /// [`Locale::from_str`]: enum.Locale.html#method.from_str
-            pub fn from_name<S>(name: S) -> Result<Locale, Error> 
+            pub fn from_name<S>(name: S) -> Result<Locale, Error>
                 where S: AsRef<str>,
             {
                 let name = name.as_ref();
@@ -171,7 +171,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
             }
 
             /// Returns the locale's [`Grouping`].
-            /// 
+            ///
             /// [`Grouping`]: enum.Grouping.html
             pub fn grouping(&self) -> Grouping {
                 use self::Grouping::*;

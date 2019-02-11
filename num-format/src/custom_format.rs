@@ -1,7 +1,7 @@
 use arrayvec::ArrayString;
+use num_format_common::utils::{InfinityStr, MinusSignStr, NanStr};
 
 use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
-use crate::utils::{InfinityStr, MinusSignStr, NanStr};
 use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 
 /// Type for representing your own custom formats. Implements [`Format`].
@@ -16,7 +16,7 @@ use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 ///         .minus_sign("🙌")
 ///         .separator(Some('😀'))
 ///         .build()?;
-///    
+///
 ///     let mut buf = Buffer::new();
 ///     buf.write_formatted(&(-1000000), &format);
 ///     assert_eq!("🙌10😀00😀000", buf.as_str());
@@ -124,8 +124,8 @@ impl From<Locale> for CustomFormat {
     }
 }
 
-#[cfg(feature = "std")]
-mod standard {
+#[cfg(all(feature = "system", any(unix, windows)))]
+mod system {
     use arrayvec::ArrayString;
 
     use crate::{CustomFormat, SystemLocale};

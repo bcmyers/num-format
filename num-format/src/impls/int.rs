@@ -4,8 +4,8 @@ use core::ptr;
 use itoa;
 
 use crate::constants::{MAX_BUF_LEN, TABLE};
+use crate::helpers::{self, Separator};
 use crate::sealed::Sealed;
-use crate::utils::{self, Separator};
 use crate::{Buffer, Format, ToFormattedStr};
 
 macro_rules! impl_signed {
@@ -52,23 +52,23 @@ macro_rules! impl_signed {
                 while n >= 10_000 {
                     let remainder = n % 10_000;
                     let table_index = ((remainder % 100) << 1) as isize;
-                    utils::write_two_bytes(buf, &mut sep, table_ptr, table_index);
+                    helpers::write_two_bytes(buf, &mut sep, table_ptr, table_index);
                     let table_index = ((remainder / 100) << 1) as isize;
-                    utils::write_two_bytes(buf, &mut sep, table_ptr, table_index);
+                    helpers::write_two_bytes(buf, &mut sep, table_ptr, table_index);
                     n /= 10_000;
                 }
                 let mut n = n as isize;
                 while n >= 100 {
                     let table_index = (n % 100) << 1;
-                    utils::write_two_bytes(buf, &mut sep, table_ptr, table_index);
+                    helpers::write_two_bytes(buf, &mut sep, table_ptr, table_index);
                     n /= 100;
                 }
                 if n >= 10 {
                     let table_index = n << 1;
-                    utils::write_two_bytes(buf, &mut sep, table_ptr, table_index);
+                    helpers::write_two_bytes(buf, &mut sep, table_ptr, table_index);
                 } else {
                     let table_index = n << 1;
-                    utils::write_one_byte(buf, &mut sep, table_ptr, table_index + 1);
+                    helpers::write_one_byte(buf, &mut sep, table_ptr, table_index + 1);
                 }
 
                 // Add on the minus sign if we are negative

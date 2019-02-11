@@ -542,11 +542,11 @@ const AVAILABLE_NAMES: [&'static str; 538usize] = [
     "zh-Hant-MO",
     "zu",
 ];
-#[doc = r"<b><u>A key type</u></b>. Represents formats from the [Unicode Consortium]'s "]
+#[doc = r"<b><u>A key type</u></b>. Represents formats from the [Unicode Consortium]'s"]
 #[doc = r"[Common Locale Data Repository (CLDR)]. Implements [`Format`]."]
 #[doc = r""]
 #[doc = r"# Example"]
-#[doc = r"```"]
+#[doc = r"```ignore"]
 #[doc = r"use num_format::{Buffer, Locale};"]
 #[doc = r""]
 #[doc = r"fn main() {"]
@@ -565,7 +565,7 @@ const AVAILABLE_NAMES: [&'static str; 538usize] = [
 #[doc = r" [Common Locale Data Repository (CLDR)]: https://en.wikipedia.org/wiki/Common_Locale_Data_Repository"]
 #[doc = r" [Unicode Consortium]: https://en.wikipedia.org/wiki/Unicode_Consortium"]
 #[allow(non_camel_case_types, missing_docs)]
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub enum Locale {
     af,
@@ -1112,7 +1112,7 @@ impl Locale {
     #[doc = r" same things as [`Locale::from_str`]."]
     #[doc = r""]
     #[doc = r" # Errors"]
-    #[doc = r" "]
+    #[doc = r""]
     #[doc = r" Returns an error if the name provided cannot be"]
     #[doc = r" parsed into a [`Locale`]."]
     #[doc = r""]
@@ -1674,7 +1674,7 @@ impl Locale {
         }
     }
     #[doc = r" Returns the locale's [`Grouping`]."]
-    #[doc = r" "]
+    #[doc = r""]
     #[doc = r" [`Grouping`]: enum.Grouping.html"]
     pub fn grouping(&self) -> Grouping {
         use self::Grouping::*;

@@ -30,6 +30,7 @@ use std::ptr;
 use std::sync::{Arc, Mutex};
 
 use lazy_static::lazy_static;
+use num_format_common::{Grouping, MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 use widestring::{U16CStr, U16CString};
 use winapi::ctypes::c_int;
 use winapi::shared::minwindef::{BOOL, DWORD, LPARAM};
@@ -37,8 +38,7 @@ use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::winnls;
 use winapi::um::winnt::WCHAR;
 
-use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
-use crate::{Error, Grouping, SystemLocale};
+use crate::{Error, SystemLocale};
 
 lazy_static! {
     static ref LOCALE_NAME_SYSTEM_DEFAULT: Result<&'static str, Error> = {

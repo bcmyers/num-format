@@ -1,0 +1,27 @@
+[package]
+name = "num-format-system"
+version = "0.3.0"
+
+edition = "2018"
+publish = false # TODO
+
+build = "src/build/build.rs"
+include = ["src/build/linux.h", "src/build/unix.h", "src/build/windows.h"]
+
+[dependencies]
+cfg-if = "0.1"
+num-format-common = { path = "../num-format-common" }
+serde = { version = "1.0", optional = true, features = ["derive"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+walkdir = "2.2"
+
+[target.'cfg(windows)'.dependencies]
+lazy_static = "1.2"
+winapi = { version = "0.3", features = ["winnls"] }
+widestring = "0.4"
+
+[build-dependencies]
+bindgen = "0.47"
+cfg-if = "0.1"

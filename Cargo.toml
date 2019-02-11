@@ -1,57 +1,8 @@
-[package]
-name = "num-format"
-version = "0.3.0"
+[workspace]
 
-authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
-categories = ["encoding", "internationalization", "localization", "no-std", "value-formatting"]
-description = "A Rust crate for producing string-representations of numbers, formatted according to international standards"
-documentation = "https://docs.rs/num-format"
-edition = "2018"
-homepage = "https://github.com/bcmyers/num-format"
-keywords = ["comma", "internationalization", "number", "separator", "thousands"]
-license = "MIT/Apache-2.0"
-publish = true
-readme = "README.md"
-repository = "https://github.com/bcmyers/num-format"
-
-build = "src/build/build.rs"
-exclude = ["num-format-dev"]
-include = ["src/build/linux.h", "src/build/unix.h", "src/build/windows.h"]
-
-[badges]
-maintenance = { status = "actively-developed" }
-travis-ci = { repository = "bcmyers/num-format", branch = "master" }
-
-[dependencies]
-arrayvec = { version = "0.4", default-features = false }
-cfg-if = "0.1"
-itoa = { version = "0.4", default-features = false, features = ["i128"] }
-num-bigint = { version = "0.2", optional = true }
-serde = { version = "1.0", optional = true }
-
-[target.'cfg(unix)'.dependencies]
-libc = "0.2"
-walkdir = "2.2"
-
-[target.'cfg(windows)'.dependencies]
-lazy_static = "1.2"
-winapi = { version = "0.3", features = ["winnls"] }
-widestring = "0.4"
-
-[features]
-default = ["std"]
-std = ["arrayvec/default", "itoa/default", "itoa/i128"]
-with-serde = ["arrayvec/serde-1", "serde/derive"]
-
-[build-dependencies]
-bindgen = "0.47"
-cfg-if = "0.1"
-
-[dev-dependencies]
-criterion = "0.2"
-lazy_static = "1.2"
-serde_json = "1.0"
-
-[[bench]]
-name = "bench_usize"
-harness = false
+members = [
+    "num-format",
+    "num-format-common",
+    # "num-format-dev",
+    "num-format-system"
+]

@@ -123,10 +123,10 @@ system's locale information. It has a very similar API to [`Locale`]. It is not 
 * On Windows, the [`GetLocaleInfoEx`] and [`EnumSystemLocalesEx`] APIs are used.
 
 ```rust
-# #[cfg(feature = "std")]
+# #[cfg(feature = "system")]
 use num_format::SystemLocale;
 
-# #[cfg(feature = "std")]
+# #[cfg(feature = "system")]
 fn main() {
     let locale = SystemLocale::default().unwrap();
     println!("My system's default locale is...");
@@ -141,7 +141,7 @@ fn main() {
         Err(_) => println!("The 'en_US' locale is not included with my system."),
     }
 }
-# #[cfg(not(feature = "std"))]
+# #[cfg(not(feature = "system"))]
 # fn main() {}
 ```
 
@@ -240,14 +240,10 @@ mod custom_format;
 mod custom_format_builder;
 mod error;
 mod error_kind;
-mod format;
-mod grouping;
+mod helpers;
 mod impls;
-mod locale;
-mod system_locale;
 mod to_formatted_str;
 mod to_formatted_string;
-pub mod utils;
 mod write_formatted;
 
 pub use self::buffer::Buffer;
@@ -255,19 +251,18 @@ pub use self::custom_format::CustomFormat;
 pub use self::custom_format_builder::CustomFormatBuilder;
 pub use self::error::Error;
 pub use self::error_kind::ErrorKind;
-pub use self::format::Format;
-pub use self::grouping::Grouping;
-pub use self::locale::Locale;
 #[cfg(feature = "std")]
 pub use self::standard::*;
 pub use self::to_formatted_str::ToFormattedStr;
+pub use num_format_common::utils;
+pub use num_format_common::{Format, Grouping, Locale};
 
 #[cfg(feature = "std")]
 mod standard {
-    #[cfg(any(unix, windows))]
-    pub use super::system_locale::SystemLocale;
     pub use super::to_formatted_string::ToFormattedString;
     pub use super::write_formatted::WriteFormatted;
+    #[cfg(any(unix, windows))]
+    pub use num_format_system::SystemLocale;
 }
 
 mod sealed {

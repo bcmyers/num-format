@@ -16,29 +16,8 @@ pub enum ErrorKind {
         cap: usize,
     },
 
-    /// locale name may not contain an iterior nul byte
-    InteriorNulByte,
-
     /// Other miscellaneous error.
     Other {
-        /// Additional details.
-        msg: ArrayString<[u8; MAX_ERR_LEN]>,
-    },
-
-    /// Failed to parse input into a Locale.
-    ParseLocale {
-        /// First 256 bytes of the provided input.
-        input: ArrayString<[u8; MAX_ERR_LEN]>,
-    },
-
-    /// Unix API error.
-    Unix {
-        /// Additional details.
-        msg: ArrayString<[u8; MAX_ERR_LEN]>,
-    },
-
-    /// Windows API error.
-    Windows {
         /// Additional details.
         msg: ArrayString<[u8; MAX_ERR_LEN]>,
     },
@@ -53,13 +32,7 @@ impl fmt::Display for ErrorKind {
                 "attempted to write input of length {} bytes into buffer with capacity {} bytes.",
                 len, cap
             ),
-            InteriorNulByte => write!(f, "locale name may not contain an interior nul byte."),
             Other { msg } => write!(f, "miscellaneous error: {}", msg),
-            ParseLocale { input } => {
-                write!(f, "failed to parse input into a Locale. input: {}", input)
-            }
-            Unix { msg } => write!(f, "unix api error: {}", msg),
-            Windows { msg } => write!(f, "windows api error: {}", msg),
         }
     }
 }

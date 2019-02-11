@@ -1,21 +1,16 @@
-#![cfg(all(feature = "std", any(unix, windows)))]
-
 mod unix;
 mod windows;
 
 use std::collections::HashSet;
 
 use cfg_if::cfg_if;
+use num_format_common::Grouping;
 
-use crate::utils::{InfinityStr, MinusSignStr, NanStr};
-use crate::{Error, Format, Grouping};
+use crate::error::Error;
 
-/// <b><u>A key type</u></b>. Allows you to access your OS's locale information. Implements
-/// [`Format`]
-///
-/// [`Format`]: trait.Format.html
+/// TODO
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
-#[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SystemLocale {
     dec: char,
     grp: Grouping,
@@ -26,16 +21,14 @@ pub struct SystemLocale {
     sep: Option<char>,
 }
 
-impl SystemLocale {
-    /// TODO
-    pub fn new() -> Result<SystemLocale, Error> {
-        SystemLocale::default()
-    }
-}
-
 cfg_if! {
     if #[cfg(unix)] {
         impl SystemLocale {
+            /// TODO
+            pub fn new() -> Result<SystemLocale, Error> {
+                SystemLocale::default()
+            }
+
             /// TODO
             pub fn default() -> Result<SystemLocale, Error> {
                 unix::default()
@@ -56,6 +49,11 @@ cfg_if! {
         }
     } else {
         impl SystemLocale {
+            /// TODO
+            pub fn new() -> Result<SystemLocale, Error> {
+                SystemLocale::default()
+            }
+
             /// TODO
             pub fn default() -> Result<SystemLocale, Error> {
                 windows::default()
@@ -119,7 +117,7 @@ impl SystemLocale {
     where
         S: Into<String>,
     {
-        use crate::constants::MAX_INF_LEN;
+        use num_format_common::MAX_INF_LEN;
 
         let s = s.into();
         if s.len() > MAX_INF_LEN {
@@ -135,7 +133,7 @@ impl SystemLocale {
     where
         S: Into<String>,
     {
-        use crate::constants::MAX_NAN_LEN;
+        use num_format_common::MAX_NAN_LEN;
 
         let s = s.into();
         if s.len() > MAX_NAN_LEN {
@@ -143,32 +141,6 @@ impl SystemLocale {
         }
         self.nan = s;
         Ok(())
-    }
-}
-
-impl Format for SystemLocale {
-    fn decimal(&self) -> char {
-        self.decimal()
-    }
-
-    fn grouping(&self) -> Grouping {
-        self.grouping()
-    }
-
-    fn infinity(&self) -> InfinityStr<'_> {
-        InfinityStr::new(self.infinity()).unwrap()
-    }
-
-    fn minus_sign(&self) -> MinusSignStr<'_> {
-        MinusSignStr::new(self.minus_sign()).unwrap()
-    }
-
-    fn nan(&self) -> NanStr<'_> {
-        NanStr::new(self.nan()).unwrap()
-    }
-
-    fn separator(&self) -> Option<char> {
-        self.separator()
     }
 }
 

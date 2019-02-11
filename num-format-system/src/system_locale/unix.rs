@@ -8,9 +8,10 @@ use std::ptr;
 use std::str;
 
 use cfg_if::cfg_if;
+use num_format_common::{Grouping, Locale, MAX_MIN_LEN};
 
-use crate::constants::MAX_MIN_LEN;
-use crate::{Error, Grouping, Locale, SystemLocale};
+use crate::error::Error;
+use crate::SystemLocale;
 
 pub(crate) fn default() -> Result<SystemLocale, Error> {
     new::<String>(None)
@@ -34,6 +35,7 @@ where
         Some(ref name) => CString::new(name.as_bytes())?,
         None => CString::new("").unwrap(),
     };
+    // TODO: Worry about sending two values down???
     let mask = (bindings::LC_NUMERIC_MASK | bindings::LC_MONETARY_MASK) as c_int;
     let new_locale = unsafe { bindings::newlocale(mask, name_cstring.as_ptr(), ptr::null_mut()) };
     if new_locale.is_null() {
@@ -132,6 +134,11 @@ cfg_if! {
                         }
                     }
                 }
+            };
+            let name = if &name == "POSIX" {
+                "C".to_string()
+            } else {
+                name
             };
             Ok(name)
         }

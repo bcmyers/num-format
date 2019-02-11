@@ -1,7 +1,7 @@
 use core::ptr;
 
 use crate::buffer::Buffer;
-use crate::utils::Separator;
+use crate::helpers::Separator;
 
 #[inline(always)]
 pub(crate) fn write_two_bytes(

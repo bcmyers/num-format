@@ -1,29 +1,30 @@
 use core::mem;
+use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
 
 use itoa;
 
 use crate::constants::{MAX_BUF_LEN, TABLE};
+use crate::helpers::{self, Separator};
 use crate::sealed::Sealed;
-use crate::utils::{self, Separator};
 use crate::{Buffer, Format, ToFormattedStr};
 
-impl ToFormattedStr for u8 {
+impl ToFormattedStr for NonZeroU8 {
     #[doc(hidden)]
     #[inline(always)]
     fn read_to_buffer<'a, F>(&self, buf: &'a mut Buffer, _: &F) -> usize
     where
         F: Format,
     {
-        let c = itoa::write(&mut buf.inner[..], *self).unwrap();
+        let c = itoa::write(&mut buf.inner[..], self.get()).unwrap();
         buf.pos = 0;
         buf.end = c;
         c
     }
 }
 
-impl Sealed for u8 {}
+impl Sealed for NonZeroU8 {}
 
-macro_rules! impl_unsigned {
+macro_rules! impl_non_zero {
     ($type:ty) => {
         impl ToFormattedStr for $type {
             #[doc(hidden)]
@@ -39,7 +40,7 @@ macro_rules! impl_unsigned {
                 // Bail out early if we can just use itoa
                 // (i.e. if we don't have a separator)
                 if sep.is_none() {
-                    let c = itoa::write(&mut buf.inner[..], *self).unwrap();
+                    let c = itoa::write(&mut buf.inner[..], self.get()).unwrap();
                     buf.pos = 0;
                     buf.end = c;
                     return c;
@@ -54,29 +55,28 @@ macro_rules! impl_unsigned {
 
                 // Start the main algorithm
                 #[allow(trivial_numeric_casts)]
-                let mut n = *self as u128;
+                let mut n = self.get() as u128;
                 while n >= 10_000 {
                     let remainder = n % 10_000;
                     let table_index = ((remainder % 100) << 1) as isize;
-                    utils::write_two_bytes(buf, &mut sep, table_ptr, table_index);
+                    helpers::write_two_bytes(buf, &mut sep, table_ptr, table_index);
                     let table_index = ((remainder / 100) << 1) as isize;
-                    utils::write_two_bytes(buf, &mut sep, table_ptr, table_index);
+                    helpers::write_two_bytes(buf, &mut sep, table_ptr, table_index);
                     n /= 10_000;
                 }
                 let mut n = n as isize;
                 while n >= 100 {
                     let table_index = (n % 100) << 1;
-                    utils::write_two_bytes(buf, &mut sep, table_ptr, table_index);
+                    helpers::write_two_bytes(buf, &mut sep, table_ptr, table_index);
                     n /= 100;
                 }
                 if n >= 10 {
                     let table_index = n << 1;
-                    utils::write_two_bytes(buf, &mut sep, table_ptr, table_index);
+                    helpers::write_two_bytes(buf, &mut sep, table_ptr, table_index);
                 } else {
                     let table_index = n << 1;
-                    utils::write_one_byte(buf, &mut sep, table_ptr, table_index + 1);
+                    helpers::write_one_byte(buf, &mut sep, table_ptr, table_index + 1);
                 }
-
                 buf.end - buf.pos
             }
         }
@@ -85,8 +85,8 @@ macro_rules! impl_unsigned {
     };
 }
 
-impl_unsigned!(u16);
-impl_unsigned!(u32);
-impl_unsigned!(usize);
-impl_unsigned!(u64);
-impl_unsigned!(u128);
+impl_non_zero!(NonZeroU16);
+impl_non_zero!(NonZeroU32);
+impl_non_zero!(NonZeroUsize);
+impl_non_zero!(NonZeroU64);
+impl_non_zero!(NonZeroU128);
