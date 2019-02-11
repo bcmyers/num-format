@@ -406,7 +406,7 @@ impl<'a> Pointer<'a> {
         match s.to_bytes() {
             [3] | [3, 3] => Ok(Grouping::Standard),
             [3, 2] => Ok(Grouping::Indian),
-            [] => Ok(Grouping::Posix),
+            [] | [127] => Ok(Grouping::Posix), // TODO: Is 127 posix?
             _ => Err(Error::unix(&format!(
                 "received unexpected grouping code from C: {:?}",
                 s.to_bytes()
