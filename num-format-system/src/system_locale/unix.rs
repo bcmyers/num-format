@@ -49,7 +49,7 @@ where
     let initial_locale = unsafe { bindings::uselocale(new_locale) };
 
     // get the lconv
-    let lconv = match localeconv() {
+    let lconv = match localeconv_l(new_locale) {
         Ok(lconv) => lconv,
         Err(e) => {
             // free the new locale object
@@ -241,8 +241,48 @@ pub(crate) fn available_names() -> HashSet<String> {
     }
 }
 
+#[cfg(any(
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "ios",
+    target_os = "macos",
+    target_os = "openbsd",
+    target_os = "netbsd"
+))]
+fn localeconv_l(locale: bindings::locale_t) -> Result<Lconv, Error> {
+    let ptr = unsafe { bindings::localeconv_l(locale) };
+    if ptr.is_null() {
+        return Err(Error::unix("'localeconv' returned a null pointer."));
+    }
+
+    let lconv: &bindings::lconv = unsafe { ptr.as_ref() }.unwrap();
+
+    let dec_ptr = Pointer::new(lconv.mon_decimal_point)?;
+    let grp_ptr = Pointer::new(lconv.mon_grouping)?;
+    let min_ptr = Pointer::new(lconv.negative_sign)?;
+    let sep_ptr = Pointer::new(lconv.mon_thousands_sep)?;
+
+    let maybe_dec = dec_ptr.as_char()?;
+    let grp = grp_ptr.as_grouping()?;
+    let min = min_ptr.as_str()?;
+    if min.len() > MAX_MIN_LEN {
+        return Err(Error::unix("TODO1"));
+    }
+    let maybe_sep = sep_ptr.as_char()?;
+
+    let locale = Lconv {
+        dec: maybe_dec.unwrap_or_else(|| '.'),
+        grp,
+        min: min.to_string(),
+        sep: maybe_sep,
+    };
+
+    Ok(locale)
+}
+
 // TODO: note on how this is a safe wrapper
-pub(crate) fn localeconv() -> Result<Lconv, Error> {
+#[allow(dead_code)] // TODO
+fn localeconv() -> Result<Lconv, Error> {
     // Note: We do **not** free ptr, as "the localeconv() function returns a pointer to a static
     // object which may be altered by later calls to setlocale(3) or localeconv()."
     // See https://www.freebsd.org/cgi/man.cgi?query=localeconv.
