@@ -361,7 +361,7 @@ impl<'a> Pointer<'a> {
             [] => Ok(Grouping::Posix),
             _ => Err(Error::unix(&format!(
                 "received unexpected grouping code from C: {:?}",
-                s.as_bytes()
+                s.to_bytes()
             ))),
         }
     }
