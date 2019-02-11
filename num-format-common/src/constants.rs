@@ -1,4 +1,7 @@
-pub(crate) const MAX_ERR_LEN: usize = 256;
+//! TODO
+
+/// TODO
+pub const MAX_ERR_LEN: usize = 256;
 
 /// TODO
 pub const MAX_INF_LEN: usize = 128;

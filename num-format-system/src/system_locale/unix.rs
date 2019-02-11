@@ -8,7 +8,8 @@ use std::ptr;
 use std::str;
 
 use cfg_if::cfg_if;
-use num_format_common::{Grouping, Locale, MAX_MIN_LEN};
+use num_format_common::constants::MAX_MIN_LEN;
+use num_format_common::{Grouping, Locale};
 
 use crate::error::Error;
 use crate::SystemLocale;

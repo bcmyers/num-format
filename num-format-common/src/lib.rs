@@ -23,7 +23,7 @@
 #[macro_use]
 extern crate serde;
 
-mod constants;
+pub mod constants;
 mod error;
 mod error_kind;
 mod format;
@@ -31,7 +31,6 @@ mod grouping;
 mod locale;
 pub mod utils;
 
-pub use self::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 pub use self::error::Error;
 pub use self::error_kind::ErrorKind;
 pub use self::format::Format;

@@ -117,7 +117,7 @@ impl SystemLocale {
     where
         S: Into<String>,
     {
-        use num_format_common::MAX_INF_LEN;
+        use num_format_common::constants::MAX_INF_LEN;
 
         let s = s.into();
         if s.len() > MAX_INF_LEN {
@@ -133,7 +133,7 @@ impl SystemLocale {
     where
         S: Into<String>,
     {
-        use num_format_common::MAX_NAN_LEN;
+        use num_format_common::constants::MAX_NAN_LEN;
 
         let s = s.into();
         if s.len() > MAX_NAN_LEN {
