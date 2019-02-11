@@ -1,22 +1,32 @@
+use std::fmt;
+
 /// TODO
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct Error;
+pub struct Error {
+    message: String,
+}
 
 impl Error {
     /// TODO
     pub fn new(msg: &str) -> Error {
-        panic!("TODO: other: {}", msg)
+        Error {
+            message: format!("TODO: other: {}", msg),
+        }
     }
 
     #[allow(dead_code)]
     pub(crate) fn capacity(_: usize, _: usize) -> Error {
-        panic!("TODO: Capacity error")
+        Error {
+            message: format!("TODO: Capacity error"),
+        }
     }
 
     #[allow(dead_code)]
     pub(crate) fn unix(msg: &str) -> Error {
-        panic!("TODO: unix: {}", msg)
+        Error {
+            message: format!("TODO: unix: {}", msg),
+        }
     }
 
     #[allow(dead_code)]
@@ -24,7 +34,15 @@ impl Error {
     where
         S: AsRef<str>,
     {
-        panic!("TODO: windows: {}", msg.as_ref())
+        Error {
+            message: format!("TODO: windows: {}", msg.as_ref()),
+        }
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", &self.message)
     }
 }
 
