@@ -262,13 +262,37 @@ fn localeconv_l(locale: bindings::locale_t) -> Result<Lconv, Error> {
     let min_ptr = Pointer::new(lconv.negative_sign)?;
     let sep_ptr = Pointer::new(lconv.mon_thousands_sep)?;
 
-    let maybe_dec = dec_ptr.as_char()?;
-    let grp = grp_ptr.as_grouping()?;
-    let min = min_ptr.as_str()?;
+    let maybe_dec = match dec_ptr.as_char() {
+        Ok(maybe_dec) => maybe_dec,
+        Err(e) => {
+            eprintln!("{}", e);
+            Some('.')
+        }
+    };
+    let grp = match grp_ptr.as_grouping() {
+        Ok(grp) => grp,
+        Err(e) => {
+            eprintln!("{}", e);
+            Grouping::Standard
+        }
+    };
+    let min = match min_ptr.as_str() {
+        Ok(min) => min,
+        Err(e) => {
+            eprintln!("{}", e);
+            "-"
+        }
+    };
     if min.len() > MAX_MIN_LEN {
         return Err(Error::unix("TODO1"));
     }
-    let maybe_sep = sep_ptr.as_char()?;
+    let maybe_sep = match sep_ptr.as_char() {
+        Ok(maybe_sep) => maybe_sep,
+        Err(e) => {
+            eprintln!("{}", e);
+            Some(',')
+        }
+    };
 
     let locale = Lconv {
         dec: maybe_dec.unwrap_or_else(|| '.'),
