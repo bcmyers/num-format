@@ -1,6 +1,6 @@
 [package]
 name = "num-format"
-version = "0.3.0"
+version = "0.3.0" # Remember to keep html_root_url in lib.rs in sync!
 
 authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
 categories = ["encoding", "internationalization", "localization", "no-std", "value-formatting"]

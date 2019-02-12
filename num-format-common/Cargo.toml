@@ -1,6 +1,6 @@
 [package]
 name = "num-format-common"
-version = "0.3.0"
+version = "0.3.0" # Remember to keep html_root_url in lib.rs in sync!
 
 edition = "2018"
 publish = false # TODO
