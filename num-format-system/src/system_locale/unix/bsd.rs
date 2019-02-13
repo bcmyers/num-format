@@ -90,6 +90,7 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             sep: lconv.sep,
         };
 
+        // TODO
         let mut print = false;
         if system_locale.decimal().chars().count() > 1 {
             print = true;
@@ -132,7 +133,7 @@ impl Lconv {
         let min = StaticCString::new(lconv.negative_sign, encoding, "lconv.negative_sign")?
             .to_minus_sign()?;
 
-        let sep = StaticCString::new(lconv.mon_thousands_sep, encoding, "lconv.mon_thousands_sep")?
+        let sep = StaticCString::new(lconv.thousands_sep, encoding, "lconv.thousands_sep")?
             .to_separator()?;
 
         Ok(Lconv { dec, grp, min, sep })
