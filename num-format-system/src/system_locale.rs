@@ -12,7 +12,7 @@ use crate::error::Error;
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SystemLocale {
-    dec: char,
+    dec: String,
     grp: Grouping,
     inf: String,
     min: String,
@@ -77,8 +77,8 @@ cfg_if! {
 
 impl SystemLocale {
     /// TODO
-    pub fn decimal(&self) -> char {
-        self.dec
+    pub fn decimal(&self) -> &str {
+        &self.dec
     }
 
     /// TODO

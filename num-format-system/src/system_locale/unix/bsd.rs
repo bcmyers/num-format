@@ -90,6 +90,10 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             sep: lconv.sep,
         };
 
+        if system_locale.decimal().len() > 1 {
+            println!("{:#?}", &system_locale);
+        }
+
         Ok(system_locale)
     };
 
@@ -102,7 +106,7 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
 }
 
 struct Lconv {
-    dec: char,
+    dec: String,
     grp: Grouping,
     min: String,
     sep: Option<char>,
@@ -155,15 +159,12 @@ impl StaticCString {
         self.encoding.decode(&bytes)
     }
 
-    fn to_decimal(&self) -> Result<char, Error> {
+    fn to_decimal(&self) -> Result<String, Error> {
         let s = self.to_string()?;
-        if s.chars().count() != 1 {
-            return Err(Error::unix(&format!(
-                "TODO: Decimal not one char: {:?}",
-                &s
-            )));
+        if s.len() == 0 {
+            return Err(Error::unix(&format!("TODO: Empty decimal: {:?}", &s)));
         }
-        Ok(s.chars().next().unwrap())
+        Ok(s)
     }
 
     fn to_grouping(&self) -> Result<Grouping, Error> {
