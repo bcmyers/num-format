@@ -1,4 +1,4 @@
-use num_format_common::Format;
+use num_format_core::Format;
 
 use crate::buffer::Buffer;
 use crate::sealed::Sealed;

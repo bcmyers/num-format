@@ -1,7 +1,7 @@
 //! TODO
 
 #![cfg(any(unix, windows))]
-#![deny(
+#![deny( // TODO
     dead_code,
     deprecated,
     missing_copy_implementations,
@@ -24,6 +24,7 @@
 #[macro_use]
 extern crate serde;
 
+mod encoding;
 mod error;
 mod system_locale;
 

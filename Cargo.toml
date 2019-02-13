@@ -2,7 +2,7 @@
 
 members = [
     "num-format",
-    "num-format-common",
+    "num-format-core",
     # "num-format-dev",
     "num-format-system"
 ]

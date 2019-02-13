@@ -254,8 +254,8 @@ pub use self::error_kind::ErrorKind;
 #[cfg(feature = "std")]
 pub use self::standard::*;
 pub use self::to_formatted_str::ToFormattedStr;
-pub use num_format_common::utils;
-pub use num_format_common::{Format, Grouping, Locale};
+pub use num_format_core::utils;
+pub use num_format_core::{Format, Grouping, Locale};
 
 #[cfg(feature = "std")]
 mod standard {

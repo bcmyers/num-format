@@ -56,7 +56,7 @@ cfg_if! {
             use bindgen::{Builder, RustTarget};
 
             let root = env::var("CARGO_MANIFEST_DIR").unwrap();
-            let headers_path = Path::new(&root).join("src").join("build").join("unix.h");
+            let headers_path = Path::new(&root).join("src").join("build").join("bsd.h");
             let headers = headers_path.to_str().unwrap();
 
             let bindings = Builder::default()
@@ -76,20 +76,20 @@ cfg_if! {
                 .whitelist_var("LC_MONETARY_MASK")
                 .whitelist_var("LC_NUMERIC_MASK")
                 .generate()
-                .expect("unable to generate bindings for xlocale.h");
+                .expect("unable to generate bindings for langinfo.h and xlocale.h");
 
-            let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("xlocale.rs");
+            let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("bsd.rs");
             eprintln!("{:?}", &out_path);
             bindings
                 .write_to_file(&out_path)
-                .expect("unable to write bindings for xlocale.h");
+                .expect("unable to write bindings for langinfo.h and xlocale.h");
 
             let development_dir = Path::new(&root).parent().unwrap().join("bindings");
             if development_dir.exists() {
-                let out_path = development_dir.join("xlocale.rs");
+                let out_path = development_dir.join("bsd.rs");
                 bindings
                     .write_to_file(&out_path)
-                    .expect("unable to write bindings for xlocale.h");
+                    .expect("unable to write bindings for langinfo.h and xlocale.h");
             }
         }
     } else if #[cfg(unix)] {

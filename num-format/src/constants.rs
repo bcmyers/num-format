@@ -1,4 +1,4 @@
-pub(crate) use num_format_common::constants::{MAX_ERR_LEN, MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
+pub(crate) use num_format_core::constants::{MAX_ERR_LEN, MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 
 // Want this to be as large as the largest possible string representation of any type
 // that implements ToFormattedStr, which is currently i128's Grouping::Indian representation.

@@ -30,8 +30,8 @@ use std::ptr;
 use std::sync::{Arc, Mutex};
 
 use lazy_static::lazy_static;
-use num_format_common::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
-use num_format_common::Grouping;
+use num_format_core::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
+use num_format_core::Grouping;
 use widestring::{U16CStr, U16CString};
 use winapi::ctypes::c_int;
 use winapi::shared::minwindef::{BOOL, DWORD, LPARAM};

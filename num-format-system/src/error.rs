@@ -23,6 +23,30 @@ impl Error {
     }
 
     #[allow(dead_code)]
+    pub(crate) fn decoding(bytes: &[u8], encoding_name: &str) -> Error {
+        Error {
+            message: format!(
+                "decoding error: unable to decode bytes {:?} using encoding {}.",
+                bytes, encoding_name
+            ),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn unsupported_encoding(label: &str) -> Error {
+        Error {
+            message: format!("unsupported encoding: {}", label),
+        }
+    }
+
+    #[allow(dead_code)]
+    pub(crate) fn null_ptr(function_name: &str) -> Error {
+        Error {
+            message: format!("{} unexpectedly returned a null pointer.", function_name),
+        }
+    }
+
+    #[allow(dead_code)]
     pub(crate) fn unix(msg: &str) -> Error {
         Error {
             message: format!("TODO: unix: {}", msg),

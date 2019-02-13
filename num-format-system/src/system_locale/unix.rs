@@ -1,3 +1,5 @@
+#![cfg(unix)]
+
 mod bsd;
 mod linux;
 
@@ -6,8 +8,8 @@ use std::collections::HashSet;
 // use std::marker::PhantomData;
 use std::str;
 
-// use num_format_common::constants::MAX_MIN_LEN;
-// use num_format_common::Grouping;
+// use num_format_core::constants::MAX_MIN_LEN;
+// use num_format_core::Grouping;
 
 use crate::{Error, SystemLocale};
 

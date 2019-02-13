@@ -1,10 +1,11 @@
 mod unix;
 mod windows;
 
+use std::borrow::Cow;
 use std::collections::HashSet;
 
 use cfg_if::cfg_if;
-use num_format_common::Grouping;
+use num_format_core::Grouping;
 
 use crate::error::Error;
 
@@ -16,7 +17,7 @@ pub struct SystemLocale {
     grp: Grouping,
     inf: String,
     min: String,
-    name: String,
+    name: Cow<'static, str>,
     nan: String,
     sep: Option<char>,
 }
@@ -117,7 +118,7 @@ impl SystemLocale {
     where
         S: Into<String>,
     {
-        use num_format_common::constants::MAX_INF_LEN;
+        use num_format_core::constants::MAX_INF_LEN;
 
         let s = s.into();
         if s.len() > MAX_INF_LEN {
@@ -133,7 +134,7 @@ impl SystemLocale {
     where
         S: Into<String>,
     {
-        use num_format_common::constants::MAX_NAN_LEN;
+        use num_format_core::constants::MAX_NAN_LEN;
 
         let s = s.into();
         if s.len() > MAX_NAN_LEN {

@@ -10,7 +10,7 @@ include = ["src/build/linux.h", "src/build/unix.h", "src/build/windows.h"]
 
 [dependencies]
 cfg-if = "0.1"
-num-format-common = { path = "../num-format-common" }
+num-format-core = { path = "../num-format-core" }
 serde = { version = "1.0", optional = true, features = ["derive"] }
 
 [target.'cfg(unix)'.dependencies]

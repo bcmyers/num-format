@@ -1,5 +1,5 @@
 use arrayvec::ArrayString;
-use num_format_common::utils::{InfinityStr, MinusSignStr, NanStr};
+use num_format_core::utils::{InfinityStr, MinusSignStr, NanStr};
 
 use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 use crate::{CustomFormatBuilder, Format, Grouping, Locale};
