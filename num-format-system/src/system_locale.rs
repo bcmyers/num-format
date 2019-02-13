@@ -18,7 +18,7 @@ pub struct SystemLocale {
     min: String,
     name: String,
     nan: String,
-    sep: Option<char>,
+    sep: Option<String>,
 }
 
 mod todo {
@@ -43,7 +43,7 @@ mod todo {
             inner(f, "min", self.minus_sign())?;
             inner(f, "nam", self.name())?;
             match self.separator() {
-                Some(sep) => inner(f, "sep", &sep.to_string())?,
+                Some(ref sep) => inner(f, "sep", sep)?,
                 None => writeln!(f, "  sep: None")?,
             }
             writeln!(f, "}}")?;
@@ -138,8 +138,8 @@ impl SystemLocale {
     }
 
     /// TODO
-    pub fn separator(&self) -> Option<char> {
-        self.sep
+    pub fn separator(&self) -> Option<&str> {
+        self.sep.as_ref().map(|s| s.as_ref())
     }
 
     #[cfg(unix)]

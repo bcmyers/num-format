@@ -90,7 +90,18 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             sep: lconv.sep,
         };
 
-        println!("{:?}", &system_locale);
+        let mut print = false;
+        if system_locale.decimal().chars().count() > 1 {
+            print = true;
+        }
+        if let Some(sep) = system_locale.separator() {
+            if sep.chars().count() > 1 {
+                print = true;
+            }
+        }
+        if print {
+            println!("{:?}", &system_locale);
+        }
 
         Ok(system_locale)
     };
@@ -107,7 +118,7 @@ struct Lconv {
     dec: String,
     grp: Grouping,
     min: String,
-    sep: Option<char>,
+    sep: Option<String>,
 }
 
 impl Lconv {
@@ -189,17 +200,11 @@ impl StaticCString {
         Ok(s)
     }
 
-    fn to_separator(&self) -> Result<Option<char>, Error> {
+    fn to_separator(&self) -> Result<Option<String>, Error> {
         let s = self.to_string()?;
         if s.len() == 0 {
             return Ok(None);
         }
-        if s.chars().count() != 1 {
-            return Err(Error::unix(&format!(
-                "TODO: separator longer than one char: {:?}",
-                &s
-            )));
-        }
-        Ok(Some(s.chars().next().unwrap()))
+        Ok(Some(s))
     }
 }
