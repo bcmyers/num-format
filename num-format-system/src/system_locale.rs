@@ -1,7 +1,6 @@
 mod unix;
 mod windows;
 
-use std::borrow::Cow;
 use std::collections::HashSet;
 
 use cfg_if::cfg_if;
@@ -17,7 +16,7 @@ pub struct SystemLocale {
     grp: Grouping,
     inf: String,
     min: String,
-    name: Cow<'static, str>,
+    name: String,
     nan: String,
     sep: Option<char>,
 }

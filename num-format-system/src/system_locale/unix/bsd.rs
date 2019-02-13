@@ -19,24 +19,18 @@ mod bindings {
     include!(concat!(env!("OUT_DIR"), "/bsd.rs"));
 }
 
-use std::borrow::Cow;
 use std::ffi::{CStr, CString};
-use std::os::raw::c_int;
-use std::ptr;
+use std::os::raw::{c_char, c_int};
+use std::ptr::{self, NonNull};
 
-// use num_format_core::constants::MAX_MIN_LEN;
+use num_format_core::constants::MAX_MIN_LEN;
 use num_format_core::{Grouping, Locale};
 
-use crate::encoding::Encoding;
+use crate::encoding::{Encoding, UTF_8};
 use crate::error::Error;
 use crate::SystemLocale;
 
-pub(crate) fn new<S>(name: Option<S>) -> Result<SystemLocale, Error>
-where
-    S: Into<String>,
-{
-    let name = name.map(|s| s.into());
-
+pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
     // create a new locale object
     let name_cstring = match name {
         Some(ref name) => CString::new(name.as_bytes())?,
@@ -50,17 +44,17 @@ where
     }
 
     let inner = || {
+        // get the encoding
+        let encoding_ptr =
+            unsafe { bindings::nl_langinfo_l(bindings::CODESET as c_int, new_locale) };
+        let encoding_static_c_string = StaticCString::new(encoding_ptr, *UTF_8, "nl_langinfo_l")?;
+        let encoding = Encoding::from_bytes(&encoding_static_c_string.to_bytes())?;
+
         // use the new locale object, while saving the initial one
         let initial_locale = unsafe { bindings::uselocale(new_locale) };
         if initial_locale.is_null() {
             return Err(Error::null_ptr("uselocale"));
         }
-
-        // get the encoding
-        let encoding_ptr =
-            unsafe { bindings::nl_langinfo_l(bindings::CODESET as c_int, new_locale) };
-        let encoding_static_c_string = StaticCString::new(encoding_ptr, "nl_langinfo_l")?;
-        let encoding = Encoding::from_bytes(encoding_static_c_string.to_bytes())?;
 
         // get the lconv
         let lconv_ptr = unsafe { bindings::localeconv_l(new_locale) };
@@ -72,22 +66,21 @@ where
 
         // get the name
         let mut name = match name {
-            Some(name) => Cow::Owned(name),
+            Some(name) => name,
             None => {
                 let name_ptr = unsafe { bindings::querylocale(mask, new_locale) };
-                let name_static_c_string = StaticCString::new(name_ptr, "querylocale")?;
-                let name = name_static_c_string.to_str()?;
-                Cow::Borrowed(name)
+                let name_static_c_string = StaticCString::new(name_ptr, encoding, "querylocale")?;
+                name_static_c_string.to_string()?
             }
         };
         if &name == "POSIX" {
-            name = Cow::Borrowed("C");
+            name = "C".to_string();
         }
 
         // reset to the initial locale object
         let _ = unsafe { bindings::uselocale(initial_locale) };
 
-        Ok(SystemLocale {
+        let system_locale = SystemLocale {
             dec: lconv.dec,
             grp: lconv.grp,
             inf: Locale::en.infinity().to_string(),
@@ -95,7 +88,9 @@ where
             name,
             nan: Locale::en.nan().to_string(),
             sep: lconv.sep,
-        })
+        };
+
+        Ok(system_locale)
     };
 
     let output = inner();
@@ -114,55 +109,91 @@ struct Lconv {
 }
 
 impl Lconv {
-    fn new(lconv: &bindings::lconv, _encoding: Encoding) -> Result<Lconv, Error> {
-        let _dec = {
-            let _numeric = StaticCString::new(lconv.decimal_point, "lconv.decimal_point")?;
-            let _monetary = StaticCString::new(lconv.mon_decimal_point, "lconv.mon_decimal_point")?;
-        };
+    fn new(lconv: &bindings::lconv, encoding: Encoding) -> Result<Lconv, Error> {
+        let dec = StaticCString::new(lconv.decimal_point, encoding, "lconv.decimal_point")?
+            .to_decimal()?;
 
-        let _grp = {
-            let _numeric = StaticCString::new(lconv.grouping, "lconv.grouping")?;
-            let _monetary = StaticCString::new(lconv.mon_grouping, "lconv.mon_grouping")?;
-        };
+        let grp = StaticCString::new(lconv.mon_grouping, encoding, "lconv.mon_grouping")?
+            .to_grouping()?;
 
-        let _min = {
-            let _numeric = StaticCString::new(lconv.negative_sign, "lconv.negative_sign")?;
-        };
+        let min = StaticCString::new(lconv.negative_sign, encoding, "lconv.negative_sign")?
+            .to_minus_sign()?;
 
-        let _sep = {
-            let _numeric = StaticCString::new(lconv.thousands_sep, "lconv.thousands_sep")?;
-            let _monetary = StaticCString::new(lconv.mon_thousands_sep, "lconv.mon_thousands_sep")?;
-        };
+        let sep = StaticCString::new(lconv.mon_thousands_sep, encoding, "lconv.mon_thousands_sep")?
+            .to_separator()?;
 
-        Ok(Lconv {
-            dec: '.',
-            grp: Grouping::Standard,
-            min: "-".to_string(),
-            sep: Some(','),
-        })
+        Ok(Lconv { dec, grp, min, sep })
     }
 }
 
 /// Invariants: nul terminated, static lifetime
-struct StaticCString(*const std::os::raw::c_char);
+struct StaticCString {
+    encoding: Encoding,
+    non_null: NonNull<c_char>,
+}
 
 impl StaticCString {
-    fn new(ptr: *const std::os::raw::c_char, function_name: &str) -> Result<StaticCString, Error> {
-        if ptr.is_null() {
-            return Err(Error::null_ptr(function_name));
-        }
-        Ok(StaticCString(ptr))
+    fn new(
+        ptr: *const std::os::raw::c_char,
+        encoding: Encoding,
+        function_name: &str,
+    ) -> Result<StaticCString, Error> {
+        let non_null =
+            NonNull::new(ptr as *mut c_char).ok_or_else(|| Error::null_ptr(function_name))?;
+        Ok(StaticCString { encoding, non_null })
     }
 
-    fn to_bytes(&self) -> &'static [u8] {
-        let ptr = self.0;
+    fn to_bytes(&self) -> Vec<u8> {
+        let ptr = self.non_null.as_ptr();
         let cstr = unsafe { CStr::from_ptr(ptr) };
         let bytes = cstr.to_bytes();
-        bytes
+        bytes.to_vec()
     }
 
-    fn to_str(&self) -> Result<&'static str, Error> {
+    fn to_string(&self) -> Result<String, Error> {
         let bytes = self.to_bytes();
-        std::str::from_utf8(bytes).map_err(|_| Error::decoding(bytes, "UTF-8"))
+        self.encoding.decode(&bytes)
+    }
+
+    fn to_decimal(&self) -> Result<char, Error> {
+        let s = self.to_string()?;
+        if s.chars().count() != 1 {
+            return Err(Error::unix("TODO"));
+        }
+        Ok(s.chars().next().unwrap())
+    }
+
+    fn to_grouping(&self) -> Result<Grouping, Error> {
+        let bytes = self.to_bytes();
+        let bytes: &[u8] = &bytes;
+        let grouping = match bytes {
+            [3, 2] => Grouping::Indian,
+            [] | [127] => Grouping::Posix,
+            [3] | [3, 3] => Grouping::Standard,
+            _ => {
+                println!("{:?}", &bytes);
+                panic!();
+            }
+        };
+        Ok(grouping)
+    }
+
+    fn to_minus_sign(&self) -> Result<String, Error> {
+        let s = self.to_string()?;
+        if s.len() > MAX_MIN_LEN {
+            return Err(Error::unix("TODO"));
+        }
+        Ok(s)
+    }
+
+    fn to_separator(&self) -> Result<Option<char>, Error> {
+        let s = self.to_string()?;
+        if s.len() == 0 {
+            return Ok(None);
+        }
+        if s.chars().count() != 1 {
+            return Err(Error::unix("TODO"));
+        }
+        Ok(Some(s.chars().next().unwrap()))
     }
 }

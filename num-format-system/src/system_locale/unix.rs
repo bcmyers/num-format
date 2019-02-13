@@ -14,14 +14,14 @@ use std::str;
 use crate::{Error, SystemLocale};
 
 pub(crate) fn default() -> Result<SystemLocale, Error> {
-    bsd::new::<String>(None)
+    bsd::new(None)
 }
 
 pub(crate) fn from_name<S>(name: S) -> Result<SystemLocale, Error>
 where
     S: Into<String>,
 {
-    bsd::new(Some(name))
+    bsd::new(Some(name.into()))
 }
 
 pub(crate) fn available_names() -> HashSet<String> {
