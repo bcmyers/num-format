@@ -9,7 +9,7 @@ use num_format_core::Grouping;
 use crate::error::Error;
 
 /// TODO
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SystemLocale {
     dec: String,
@@ -19,6 +19,37 @@ pub struct SystemLocale {
     name: String,
     nan: String,
     sep: Option<char>,
+}
+
+mod todo {
+    use std::fmt;
+
+    use super::*;
+
+    impl fmt::Debug for SystemLocale {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn inner(f: &mut fmt::Formatter, l: &str, s: &str) -> fmt::Result {
+                write!(f, "  {}: \"{}\" [", l, s)?;
+                for c in s.chars() {
+                    for d in c.escape_unicode() {
+                        write!(f, "{}", d)?;
+                    }
+                }
+                writeln!(f, "]")
+            }
+
+            writeln!(f, "SystemLocale {{")?;
+            inner(f, "dec", self.decimal())?;
+            inner(f, "min", self.minus_sign())?;
+            inner(f, "nam", self.name())?;
+            match self.separator() {
+                Some(sep) => inner(f, "sep", &sep.to_string())?,
+                None => writeln!(f, "  sep: None")?,
+            }
+            writeln!(f, "}}")?;
+            Ok(())
+        }
+    }
 }
 
 cfg_if! {

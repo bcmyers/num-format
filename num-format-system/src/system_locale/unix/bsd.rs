@@ -90,9 +90,7 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             sep: lconv.sep,
         };
 
-        if system_locale.decimal().len() > 1 {
-            println!("{:#?}", &system_locale);
-        }
+        println!("{:?}", &system_locale);
 
         Ok(system_locale)
     };
