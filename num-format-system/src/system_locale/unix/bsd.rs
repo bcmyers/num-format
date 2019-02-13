@@ -173,10 +173,7 @@ impl StaticCString {
             [3, 2] => Grouping::Indian,
             [] | [127] => Grouping::Posix,
             [3] | [3, 3] => Grouping::Standard,
-            _ => {
-                println!("{:?}", &bytes);
-                panic!();
-            }
+            _ => return Err(Error::unix(&format!("unsupported grouping: {:?}", bytes))),
         };
         Ok(grouping)
     }
