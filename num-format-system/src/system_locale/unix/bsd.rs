@@ -12,6 +12,7 @@
 
 mod bindings {
     //! Bindings to xlocale.h. See build.rs.
+    #![allow(dead_code)] // TODO
     #![allow(non_camel_case_types)]
     #![allow(non_snake_case)]
     #![allow(non_upper_case_globals)]
@@ -36,8 +37,12 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
         Some(ref name) => CString::new(name.as_bytes())?,
         None => CString::new("").unwrap(),
     };
-    let mask =
-        (bindings::LC_CTYPE_MASK | bindings::LC_NUMERIC_MASK | bindings::LC_MONETARY_MASK) as c_int;
+    let mask = (bindings::LC_COLLATE_MASK
+        | bindings::LC_CTYPE_MASK
+        | bindings::LC_MESSAGES_MASK
+        | bindings::LC_MONETARY_MASK
+        | bindings::LC_NUMERIC_MASK
+        | bindings::LC_TIME_MASK) as c_int;
     let new_locale = unsafe { bindings::newlocale(mask, name_cstring.as_ptr(), ptr::null_mut()) };
     if new_locale.is_null() {
         return Err(Error::null_ptr("newlocale"));
@@ -87,22 +92,9 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             min: lconv.min,
             name,
             nan: Locale::en.nan().to_string(),
+            pos: lconv.pos,
             sep: lconv.sep,
         };
-
-        // TODO
-        let mut print = false;
-        if system_locale.decimal().chars().count() > 1 {
-            print = true;
-        }
-        if let Some(sep) = system_locale.separator() {
-            if sep.chars().count() > 1 {
-                print = true;
-            }
-        }
-        if print {
-            println!("{:?}", &system_locale);
-        }
 
         Ok(system_locale)
     };
@@ -119,6 +111,7 @@ struct Lconv {
     dec: String,
     grp: Grouping,
     min: String,
+    pos: String,
     sep: Option<String>,
 }
 
@@ -127,16 +120,24 @@ impl Lconv {
         let dec = StaticCString::new(lconv.decimal_point, encoding, "lconv.decimal_point")?
             .to_decimal()?;
 
-        let grp = StaticCString::new(lconv.mon_grouping, encoding, "lconv.mon_grouping")?
-            .to_grouping()?;
+        let grp = StaticCString::new(lconv.grouping, encoding, "lconv.grouping")?.to_grouping()?;
 
         let min = StaticCString::new(lconv.negative_sign, encoding, "lconv.negative_sign")?
             .to_minus_sign()?;
 
+        let pos = StaticCString::new(lconv.positive_sign, encoding, "lconv.positive_sign")?
+            .to_string()?;
+
         let sep = StaticCString::new(lconv.thousands_sep, encoding, "lconv.thousands_sep")?
             .to_separator()?;
 
-        Ok(Lconv { dec, grp, min, sep })
+        Ok(Lconv {
+            dec,
+            grp,
+            min,
+            pos,
+            sep,
+        })
     }
 }
 
@@ -181,7 +182,7 @@ impl StaticCString {
         let bytes = self.to_bytes();
         let bytes: &[u8] = &bytes;
         let grouping = match bytes {
-            [3, 2] => Grouping::Indian,
+            [3, 2] | [2, 3] => Grouping::Indian,
             [] | [127] => Grouping::Posix,
             [3] | [3, 3] => Grouping::Standard,
             _ => return Err(Error::unix(&format!("unsupported grouping: {:?}", bytes))),

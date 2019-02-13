@@ -18,6 +18,7 @@ pub struct SystemLocale {
     min: String,
     name: String,
     nan: String,
+    pos: String,
     sep: Option<String>,
 }
 
@@ -40,8 +41,10 @@ mod todo {
 
             writeln!(f, "SystemLocale {{")?;
             inner(f, "dec", self.decimal())?;
+            writeln!(f, "  grp: {:?}", self.grouping())?;
             inner(f, "min", self.minus_sign())?;
             inner(f, "nam", self.name())?;
+            inner(f, "pos", self.positive_sign())?;
             match self.separator() {
                 Some(ref sep) => inner(f, "sep", sep)?,
                 None => writeln!(f, "  sep: None")?,
@@ -135,6 +138,11 @@ impl SystemLocale {
     /// TODO
     pub fn nan(&self) -> &str {
         &self.nan
+    }
+
+    /// TODO
+    pub fn positive_sign(&self) -> &str {
+        &self.pos
     }
 
     /// TODO
