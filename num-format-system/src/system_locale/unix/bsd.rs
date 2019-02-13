@@ -158,7 +158,10 @@ impl StaticCString {
     fn to_decimal(&self) -> Result<char, Error> {
         let s = self.to_string()?;
         if s.chars().count() != 1 {
-            return Err(Error::unix("TODO"));
+            return Err(Error::unix(&format!(
+                "TODO: Decimal not one char: {:?}",
+                &s
+            )));
         }
         Ok(s.chars().next().unwrap())
     }
@@ -181,7 +184,11 @@ impl StaticCString {
     fn to_minus_sign(&self) -> Result<String, Error> {
         let s = self.to_string()?;
         if s.len() > MAX_MIN_LEN {
-            return Err(Error::unix("TODO"));
+            return Err(Error::unix(&format!(
+                "TODO: Minus sign longer than max len: {:?} ({})",
+                &s,
+                s.len(),
+            )));
         }
         Ok(s)
     }
@@ -192,7 +199,10 @@ impl StaticCString {
             return Ok(None);
         }
         if s.chars().count() != 1 {
-            return Err(Error::unix("TODO"));
+            return Err(Error::unix(&format!(
+                "TODO: separator longer than one char: {:?}",
+                &s
+            )));
         }
         Ok(Some(s.chars().next().unwrap()))
     }
