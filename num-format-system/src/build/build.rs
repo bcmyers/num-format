@@ -72,6 +72,7 @@ cfg_if! {
                 .whitelist_type("lconv")
                 .whitelist_type("nl_item")
                 .whitelist_var("CODESET")
+                .whitelist_var("LC_CTYPE_MASK")
                 .whitelist_var("LC_MONETARY_MASK")
                 .whitelist_var("LC_NUMERIC_MASK")
                 .generate()

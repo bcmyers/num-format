@@ -22,6 +22,7 @@ mod bindings {
     //! * `uselocale`
     //!
     //! See build.rs.
+    #![allow(dead_code)] // TODO
     #![allow(non_camel_case_types)]
     #![allow(non_snake_case)]
     #![allow(non_upper_case_globals)]
@@ -33,11 +34,10 @@ use std::ffi::{CStr, CString};
 use std::os::raw::c_int;
 use std::ptr;
 
-use num_format_common::constants::MAX_MIN_LEN;
+// use num_format_common::constants::MAX_MIN_LEN;
 use num_format_common::{Grouping, Locale};
 
 use crate::error::Error;
-use crate::system_locale::unix::{Lconv, Pointer};
 use crate::SystemLocale;
 
 pub(crate) fn new<S>(name: Option<S>) -> Result<SystemLocale, Error>
@@ -46,13 +46,17 @@ where
 {
     let name = name.map(|s| s.into());
 
+    println!();
+    println!("INPUT: {:?}", &name);
+
     // create a new locale object
     let name_cstring = match name {
         Some(ref name) => CString::new(name.as_bytes())?,
         None => CString::new("").unwrap(),
     };
-    // TODO: Worry about sending two values down???
-    let mask = (bindings::LC_NUMERIC_MASK | bindings::LC_MONETARY_MASK) as c_int;
+
+    let mask =
+        (bindings::LC_CTYPE_MASK | bindings::LC_NUMERIC_MASK | bindings::LC_MONETARY_MASK) as c_int; // TODO
     let new_locale = unsafe { bindings::newlocale(mask, name_cstring.as_ptr(), ptr::null_mut()) };
     if new_locale.is_null() {
         return Err(Error::unix(
@@ -62,24 +66,32 @@ where
 
     // use the new locale object, while saving the initial one
     let initial_locale = unsafe { bindings::uselocale(new_locale) };
+    if initial_locale.is_null() {
+        panic!("TODO: null ptr")
+    }
 
     // get the encoding
     let encoding_ptr = unsafe { bindings::nl_langinfo_l(bindings::CODESET as c_int, new_locale) };
-    if encoding_ptr.is_null() {
-        panic!("TODO: null ptr")
-    }
-    let encoding = match unsafe { CStr::from_ptr(encoding_ptr) }.to_str() {
-        Ok(encoding) => encoding,
-        Err(_) => {
+    match StaticCString::new(encoding_ptr) {
+        Ok(val) => {
+            println!("ENCODING: {:?} | {:?}", val.to_bytes(), val.to_str());
+        }
+        Err(e) => {
             // free the new locale object
             let _ = unsafe { bindings::freelocale(new_locale) };
-            return Err(Error::unix("TODO55"));
+            return Err(e);
         }
-    };
-    println!("******* ENCODING: {}", encoding);
+    }
 
     // get the lconv
-    let lconv = match localeconv_l(new_locale) {
+    let lconv_ptr = unsafe { bindings::localeconv_l(new_locale) };
+    if lconv_ptr.is_null() {
+        // free the new locale object
+        let _ = unsafe { bindings::freelocale(new_locale) };
+        return Err(Error::unix("'localeconv_l' returned a null pointer."));
+    }
+    let lconv: &bindings::lconv = unsafe { lconv_ptr.as_ref() }.unwrap();
+    let lconv = match Lconv::new(lconv) {
         Ok(lconv) => lconv,
         Err(e) => {
             // free the new locale object
@@ -88,12 +100,18 @@ where
         }
     };
 
-    let name = get_name(mask, name, new_locale)?;
+    // get the name
+    let name = match get_name(mask, name, new_locale) {
+        Ok(name) => name,
+        Err(e) => {
+            // free the new locale object
+            let _ = unsafe { bindings::freelocale(new_locale) };
+            return Err(e);
+        }
+    };
 
     // reset to the initial locale object
-    if !initial_locale.is_null() {
-        let _ = unsafe { bindings::uselocale(initial_locale) };
-    }
+    let _ = unsafe { bindings::uselocale(initial_locale) };
 
     // free the new locale object
     let _ = unsafe { bindings::freelocale(new_locale) };
@@ -119,23 +137,15 @@ fn get_name(
         None => {
             // don't think we need to free this pointer
             let name_ptr = unsafe { bindings::querylocale(mask, new_locale) };
-            if name_ptr.is_null() {
-                // free the new locale object
-                let _ = unsafe { bindings::freelocale(new_locale) };
-                return Err(Error::unix(
-                    "querylocale unexpectedly return a null pointer.",
-                ));
-            }
-            let name_cstr = unsafe { CStr::from_ptr(name_ptr) };
-            match name_cstr.to_str() {
-                Ok(s) => s.to_string(),
-                Err(_) => {
-                    // free the new locale object
-                    let _ = unsafe { bindings::freelocale(new_locale) };
-                    return Err(Error::unix(
-                        "querylocale unexpected returns string with invalid UTF-8.",
-                    ));
-                }
+            let static_c_string = StaticCString::new(name_ptr)?;
+            println!(
+                "NAME: {:?} | {:?}",
+                static_c_string.to_bytes(),
+                static_c_string.to_str()
+            );
+            match static_c_string.to_str() {
+                Some(s) => s.to_string(), // TODO
+                None => "*****INVALID UTF8****".to_string(),
             }
         }
     };
@@ -147,57 +157,133 @@ fn get_name(
     Ok(name)
 }
 
-fn localeconv_l(locale: bindings::locale_t) -> Result<Lconv, Error> {
-    let ptr = unsafe { bindings::localeconv_l(locale) };
-    if ptr.is_null() {
-        return Err(Error::unix("'localeconv' returned a null pointer."));
+pub struct Lconv {
+    dec: char,
+    grp: Grouping,
+    min: String,
+    sep: Option<char>,
+}
+
+impl Lconv {
+    pub fn new(lconv: &bindings::lconv) -> Result<Lconv, Error> {
+        let _dec = {
+            let numeric = StaticCString::new(lconv.decimal_point)?;
+            let monetary = StaticCString::new(lconv.mon_decimal_point)?;
+            print!("DECIMAL_POINT: ");
+            if numeric.to_bytes() == monetary.to_bytes() {
+                println!("{:?} | {:?}", numeric.to_bytes(), numeric.to_str());
+            } else {
+                println!();
+                println!(
+                    "    numeric: {:?} | {:?}",
+                    numeric.to_bytes(),
+                    numeric.to_str()
+                );
+                println!(
+                    "    monetary: {:?} | {:?}",
+                    monetary.to_bytes(),
+                    monetary.to_str()
+                );
+            }
+        };
+
+        let _grp = {
+            let numeric = StaticCString::new(lconv.grouping)?;
+            let monetary = StaticCString::new(lconv.mon_grouping)?;
+            print!("GROUPING: ");
+            if numeric.to_bytes() == monetary.to_bytes() {
+                println!("{:?} | {:?}", numeric.to_bytes(), numeric.to_str());
+            } else {
+                println!();
+                println!(
+                    "    numeric: {:?} | {:?}",
+                    numeric.to_bytes(),
+                    numeric.to_str()
+                );
+                println!(
+                    "    monetary: {:?} | {:?}",
+                    monetary.to_bytes(),
+                    monetary.to_str()
+                );
+            }
+        };
+
+        let _min = {
+            let numeric = StaticCString::new(lconv.negative_sign)?;
+            println!(
+                "NEGATIVE_SIGN: {:?} | {:?}",
+                numeric.to_bytes(),
+                numeric.to_str()
+            );
+        };
+
+        let _sep = {
+            let numeric = StaticCString::new(lconv.thousands_sep)?;
+            let monetary = StaticCString::new(lconv.mon_thousands_sep)?;
+            print!("THOUSANDS_SEP: ");
+            if numeric.to_bytes() == monetary.to_bytes() {
+                println!("{:?} | {:?}", numeric.to_bytes(), numeric.to_str());
+            } else {
+                println!();
+                println!(
+                    "    numeric: {:?} | {:?}",
+                    numeric.to_bytes(),
+                    numeric.to_str()
+                );
+                println!(
+                    "    monetary: {:?} | {:?}",
+                    monetary.to_bytes(),
+                    monetary.to_str()
+                );
+            }
+        };
+
+        Ok(Lconv {
+            dec: '.',
+            grp: Grouping::Standard,
+            min: "-".to_string(),
+            sep: Some(','),
+        })
+    }
+}
+
+/// Invariants: nul terminated, static lifetime
+struct StaticCString(*const std::os::raw::c_char);
+
+impl StaticCString {
+    fn new(ptr: *const std::os::raw::c_char) -> Result<StaticCString, Error> {
+        if ptr.is_null() {
+            return Err(Error::unix("TODO: null pointer."));
+        }
+        Ok(StaticCString(ptr))
     }
 
-    let lconv: &bindings::lconv = unsafe { ptr.as_ref() }.unwrap();
-
-    let dec_ptr = Pointer::new(lconv.mon_decimal_point)?;
-    let grp_ptr = Pointer::new(lconv.mon_grouping)?;
-    let min_ptr = Pointer::new(lconv.negative_sign)?;
-    let sep_ptr = Pointer::new(lconv.mon_thousands_sep)?;
-
-    let maybe_dec = match dec_ptr.as_char() {
-        Ok(maybe_dec) => maybe_dec,
-        Err(e) => {
-            eprintln!("{}", e);
-            Some('.')
-        }
-    };
-    let grp = match grp_ptr.as_grouping() {
-        Ok(grp) => grp,
-        Err(e) => {
-            eprintln!("{}", e);
-            Grouping::Standard
-        }
-    };
-    let min = match min_ptr.as_str() {
-        Ok(min) => min,
-        Err(e) => {
-            eprintln!("{}", e);
-            "-"
-        }
-    };
-    if min.len() > MAX_MIN_LEN {
-        return Err(Error::unix("TODO1"));
+    fn to_bytes(&self) -> &'static [u8] {
+        let ptr = self.0;
+        let cstr = unsafe { CStr::from_ptr(ptr) };
+        let bytes = cstr.to_bytes();
+        bytes
     }
-    let maybe_sep = match sep_ptr.as_char() {
-        Ok(maybe_sep) => maybe_sep,
-        Err(e) => {
-            eprintln!("{}", e);
-            Some(',')
+
+    fn to_str(&self) -> Option<&'static str> {
+        let bytes = self.to_bytes();
+        std::str::from_utf8(bytes).ok()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_system_locale_bsd() {
+        let names = SystemLocale::available_names().unwrap();
+        let mut names = names.into_iter().collect::<Vec<String>>();
+        names.sort();
+        for name in names {
+            let _ = SystemLocale::from_name(name.clone()).unwrap();
+            std::env::set_var("LC_ALL", &name);
+            let _ = SystemLocale::default().unwrap();
         }
-    };
-
-    let locale = Lconv {
-        dec: maybe_dec.unwrap_or_else(|| '.'),
-        grp,
-        min: min.to_string(),
-        sep: maybe_sep,
-    };
-
-    Ok(locale)
+    }
 }

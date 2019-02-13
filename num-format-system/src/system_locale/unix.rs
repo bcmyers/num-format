@@ -2,12 +2,12 @@ mod bsd;
 mod linux;
 
 use std::collections::HashSet;
-use std::ffi::CStr;
-use std::marker::PhantomData;
+// use std::ffi::CStr;
+// use std::marker::PhantomData;
 use std::str;
 
-use num_format_common::constants::MAX_MIN_LEN;
-use num_format_common::Grouping;
+// use num_format_common::constants::MAX_MIN_LEN;
+// use num_format_common::Grouping;
 
 use crate::{Error, SystemLocale};
 
@@ -74,63 +74,63 @@ pub(crate) fn available_names() -> HashSet<String> {
     }
 }
 
-#[derive(Clone, Debug)]
-pub(crate) struct Lconv {
-    pub(crate) dec: char,
-    pub(crate) grp: Grouping,
-    pub(crate) min: String,
-    pub(crate) sep: Option<char>,
-}
+// #[derive(Clone, Debug)]
+// pub(crate) struct Lconv {
+//     pub(crate) dec: char,
+//     pub(crate) grp: Grouping,
+//     pub(crate) min: String,
+//     pub(crate) sep: Option<char>,
+// }
 
-#[derive(Debug)]
-struct Pointer<'a> {
-    ptr: *const std::os::raw::c_char,
-    phantom: PhantomData<&'a ()>,
-}
+// #[derive(Debug)]
+// struct Pointer<'a> {
+//     ptr: *const std::os::raw::c_char,
+//     phantom: PhantomData<&'a ()>,
+// }
 
-impl<'a> Pointer<'a> {
-    fn new(ptr: *const std::os::raw::c_char) -> Result<Pointer<'a>, Error> {
-        if ptr.is_null() {
-            return Err(Error::unix("received a null pointer from C."));
-        }
-        Ok(Pointer {
-            ptr,
-            phantom: PhantomData,
-        })
-    }
+// impl<'a> Pointer<'a> {
+//     fn new(ptr: *const std::os::raw::c_char) -> Result<Pointer<'a>, Error> {
+//         if ptr.is_null() {
+//             return Err(Error::unix("received a null pointer from C."));
+//         }
+//         Ok(Pointer {
+//             ptr,
+//             phantom: PhantomData,
+//         })
+//     }
 
-    fn as_char(&self) -> Result<Option<char>, Error> {
-        let s = unsafe { CStr::from_ptr(self.ptr) }
-            .to_str()
-            .map_err(|_| Error::unix("TODO2"))?;
-        if s.chars().count() > 1 {
-            return Err(Error::unix(
-                "received C string of length greater than 1 when C string of length 1 was expected",
-            ));
-        }
-        Ok(s.chars().next())
-    }
+//     fn as_char(&self) -> Result<Option<char>, Error> {
+//         let s = unsafe { CStr::from_ptr(self.ptr) }
+//             .to_str()
+//             .map_err(|_| Error::unix("TODO2"))?;
+//         if s.chars().count() > 1 {
+//             return Err(Error::unix(
+//                 "received C string of length greater than 1 when C string of length 1 was expected",
+//             ));
+//         }
+//         Ok(s.chars().next())
+//     }
 
-    fn as_grouping(&self) -> Result<Grouping, Error> {
-        let s = unsafe { CStr::from_ptr(self.ptr) };
-        match s.to_bytes() {
-            [3] | [3, 3] => Ok(Grouping::Standard),
-            [3, 2] => Ok(Grouping::Indian),
-            [] | [127] => Ok(Grouping::Posix), // TODO: Is 127 posix?
-            _ => Err(Error::unix(&format!(
-                "received unexpected grouping code from C: {:?}",
-                s.to_bytes()
-            ))),
-        }
-    }
+//     fn as_grouping(&self) -> Result<Grouping, Error> {
+//         let s = unsafe { CStr::from_ptr(self.ptr) };
+//         match s.to_bytes() {
+//             [3] | [3, 3] => Ok(Grouping::Standard),
+//             [3, 2] => Ok(Grouping::Indian),
+//             [] | [127] => Ok(Grouping::Posix), // TODO: Is 127 posix?
+//             _ => Err(Error::unix(&format!(
+//                 "received unexpected grouping code from C: {:?}",
+//                 s.to_bytes()
+//             ))),
+//         }
+//     }
 
-    fn as_str(&self) -> Result<&str, Error> {
-        let s = unsafe { CStr::from_ptr(self.ptr) }
-            .to_str()
-            .map_err(|_| Error::unix("TODO3"))?;
-        if s.len() > MAX_MIN_LEN {
-            return Err(Error::capacity(s.len(), MAX_MIN_LEN));
-        }
-        Ok(s)
-    }
-}
+//     fn as_str(&self) -> Result<&str, Error> {
+//         let s = unsafe { CStr::from_ptr(self.ptr) }
+//             .to_str()
+//             .map_err(|_| Error::unix("TODO3"))?;
+//         if s.len() > MAX_MIN_LEN {
+//             return Err(Error::capacity(s.len(), MAX_MIN_LEN));
+//         }
+//         Ok(s)
+//     }
+// }
