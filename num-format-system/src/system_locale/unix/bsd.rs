@@ -11,8 +11,7 @@
 ))]
 
 mod bindings {
-    //! Bindings to xlocale.h. See build.rs.
-    #![allow(dead_code)] // TODO
+    //! Bindings to libc headers. See build.rs.
     #![allow(non_camel_case_types)]
     #![allow(non_snake_case)]
     #![allow(non_upper_case_globals)]
@@ -37,12 +36,8 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
         Some(ref name) => CString::new(name.as_bytes())?,
         None => CString::new("").unwrap(),
     };
-    let mask = (bindings::LC_COLLATE_MASK
-        | bindings::LC_CTYPE_MASK
-        | bindings::LC_MESSAGES_MASK
-        | bindings::LC_MONETARY_MASK
-        | bindings::LC_NUMERIC_MASK
-        | bindings::LC_TIME_MASK) as c_int;
+    let mask =
+        (bindings::LC_CTYPE_MASK | bindings::LC_MONETARY_MASK | bindings::LC_NUMERIC_MASK) as c_int;
     let new_locale = unsafe { bindings::newlocale(mask, name_cstring.as_ptr(), ptr::null_mut()) };
     if new_locale.is_null() {
         return Err(Error::null_ptr("newlocale"));
@@ -117,19 +112,42 @@ struct Lconv {
 
 impl Lconv {
     fn new(lconv: &bindings::lconv, encoding: Encoding) -> Result<Lconv, Error> {
-        let dec = StaticCString::new(lconv.decimal_point, encoding, "lconv.decimal_point")?
-            .to_decimal()?;
+        let dec = {
+            let s = StaticCString::new(lconv.decimal_point, encoding, "lconv.decimal_point")?
+                .to_string()?;
+            if s.len() == 0 {
+                return Err(Error::unix(&format!("TODO: Empty decimal: {:?}", &s)));
+            }
+            s
+        };
 
         let grp = StaticCString::new(lconv.grouping, encoding, "lconv.grouping")?.to_grouping()?;
 
-        let min = StaticCString::new(lconv.negative_sign, encoding, "lconv.negative_sign")?
-            .to_minus_sign()?;
+        let min = {
+            let s = StaticCString::new(lconv.negative_sign, encoding, "lconv.negative_sign")?
+                .to_string()?;
+            if s.len() > MAX_MIN_LEN {
+                return Err(Error::unix(&format!(
+                    "TODO: Minus sign longer than max len: {:?} ({})",
+                    &s,
+                    s.len(),
+                )));
+            }
+            s
+        };
 
         let pos = StaticCString::new(lconv.positive_sign, encoding, "lconv.positive_sign")?
             .to_string()?;
 
-        let sep = StaticCString::new(lconv.thousands_sep, encoding, "lconv.thousands_sep")?
-            .to_separator()?;
+        let sep = {
+            let s = StaticCString::new(lconv.thousands_sep, encoding, "lconv.thousands_sep")?
+                .to_string()?;
+            if s.len() == 0 {
+                None
+            } else {
+                Some(s)
+            }
+        };
 
         Ok(Lconv {
             dec,
@@ -165,24 +183,11 @@ impl StaticCString {
         bytes.to_vec()
     }
 
-    fn to_string(&self) -> Result<String, Error> {
-        let bytes = self.to_bytes();
-        self.encoding.decode(&bytes)
-    }
-
-    fn to_decimal(&self) -> Result<String, Error> {
-        let s = self.to_string()?;
-        if s.len() == 0 {
-            return Err(Error::unix(&format!("TODO: Empty decimal: {:?}", &s)));
-        }
-        Ok(s)
-    }
-
     fn to_grouping(&self) -> Result<Grouping, Error> {
         let bytes = self.to_bytes();
         let bytes: &[u8] = &bytes;
         let grouping = match bytes {
-            [3, 2] | [2, 3] => Grouping::Indian,
+            [3, 2] | [2, 3] => Grouping::Indian, // TODO
             [] | [127] => Grouping::Posix,
             [3] | [3, 3] => Grouping::Standard,
             _ => return Err(Error::unix(&format!("unsupported grouping: {:?}", bytes))),
@@ -190,23 +195,8 @@ impl StaticCString {
         Ok(grouping)
     }
 
-    fn to_minus_sign(&self) -> Result<String, Error> {
-        let s = self.to_string()?;
-        if s.len() > MAX_MIN_LEN {
-            return Err(Error::unix(&format!(
-                "TODO: Minus sign longer than max len: {:?} ({})",
-                &s,
-                s.len(),
-            )));
-        }
-        Ok(s)
-    }
-
-    fn to_separator(&self) -> Result<Option<String>, Error> {
-        let s = self.to_string()?;
-        if s.len() == 0 {
-            return Ok(None);
-        }
-        Ok(Some(s))
+    fn to_string(&self) -> Result<String, Error> {
+        let bytes = self.to_bytes();
+        self.encoding.decode(&bytes)
     }
 }

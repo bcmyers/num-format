@@ -1,3 +1,5 @@
+// TODO
+
 use std::env;
 use std::process::exit;
 
@@ -32,7 +34,6 @@ fn main() {
             } else {
                 let locale = SystemLocale::from_name(arg).unwrap();
                 println!("{:?}", &locale);
-
             }
         }
         _ => {
