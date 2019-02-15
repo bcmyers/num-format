@@ -2,35 +2,11 @@
 
 #![cfg(windows)]
 
-mod bindings {
-    //! Bindings to windows.h with definitions for...
-    //!
-    //! * `LOCALE_NAME_MAX_LENGTH`
-    //! * `LOCALE_NAME_SYSTEM_DEFAULT`
-    //! * `LOCALE_SDECIMAL`
-    //! * `LOCALE_SGROUPING`
-    //! * `LOCALE_SPOSINFINITY`
-    //! * `LOCALE_SNAME`
-    //! * `LOCALE_SNAN`
-    //! * `LOCALE_SNEGATIVESIGN`
-    //! * `LOCALE_SNEGINFINITY`
-    //! * `LOCALE_STHOUSAND`
-    //!
-    //! See build.rs.
-    #![allow(non_camel_case_types)]
-    #![allow(non_snake_case)]
-    #![allow(non_upper_case_globals)]
-    include!(concat!(env!("OUT_DIR"), "\\windows.rs"));
-}
-
 use std::collections::HashSet;
 use std::mem;
 use std::ptr;
 use std::sync::{Arc, Mutex};
 
-use lazy_static::lazy_static;
-use num_format_core::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
-use num_format_core::Grouping;
 use widestring::{U16CStr, U16CString};
 use winapi::ctypes::c_int;
 use winapi::shared::minwindef::{BOOL, DWORD, LPARAM};
@@ -38,11 +14,29 @@ use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::winnls;
 use winapi::um::winnt::WCHAR;
 
-use crate::{Error, SystemLocale};
+use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
+use crate::error::Error;
+use crate::grouping::Grouping;
+use crate::system_locale::SystemLocale;
+
+extern "system" {
+    static LOCALE_NAME_MAX_LENGTH: usize;
+    static LOCALE_SDECIMAL: usize;
+    static LOCALE_SGROUPING: usize;
+    static LOCALE_SPOSINFINITY: usize;
+    static LOCALE_SNAME: usize;
+    static LOCALE_SNAN: usize;
+    static LOCALE_SNEGATIVESIGN: usize;
+    static LOCALE_SNEGINFINITY: usize;
+    static LOCALE_STHOUSAND: usize;
+}
 
 lazy_static! {
     static ref LOCALE_NAME_SYSTEM_DEFAULT: Result<&'static str, Error> = {
-        let raw = bindings::LOCALE_NAME_SYSTEM_DEFAULT;
+        extern "system" {
+            static LOCALE_NAME_SYSTEM_DEFAULT: *const u8;
+        }
+        let raw = LOCALE_NAME_SYSTEM_DEFAULT;
         std::str::from_utf8(&raw[0..raw.len() - 1]).map_err(|_| {
             Error::windows(
                 "LOCALE_NAME_SYSTEM_DEFAULT from windows.h unexpectedly contains invalid UTF-8.",
@@ -50,8 +44,6 @@ lazy_static! {
         })
     };
 }
-
-const LOCALE_NAME_MAX_LENGTH: usize = bindings::LOCALE_NAME_MAX_LENGTH as usize;
 
 pub(crate) fn available_names() -> Result<HashSet<String>, Error> {
     // call safe wrapper for EnumSystemLocalesEx
@@ -209,14 +201,14 @@ impl From<Request> for DWORD {
     fn from(request: Request) -> DWORD {
         use self::Request::*;
         match request {
-            Decimal => bindings::LOCALE_SDECIMAL,
-            Grouping => bindings::LOCALE_SGROUPING,
-            MinusSign => bindings::LOCALE_SNEGATIVESIGN,
-            Name => bindings::LOCALE_SNAME,
-            Nan => bindings::LOCALE_SNAN,
-            NegativeInfinity => bindings::LOCALE_SNEGINFINITY,
-            PositiveInfinity => bindings::LOCALE_SPOSINFINITY,
-            Separator => bindings::LOCALE_STHOUSAND,
+            Decimal => LOCALE_SDECIMAL,
+            Grouping => LOCALE_SGROUPING,
+            MinusSign => LOCALE_SNEGATIVESIGN,
+            Name => LOCALE_SNAME,
+            Nan => LOCALE_SNAN,
+            NegativeInfinity => LOCALE_SNEGINFINITY,
+            PositiveInfinity => LOCALE_SPOSINFINITY,
+            Separator => LOCALE_STHOUSAND,
         }
     }
 }

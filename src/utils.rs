@@ -4,8 +4,36 @@
 
 use core::fmt;
 
-use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
+use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN, MAX_DEC_LEN, MAX_SEP_LEN};
 use crate::Error;
+
+/// Simple wrapper type for a `&str` to make sure its length is less than the maximum for
+/// a decimal (8 bytes).
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct DecimalStr<'a>(&'a str);
+
+impl<'a> DecimalStr<'a> {
+    /// Constructs an [`DecimalStr`], ensuring that the length is less than the maximum for
+    /// a decimal (8 bytes).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the provided `&str`'s length is more than 8 bytes.
+    ///
+    /// [`DecimalStr`]: struct.DecimalStr.html
+    pub fn new(s: &'a str) -> Result<DecimalStr<'a>, Error> {
+        let len = s.len();
+        if len > MAX_DEC_LEN {
+            return Err(Error::capacity(len, MAX_DEC_LEN));
+        }
+        Ok(DecimalStr(s))
+    }
+
+    /// Allows recovery of the initial / wrapped `&str`.
+    pub fn into_str(self) -> &'a str {
+        self.0
+    }
+}
 
 /// Simple wrapper type for a `&str` to make sure its length is less than the maximum for
 /// an infinity symbol (128 bytes).
@@ -124,5 +152,33 @@ impl<'a> fmt::Debug for NanStr<'a> {
 impl<'a> fmt::Display for NanStr<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+/// Simple wrapper type for a `&str` to make sure its length is less than the maximum for
+/// a separator (8 bytes).
+#[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct SeparatorStr<'a>(&'a str);
+
+impl<'a> SeparatorStr<'a> {
+    /// Constructs an [`SeparatorStr`], ensuring that the length is less than the maximum for
+    /// a separator (8 bytes).
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the provided `&str`'s length is more than 8 bytes.
+    ///
+    /// [`SeparatorStr`]: struct.SeparatorStr.html
+    pub fn new(s: &'a str) -> Result<SeparatorStr<'a>, Error> {
+        let len = s.len();
+        if len > MAX_SEP_LEN {
+            return Err(Error::capacity(len, MAX_SEP_LEN));
+        }
+        Ok(SeparatorStr(s))
+    }
+
+    /// Allows recovery of the initial / wrapped `&str`.
+    pub fn into_str(self) -> &'a str {
+        self.0
     }
 }

@@ -1,7 +1,7 @@
 use arrayvec::ArrayString;
-use num_format_core::utils::{InfinityStr, MinusSignStr, NanStr};
 
-use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
+use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN, MAX_DEC_LEN, MAX_SEP_LEN};
+use crate::utils::{InfinityStr, MinusSignStr, NanStr, DecimalStr, SeparatorStr};
 use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 
 /// Type for representing your own custom formats. Implements [`Format`].
@@ -29,12 +29,12 @@ use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct CustomFormat {
-    pub(crate) dec: char,
+    pub(crate) dec: ArrayString<[u8; MAX_DEC_LEN]>,
     pub(crate) grp: Grouping,
     pub(crate) inf: ArrayString<[u8; MAX_INF_LEN]>,
     pub(crate) min: ArrayString<[u8; MAX_MIN_LEN]>,
     pub(crate) nan: ArrayString<[u8; MAX_NAN_LEN]>,
-    pub(crate) sep: Option<char>,
+    pub(crate) sep: ArrayString<[u8; MAX_SEP_LEN]>,
 }
 
 impl CustomFormat {
@@ -53,8 +53,8 @@ impl CustomFormat {
     }
 
     /// Returns this format's representation of decimal points.
-    pub fn decimal(&self) -> char {
-        self.dec
+    pub fn decimal(&self) -> &str {
+        &self.dec
     }
 
     /// Returns this format's [`Grouping`], which governs how digits are separated (see [`Grouping`]).
@@ -80,14 +80,14 @@ impl CustomFormat {
     }
 
     /// Returns this format's representation of separators.
-    pub fn separator(&self) -> Option<char> {
-        self.sep
+    pub fn separator(&self) -> &str {
+        &self.sep
     }
 }
 
 impl Format for CustomFormat {
-    fn decimal(&self) -> char {
-        self.decimal()
+    fn decimal(&self) -> DecimalStr<'_> {
+        DecimalStr::new(self.decimal()).unwrap()
     }
 
     fn grouping(&self) -> Grouping {
@@ -106,20 +106,20 @@ impl Format for CustomFormat {
         NanStr::new(self.nan()).unwrap()
     }
 
-    fn separator(&self) -> Option<char> {
-        self.separator()
+    fn separator(&self) -> SeparatorStr<'_> {
+        SeparatorStr::new(self.separator()).unwrap()
     }
 }
 
 impl From<Locale> for CustomFormat {
     fn from(locale: Locale) -> Self {
         Self {
-            dec: locale.decimal(),
+            dec: ArrayString::from(locale.decimal()).unwrap(),
             grp: locale.grouping(),
             inf: ArrayString::from(locale.infinity()).unwrap(),
             min: ArrayString::from(locale.minus_sign()).unwrap(),
             nan: ArrayString::from(locale.nan()).unwrap(),
-            sep: locale.separator(),
+            sep: ArrayString::from(locale.separator()).unwrap(),
         }
     }
 }
@@ -133,12 +133,12 @@ mod system {
     impl From<SystemLocale> for CustomFormat {
         fn from(locale: SystemLocale) -> Self {
             Self {
-                dec: locale.decimal(),
+                dec: ArrayString::from(locale.decimal()).unwrap(),
                 grp: locale.grouping(),
                 inf: ArrayString::from(locale.infinity()).unwrap(),
                 min: ArrayString::from(locale.minus_sign()).unwrap(),
                 nan: ArrayString::from(locale.nan()).unwrap(),
-                sep: locale.separator(),
+                sep: ArrayString::from(locale.separator()).unwrap(),
             }
         }
     }

@@ -1,4 +1,4 @@
-use crate::utils::{InfinityStr, MinusSignStr, NanStr};
+use crate::utils::{InfinityStr, MinusSignStr, NanStr, DecimalStr, SeparatorStr};
 use crate::Grouping;
 
 /// Trait that abstracts over [`CustomFormat`], [`Locale`], and [`SystemLocale`].
@@ -8,7 +8,7 @@ use crate::Grouping;
 /// [`SystemLocale`]: struct.SystemLocale.html
 pub trait Format {
     /// Returns character to use for representing decimal points.
-    fn decimal(&self) -> char;
+    fn decimal(&self) -> DecimalStr<'_>;
     /// Returns [`Grouping`] to use for separating digits. (see [`Grouping`])
     ///
     /// [`Grouping`]: enum.Grouping.html
@@ -20,5 +20,5 @@ pub trait Format {
     /// Returns string to use for representing NaN symbols.
     fn nan(&self) -> NanStr<'_>;
     /// Returns character to use, if any, for representing separators.
-    fn separator(&self) -> Option<char>;
+    fn separator(&self) -> SeparatorStr<'_>;
 }

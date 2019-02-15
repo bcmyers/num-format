@@ -21,7 +21,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
     for (variant_name, format) in data.iter() {
         let key = Ident::new(variant_name, Span::call_site());
 
-        let value = Literal::character(format.dec);
+        let value = Literal::string(&format.dec.to_string());
         let group = Group::new(
             Delimiter::None,
             quote! {
@@ -66,11 +66,11 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         );
         nans.push(group);
 
-        let value = Literal::character(format.sep);
+        let value = Literal::string(&format.sep.to_string());
         let group = Group::new(
             Delimiter::None,
             quote! {
-                #key => Some(#value),
+                #key => #value,
             },
         );
         separators.push(group);
@@ -105,7 +105,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
 
         use core::str::FromStr;
 
-        use crate::utils::{InfinityStr, MinusSignStr, NanStr};
+        use crate::utils::{DecimalStr, InfinityStr, MinusSignStr, NanStr, SeparatorStr};
         use crate::{Error, Format, Grouping};
 
         const AVAILABLE_NAMES: [&'static str; #names2_len] = [#(#names2),*];
@@ -114,7 +114,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         ///[Common Locale Data Repository (CLDR)]. Implements [`Format`].
         ///
         ///# Example
-        ///```ignore
+        ///```
         ///use num_format::{Buffer, Locale};
         ///
         ///fn main() {
@@ -163,7 +163,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
             }
 
             /// Returns the locale's decimal representation.
-            pub fn decimal(&self) -> char {
+            pub fn decimal(&self) -> &'static str {
                 use self::Locale::*;
                 match self {
                     #(#decimals)*
@@ -214,7 +214,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
             }
 
             /// Returns the locale's separator representation, if any.
-            pub fn separator(&self) -> Option<char> {
+            pub fn separator(&self) -> &'static str {
                 use self::Locale::*;
                 match self {
                     #(#separators)*
@@ -223,8 +223,8 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         }
 
         impl Format for Locale {
-            fn decimal(&self) -> char {
-                self.decimal()
+            fn decimal(&self) -> DecimalStr<'_> {
+                DecimalStr::new(self.decimal()).unwrap()
             }
 
             fn grouping(&self) -> Grouping {
@@ -243,8 +243,8 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
                 NanStr::new(self.nan()).unwrap()
             }
 
-            fn separator(&self) -> Option<char> {
-                self.separator()
+            fn separator(&self) -> SeparatorStr<'_> {
+                SeparatorStr::new(self.separator()).unwrap()
             }
         }
 

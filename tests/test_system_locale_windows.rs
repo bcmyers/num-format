@@ -1,6 +1,6 @@
-#![cfg(windows)]
+#![cfg(all(feature = "std", windows))]
 
-use num_format_system::SystemLocale;
+use num_format::SystemLocale;
 
 #[test]
 fn test_windows() {

@@ -1,24 +1,31 @@
+#[cfg(all(feature = "std", any(unix, windows)))]
 mod unix;
 mod windows;
 
 use std::collections::HashSet;
 
-use num_format_core::Grouping;
+use arrayvec::ArrayString;
 
+use crate::constants::{
+    MAX_DEC_LEN, MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN, MAX_POS_LEN, MAX_SEP_LEN,
+};
 use crate::error::Error;
+use crate::format::Format;
+use crate::grouping::Grouping;
+use crate::utils::{InfinityStr, DecimalStr, SeparatorStr, MinusSignStr, NanStr};
 
 /// TODO
 #[derive(Clone, Eq, PartialEq, Hash)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct SystemLocale {
-    dec: String,
-    grp: Grouping,
-    inf: String,
-    min: String,
-    name: String,
-    nan: String,
-    pos: String,
-    sep: Option<String>,
+    pub(crate) dec: ArrayString<[u8; MAX_DEC_LEN]>,
+    pub(crate) grp: Grouping,
+    pub(crate) inf: ArrayString<[u8; MAX_INF_LEN]>,
+    pub(crate) min: ArrayString<[u8; MAX_MIN_LEN]>,
+    pub(crate) name: String,
+    pub(crate) nan: ArrayString<[u8; MAX_NAN_LEN]>,
+    pub(crate) pos: ArrayString<[u8; MAX_POS_LEN]>,
+    pub(crate) sep: ArrayString<[u8; MAX_SEP_LEN]>,
 }
 
 mod todo {
@@ -44,10 +51,7 @@ mod todo {
             inner(f, "min", self.minus_sign())?;
             inner(f, "nam", self.name())?;
             inner(f, "pos", self.positive_sign())?;
-            match self.separator() {
-                Some(ref sep) => inner(f, "sep", sep)?,
-                None => writeln!(f, "  sep: None")?,
-            }
+            inner(f, "sep", self.separator())?;
             writeln!(f, "}}")?;
             Ok(())
         }
@@ -64,7 +68,7 @@ cfg_if! {
 
             /// TODO
             pub fn default() -> Result<SystemLocale, Error> {
-                unix::new(None)
+                self::unix::new(None)
             }
 
             /// TODO
@@ -72,12 +76,12 @@ cfg_if! {
             where
                 S: Into<String>,
             {
-                unix::new(Some(name.into()))
+                self::unix::new(Some(name.into()))
             }
 
             /// TODO
             pub fn available_names() -> Result<HashSet<String>, Error> {
-                Ok(unix::available_names())
+                Ok(self::unix::available_names())
             }
         }
     } else {
@@ -89,7 +93,7 @@ cfg_if! {
 
             /// TODO
             pub fn default() -> Result<SystemLocale, Error> {
-                windows::default()
+                self::windows::new(None)
             }
 
             /// TODO
@@ -97,12 +101,12 @@ cfg_if! {
             where
                 S: Into<String>,
             {
-                windows::from_name(name)
+                self::windows::new(Some(name))
             }
 
             /// TODO
             pub fn available_names() -> Result<HashSet<String>, Error> {
-                windows::available_names()
+                self::windows::available_names()
             }
         }
     }
@@ -145,23 +149,18 @@ impl SystemLocale {
     }
 
     /// TODO
-    pub fn separator(&self) -> Option<&str> {
-        self.sep.as_ref().map(|s| s.as_ref())
+    pub fn separator(&self) -> &str {
+        &self.sep
     }
 
     #[cfg(unix)]
     /// TODO
     pub fn set_infinity<S>(&mut self, s: S) -> Result<(), Error>
     where
-        S: Into<String>,
+        S: AsRef<str>,
     {
-        use num_format_core::constants::MAX_INF_LEN;
-
-        let s = s.into();
-        if s.len() > MAX_INF_LEN {
-            return Err(Error::new("TODO"));
-        }
-        self.nan = s;
+        let s = s.as_ref();
+        self.inf = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_INF_LEN))?;
         Ok(())
     }
 
@@ -169,15 +168,10 @@ impl SystemLocale {
     /// TODO
     pub fn set_nan<S>(&mut self, s: S) -> Result<(), Error>
     where
-        S: Into<String>,
+        S: AsRef<str>,
     {
-        use num_format_core::constants::MAX_NAN_LEN;
-
-        let s = s.into();
-        if s.len() > MAX_NAN_LEN {
-            return Err(Error::new("TODO"));
-        }
-        self.nan = s;
+        let s = s.as_ref();
+        self.nan = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_NAN_LEN))?;
         Ok(())
     }
 }
@@ -187,5 +181,26 @@ impl std::str::FromStr for SystemLocale {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         SystemLocale::from_name(s)
+    }
+}
+
+impl Format for SystemLocale {
+    fn decimal(&self) -> DecimalStr<'_> {
+        DecimalStr::new(self.decimal()).unwrap()
+    }
+    fn grouping(&self) -> Grouping {
+        self.grouping()
+    }
+    fn infinity(&self) -> InfinityStr<'_> {
+        InfinityStr::new(self.infinity()).unwrap()
+    }
+    fn minus_sign(&self) -> MinusSignStr<'_> {
+        MinusSignStr::new(self.minus_sign()).unwrap()
+    }
+    fn nan(&self) -> NanStr<'_> {
+        NanStr::new(self.nan()).unwrap()
+    }
+    fn separator(&self) -> SeparatorStr<'_> {
+        SeparatorStr::new(self.separator()).unwrap()
     }
 }

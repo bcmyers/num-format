@@ -230,6 +230,14 @@ at your option.
 )]
 #![doc(html_root_url = "https://docs.rs/num-format/0.3.0")]
 
+#[cfg(all(feature = "std", unix))]
+#[macro_use]
+extern crate cfg_if;
+
+#[cfg(all(feature = "std", any(unix, windows)))]
+#[macro_use]
+extern crate lazy_static;
+
 #[cfg(feature = "with-serde")]
 #[macro_use]
 extern crate serde;
@@ -240,10 +248,16 @@ mod custom_format;
 mod custom_format_builder;
 mod error;
 mod error_kind;
+mod format;
+mod grouping;
 mod helpers;
 mod impls;
+mod locale;
+#[cfg(all(feature = "std", any(unix, windows)))]
+mod system_locale;
 mod to_formatted_str;
 mod to_formatted_string;
+pub mod utils;
 mod write_formatted;
 
 pub use self::buffer::Buffer;
@@ -251,19 +265,16 @@ pub use self::custom_format::CustomFormat;
 pub use self::custom_format_builder::CustomFormatBuilder;
 pub use self::error::Error;
 pub use self::error_kind::ErrorKind;
-#[cfg(feature = "std")]
-pub use self::standard::*;
+pub use self::format::Format;
+pub use self::grouping::Grouping;
+pub use self::locale::Locale;
+#[cfg(all(feature = "std", any(unix, windows)))]
+pub use self::system_locale::SystemLocale;
 pub use self::to_formatted_str::ToFormattedStr;
-pub use num_format_core::utils;
-pub use num_format_core::{Format, Grouping, Locale};
-
 #[cfg(feature = "std")]
-mod standard {
-    pub use super::to_formatted_string::ToFormattedString;
-    pub use super::write_formatted::WriteFormatted;
-    #[cfg(any(unix, windows))]
-    pub use num_format_system::SystemLocale;
-}
+pub use self::to_formatted_string::ToFormattedString;
+#[cfg(feature = "std")]
+pub use self::write_formatted::WriteFormatted;
 
 mod sealed {
     pub trait Sealed {}

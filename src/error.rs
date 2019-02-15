@@ -46,6 +46,49 @@ impl Error {
             kind: ErrorKind::Capacity { len, cap },
         }
     }
+
+    #[cfg(all(feature = "std", unix))]
+    pub(crate) fn decoding<B, S>(bytes: B, encoding_label: S) -> Error
+    where
+        B: AsRef<[u8]>,
+        S: AsRef<str>,
+    {
+        let _ = bytes;
+        let _ = encoding_label;
+        unimplemented!()
+    }
+
+    #[cfg(feature = "std")]
+    pub(crate) fn null_ptr(function_name: &str) -> Error {
+        let _ = function_name;
+        unimplemented!()
+    }
+
+    pub(crate) fn parse_locale<S>(msg: S) -> Error
+    where
+        S: AsRef<str>,
+    {
+        let _ = msg;
+        unimplemented!()
+    }
+
+    #[cfg(all(feature = "std", unix))]
+    pub(crate) fn unix<S>(msg: S) -> Error
+    where
+        S: AsRef<str>,
+    {
+        let _ = msg;
+        unimplemented!()
+    }
+
+    #[cfg(all(feature = "std", any(unix, windows)))]
+    pub(crate) fn unsupported_encoding<S>(encoding_label: S) -> Error
+    where
+        S: AsRef<str>,
+    {
+        let _ = encoding_label;
+        unimplemented!()
+    }
 }
 
 impl fmt::Display for Error {

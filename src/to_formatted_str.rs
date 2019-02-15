@@ -1,6 +1,5 @@
-use num_format_core::Format;
-
 use crate::buffer::Buffer;
+use crate::format::Format;
 use crate::sealed::Sealed;
 
 /// Marker trait for number types that can be formatted without heap allocation (see [`Buffer`]).
