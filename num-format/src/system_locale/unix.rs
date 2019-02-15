@@ -113,7 +113,8 @@ fn free_locale(locale: *const c_void) {
 
 fn new_locale(name: &Option<String>) -> Result<*const c_void, Error> {
     let name_cstring = match name {
-        Some(ref name) => CString::new(name.as_bytes()).map_err(|_| Error::new("TODO: Unable to create cstring"))?,
+        Some(ref name) => CString::new(name.as_bytes())
+            .map_err(|_| Error::new("TODO: Unable to create cstring"))?,
         None => CString::new("").unwrap(),
     };
     let mask = libc::LC_CTYPE_MASK | libc::LC_MONETARY_MASK | libc::LC_NUMERIC_MASK;

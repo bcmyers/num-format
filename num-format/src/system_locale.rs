@@ -97,7 +97,7 @@ cfg_if! {
             where
                 S: Into<String>,
             {
-                self::windows::new(Some(name))
+                self::windows::new(Some(name.into()))
             }
 
             /// TODO

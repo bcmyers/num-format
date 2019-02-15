@@ -177,7 +177,7 @@ create_impls!(SeparatorStr, MAX_SEP_LEN);
 macro_rules! create_string {
     ( $name:ident, $visitor:ident, $max_len:expr ) => {
         #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-        pub(crate) struct $name(ArrayString<[u8; MAX_DEC_LEN]>);
+        pub(crate) struct $name(ArrayString<[u8; $max_len]>);
 
         impl $name {
             pub(crate) fn new<S>(s: S) -> Result<Self, Error>
@@ -187,6 +187,11 @@ macro_rules! create_string {
                 let s = s.as_ref();
                 let a = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), $max_len))?;
                 Ok($name(a))
+            }
+
+            #[allow(unused)]
+            pub(crate) fn max_len() -> usize {
+                $max_len
             }
         }
 

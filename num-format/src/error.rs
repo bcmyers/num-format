@@ -89,6 +89,14 @@ impl Error {
         let _ = encoding_label;
         unimplemented!()
     }
+
+    pub(crate) fn windows<S>(msg: S) -> Error
+    where
+        S: AsRef<str>,
+    {
+        eprintln!("{}", msg.as_ref());
+        unimplemented!()
+    }
 }
 
 impl fmt::Display for Error {

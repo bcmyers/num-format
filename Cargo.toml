@@ -1,50 +1,5 @@
-[package]
-name = "num-format"
-version = "0.3.0" # Remember to keep html_root_url in lib.rs in sync!
-
-authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
-categories = ["encoding", "internationalization", "localization", "no-std", "value-formatting"]
-description = "A Rust crate for producing string-representations of numbers, formatted according to international standards"
-documentation = "https://docs.rs/num-format"
-edition = "2018"
-homepage = "https://github.com/bcmyers/num-format"
-keywords = ["comma", "internationalization", "number", "separator", "thousands"]
-license = "MIT/Apache-2.0"
-publish = false # TODO
-readme = "README.md"
-repository = "https://github.com/bcmyers/num-format"
-
-[badges]
-maintenance = { status = "actively-developed" }
-travis-ci = { repository = "bcmyers/num-format", branch = "master" }
-
-[dependencies]
-arrayvec = { version = "0.4", default-features = false }
-itoa = { version = "0.4", default-features = false, features = ["i128"] }
-lazy_static = { version = "1.2", optional = true }
-num-bigint = { version = "0.2", optional = true }
-serde = { version = "1.0", optional = true }
-
-[target.'cfg(unix)'.dependencies]
-cfg-if = "0.1"
-encoding_rs = "0.8"
-libc = "0.2"
-
-[target.'cfg(windows)'.dependencies]
-winapi = { version = "0.3", features = ["winnls"] }
-widestring = "0.4"
-
-[features]
-default = ["std"]
-std = ["arrayvec/default", "itoa/default", "itoa/i128", "lazy_static"]
-with-serde = ["arrayvec/serde-1", "serde/derive"]
-
-[dev-dependencies]
-criterion = "0.2"
-lazy_static = "1.2"
-rand = "0.6"
-serde_json = "1.0"
-
-# [[bench]] TODO
-# name = "bench_usize"
-# harness = false
+[workspace]
+members = [
+    "num-format",
+    "num-format-windows",
+]

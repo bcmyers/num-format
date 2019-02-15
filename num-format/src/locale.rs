@@ -2,7 +2,9 @@
 use crate::error::Error;
 use crate::format::Format;
 use crate::grouping::Grouping;
-use crate::strings::{DecimalStr, InfinityStr, MinusSignStr, NanStr, PositiveSignStr, SeparatorStr};
+use crate::strings::{
+    DecimalStr, InfinityStr, MinusSignStr, NanStr, PositiveSignStr, SeparatorStr,
+};
 use core::str::FromStr;
 const AVAILABLE_NAMES: [&'static str; 538usize] = [
     "af",

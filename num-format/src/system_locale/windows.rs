@@ -2,11 +2,18 @@
 
 #![cfg(windows)]
 
+use std::borrow::Cow;
 use std::collections::HashSet;
+use std::ffi::CStr;
 use std::mem;
 use std::ptr;
 use std::sync::{Arc, Mutex};
 
+use num_format_windows::{
+    LOCALE_NAME_MAX_LENGTH, LOCALE_NAME_SYSTEM_DEFAULT, LOCALE_SDECIMAL, LOCALE_SGROUPING,
+    LOCALE_SNAME, LOCALE_SNAN, LOCALE_SNEGATIVESIGN, LOCALE_SNEGINFINITY, LOCALE_SPOSINFINITY,
+    LOCALE_SPOSITIVESIGN, LOCALE_STHOUSAND,
+};
 use widestring::{U16CStr, U16CString};
 use winapi::ctypes::c_int;
 use winapi::shared::minwindef::{BOOL, DWORD, LPARAM};
@@ -14,30 +21,18 @@ use winapi::um::errhandlingapi::GetLastError;
 use winapi::um::winnls;
 use winapi::um::winnt::WCHAR;
 
-use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN};
 use crate::error::Error;
 use crate::grouping::Grouping;
+use crate::strings::{DecString, InfString, MinString, NanString, PosString, SepString};
 use crate::system_locale::SystemLocale;
 
-extern "system" {
-    static LOCALE_NAME_MAX_LENGTH: usize;
-    static LOCALE_SDECIMAL: usize;
-    static LOCALE_SGROUPING: usize;
-    static LOCALE_SPOSINFINITY: usize;
-    static LOCALE_SNAME: usize;
-    static LOCALE_SNAN: usize;
-    static LOCALE_SNEGATIVESIGN: usize;
-    static LOCALE_SNEGINFINITY: usize;
-    static LOCALE_STHOUSAND: usize;
-}
-
 lazy_static! {
-    static ref LOCALE_NAME_SYSTEM_DEFAULT: Result<&'static str, Error> = {
-        extern "system" {
-            static LOCALE_NAME_SYSTEM_DEFAULT: *const u8;
-        }
-        let raw = LOCALE_NAME_SYSTEM_DEFAULT;
-        std::str::from_utf8(&raw[0..raw.len() - 1]).map_err(|_| {
+    static ref SYSTEM_DEFAULT: Result<&'static str, Error> = {
+        CStr::from_bytes_with_nul(LOCALE_NAME_SYSTEM_DEFAULT).map_err(|_| {
+            Error::windows(
+                "LOCALE_NAME_SYSTEM_DEFAULT from windows.h unexpectedly contains interior nul byte.",
+            )
+        })?.to_str().map_err(|_| {
             Error::windows(
                 "LOCALE_NAME_SYSTEM_DEFAULT from windows.h unexpectedly contains invalid UTF-8.",
             )
@@ -51,38 +46,23 @@ pub(crate) fn available_names() -> Result<HashSet<String>, Error> {
     enum_system_locales_ex()
 }
 
-pub(crate) fn default() -> Result<SystemLocale, Error> {
-    LOCALE_NAME_SYSTEM_DEFAULT.and_then(|s| from_name(s))
-}
+pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
+    let name: Cow<str> = match name {
+        Some(name) => name.into(),
+        None => (*SYSTEM_DEFAULT)?.into(),
+    };
 
-pub(crate) fn from_name<S>(name: S) -> Result<SystemLocale, Error>
-where
-    S: Into<String>,
-{
-    let name: String = name.into();
-
-    if name.len() > LOCALE_NAME_MAX_LENGTH - 1 {
+    let max_len = LOCALE_NAME_MAX_LENGTH as usize - 1;
+    if name.len() > max_len {
         return Err(Error::windows(format!(
             "locale names on windows may not exceed {} bytes (including a null byte).",
-            LOCALE_NAME_MAX_LENGTH,
+            max_len,
         )));
     }
 
     let dec = {
-        // call safe wrapper for GetLocaleInfoEx
-        // see https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-getlocaleinfoex
-        let dec_string = get_locale_info_ex(&name, Request::Decimal)?;
-
-        if dec_string.chars().count() != 1 {
-            return Err(Error::windows(format!(
-                "for the locale {:?}, windows returned a decimal value of {:?}, which is not one \
-                 character long. num-format currently does not support this. if you need support \
-                 for decimals of different lengths than one character, please file an issue at \
-                 https://github.com/bcmyers/num-format.",
-                &name, &dec_string
-            )));
-        }
-        dec_string.chars().nth(0).unwrap()
+        let s = get_locale_info_ex(&name, Request::Decimal)?;
+        DecString::new(&s).map_err(|_| Error::windows("TODO"))?
     };
 
     let grp = {
@@ -101,74 +81,66 @@ where
         }
     };
 
-    let inf =
-        {
-            let inf_string = get_locale_info_ex(&name, Request::PositiveInfinity)?;
-            if inf_string.len() > MAX_INF_LEN {
-                return Err(Error::windows(format!(
+    let inf = {
+        let s = get_locale_info_ex(&name, Request::PositiveInfinity)?;
+        InfString::new(&s).map_err(|_| {
+            Error::windows(format!(
                 "for the locale {:?}, windows returned an infinity sign of length {} bytes, \
-                which exceeds the maximum length for infinity signs that num-format currently \
-                supports ({} bytes). if you need support longer infinity signs, please file an \
-                issue at https://github.com/bcmyers/num-format.",
-                &name, inf_string.len(), MAX_INF_LEN)));
-            }
-            inf_string
-        };
+                 which exceeds the maximum length for infinity signs that num-format currently \
+                 supports. if you need support longer infinity signs, please file an \
+                 issue at https://github.com/bcmyers/num-format.",
+                &name,
+                s.len()
+            ))
+        })?
+    };
 
-    let min =
-        {
-            let min_string = get_locale_info_ex(&name, Request::MinusSign)?;
-            if min_string.len() > MAX_MIN_LEN {
-                return Err(Error::windows(format!(
+    let min = {
+        let s = get_locale_info_ex(&name, Request::MinusSign)?;
+        MinString::new(&s).map_err(|_| {
+            Error::windows(format!(
                 "for the locale {:?}, windows returned a minus sign of length {} bytes, \
-                which exceeds the maximum length for minus signs that num-format currently \
-                supports ({} bytes). if you need support longer minus signs, please file an issue \
-                at https://github.com/bcmyers/num-format.",
-                &name, min_string.len(), MAX_MIN_LEN)));
-            }
-            min_string
-        };
+                 which exceeds the maximum length for minus signs that num-format currently \
+                 supports. if you need support longer minus signs, please file an issue \
+                 at https://github.com/bcmyers/num-format.",
+                &name,
+                s.len()
+            ))
+        })?
+    };
 
-    let nan =
-        {
-            let nan_string = get_locale_info_ex(&name, Request::Nan)?;
-            if nan_string.len() > MAX_NAN_LEN {
-                return Err(Error::windows(format!(
+    let nan = {
+        let s = get_locale_info_ex(&name, Request::Nan)?;
+        NanString::new(&s).map_err(|_| {
+            Error::windows(format!(
                 "for the locale {:?}, windows returned a NaN value of length {} bytes, \
-                which exceeds the maximum length for NaN values that num-format currently \
-                supports ({} bytes). if you need support longer NaN values, please file an issue \
-                at https://github.com/bcmyers/num-format.",
-                &name, nan_string.len(), MAX_NAN_LEN)));
-            }
-            nan_string
-        };
+                 which exceeds the maximum length for NaN values that num-format currently \
+                 supports. if you need support longer NaN values, please file an issue \
+                 at https://github.com/bcmyers/num-format.",
+                &name,
+                s.len()
+            ))
+        })?
+    };
 
     let sep = {
-        let sep_string = get_locale_info_ex(&name, Request::Separator)?;
-        match sep_string.chars().count() {
-            0 => None,
-            1 => Some(sep_string.chars().nth(0).unwrap()),
-            _ => {
-                return Err(Error::windows(format!(
-                    "for the locale {:?}, windows returned a separator value of {:?}, which is \
-                    longer than one character, which num-format currently does not support. if you \
-                    need support for separator values longer than one character, please file an \
-                    issue at https://github.com/bcmyers/num-format.",
-                    &name,
-                    &sep_string
-                )));
-            }
-        }
+        let s = get_locale_info_ex(&name, Request::Separator)?;
+        SepString::new(&s).map_err(|_| Error::windows("TODO"))?
+    };
+
+    let pos = {
+        let s = get_locale_info_ex(&name, Request::PositiveSign)?;
+        PosString::new(&s).map_err(|_| Error::windows("TODO"))?
     };
 
     // we already have the name unless unless it was LOCALE_NAME_SYSTEM_DEFAULT, a special
     // case that doesn't correspond to our concept of name. in this special case, we have
     // to ask windows for the user-friendly name. the unwrap is OK, because we would never
     // have reached this point if LOCALE_NAME_SYSTEM_DEFAULT were an error.
-    let name = if &name == LOCALE_NAME_SYSTEM_DEFAULT.as_ref().unwrap() {
+    let name = if &name == SYSTEM_DEFAULT.as_ref().unwrap() {
         get_locale_info_ex(&name, Request::Name)?
     } else {
-        name
+        name.into()
     };
 
     let locale = SystemLocale {
@@ -178,6 +150,7 @@ where
         min,
         name,
         nan,
+        pos,
         sep,
     };
 
@@ -194,6 +167,7 @@ pub enum Request {
     Nan,
     NegativeInfinity,
     PositiveInfinity,
+    PositiveSign,
     Separator,
 }
 
@@ -208,6 +182,7 @@ impl From<Request> for DWORD {
             Nan => LOCALE_SNAN,
             NegativeInfinity => LOCALE_SNEGINFINITY,
             PositiveInfinity => LOCALE_SPOSINFINITY,
+            PositiveSign => LOCALE_SPOSITIVESIGN,
             Separator => LOCALE_STHOUSAND,
         }
     }
@@ -319,7 +294,7 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
     }
 
     // turn locale_name into windows string
-    let locale_name = U16CString::from_str(locale_name)?;
+    let locale_name = U16CString::from_str(locale_name).map_err(|_| Error::windows("TODO"))?;
 
     #[allow(non_snake_case)]
     let lpLocaleName = locale_name.as_ptr();
@@ -357,12 +332,12 @@ mod tests {
 
     #[test]
     fn test_system_locale_windows_constructors() {
-        let locale = default().unwrap();
+        let locale = new(None).unwrap();
         println!("DEFAULT LOCALE NAME: {}", locale.name());
-        let _ = from_name("en-US").unwrap();
+        let _ = new(Some("en-US".to_string())).unwrap();
         let names = available_names().unwrap();
-        for name in &names {
-            let _ = from_name(name.as_ref()).unwrap();
+        for name in names {
+            let _ = new(Some(name)).unwrap();
         }
     }
 
