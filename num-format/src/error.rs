@@ -94,7 +94,6 @@ impl Error {
     where
         S: AsRef<str>,
     {
-        eprintln!("{}", msg.as_ref());
         unimplemented!()
     }
 }

@@ -5,7 +5,8 @@ use core::ops::Deref;
 use core::str;
 
 use crate::constants::MAX_BUF_LEN;
-use crate::{Format, ToFormattedStr};
+use crate::format::Format;
+use crate::to_formatted_str::ToFormattedStr;
 
 /// <b><u>A key type</u></b>. Represents a stack-allocated buffer you can use to get a
 /// formatted `&str` without heap allocation.
@@ -83,6 +84,20 @@ impl Buffer {
     #[inline(always)]
     pub(crate) fn as_mut_ptr(&mut self) -> *mut u8 {
         self.inner.as_mut_ptr()
+    }
+
+    #[inline(always)]
+    pub(crate) fn write_with_itoa<N: itoa::Integer>(&mut self, n: N) -> usize {
+        let mut itoa_buf = itoa::Buffer::new();
+        let s = itoa_buf.format(n);
+        let bytes = s.as_bytes();
+        let len = s.len();
+        for i in 0..len {
+            self.inner[i] = bytes[i];
+        }
+        self.pos = 0;
+        self.end = len;
+        len
     }
 }
 

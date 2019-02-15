@@ -21,5 +21,4 @@ maintenance = { status = "actively-developed" }
 travis-ci = { repository = "bcmyers/num-format", branch = "master" }
 
 [build-dependencies]
-cfg-if = "0.1"
 bindgen = "0.47"

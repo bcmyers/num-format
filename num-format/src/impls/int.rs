@@ -1,8 +1,6 @@
 use core::mem;
 use core::ptr;
 
-use itoa;
-
 use crate::constants::{MAX_BUF_LEN, TABLE};
 use crate::helpers::{self, Separator};
 use crate::sealed::Sealed;
@@ -28,10 +26,7 @@ macro_rules! impl_signed {
                 // Bail out early if we can just use itoa
                 // (i.e. if we don't have a separator and a minus sign doesn't cause us problems)
                 if sep.is_none() && ((is_negative && min == "-") || !is_negative) {
-                    let c = itoa::write(&mut buf.inner[..], *self).unwrap();
-                    buf.pos = 0;
-                    buf.end = c;
-                    return c;
+                    return buf.write_with_itoa(*self);
                 }
 
                 // Reset our position to the end of the buffer

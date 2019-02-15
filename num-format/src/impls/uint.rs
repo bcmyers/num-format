@@ -1,7 +1,5 @@
 use core::mem;
 
-use itoa;
-
 use crate::constants::{MAX_BUF_LEN, TABLE};
 use crate::helpers::{self, Separator};
 use crate::sealed::Sealed;
@@ -14,10 +12,7 @@ impl ToFormattedStr for u8 {
     where
         F: Format,
     {
-        let c = itoa::write(&mut buf.inner[..], *self).unwrap();
-        buf.pos = 0;
-        buf.end = c;
-        c
+        buf.write_with_itoa(*self)
     }
 }
 
@@ -39,10 +34,7 @@ macro_rules! impl_unsigned {
                 // Bail out early if we can just use itoa
                 // (i.e. if we don't have a separator)
                 if sep.is_none() {
-                    let c = itoa::write(&mut buf.inner[..], *self).unwrap();
-                    buf.pos = 0;
-                    buf.end = c;
-                    return c;
+                    return buf.write_with_itoa(*self);
                 }
 
                 // Reset our position to the end of the buffer

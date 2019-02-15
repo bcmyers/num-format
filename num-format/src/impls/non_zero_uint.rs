@@ -1,8 +1,6 @@
 use core::mem;
 use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
 
-use itoa;
-
 use crate::constants::{MAX_BUF_LEN, TABLE};
 use crate::helpers::{self, Separator};
 use crate::sealed::Sealed;
@@ -15,10 +13,7 @@ impl ToFormattedStr for NonZeroU8 {
     where
         F: Format,
     {
-        let c = itoa::write(&mut buf.inner[..], self.get()).unwrap();
-        buf.pos = 0;
-        buf.end = c;
-        c
+        buf.write_with_itoa(self.get())
     }
 }
 
@@ -40,10 +35,7 @@ macro_rules! impl_non_zero {
                 // Bail out early if we can just use itoa
                 // (i.e. if we don't have a separator)
                 if sep.is_none() {
-                    let c = itoa::write(&mut buf.inner[..], self.get()).unwrap();
-                    buf.pos = 0;
-                    buf.end = c;
-                    return c;
+                    return buf.write_with_itoa(self.get());
                 }
 
                 // Reset our position to the end of the buffer

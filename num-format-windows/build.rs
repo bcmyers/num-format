@@ -1,8 +1,4 @@
-#[macro_use]
-extern crate cfg_if;
-
-cfg_if! {
-    if #[cfg(windows)] {
+#[cfg(windows)]
 fn main() {
     use std::env;
     use std::path::Path;
@@ -10,7 +6,7 @@ fn main() {
     use bindgen::{Builder, RustTarget};
 
     let root = env::var("CARGO_MANIFEST_DIR").unwrap();
-    let headers_path = Path::new(&root).join("win.h");
+    let headers_path = Path::new(&root).join("wrapper.h");
     let headers = headers_path.to_str().unwrap();
 
     let bindings = Builder::default()
@@ -30,20 +26,11 @@ fn main() {
         .generate()
         .expect("unable to generate bindings for windows.h");
 
-    let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("windows.rs");
+    let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("bindings.rs");
     bindings
         .write_to_file(&out_path)
         .expect("unable to write bindings for windows.h");
+}
 
-    let development_dir = Path::new(&root).parent().unwrap().join("tmp");
-    if development_dir.exists() {
-        let out_path = development_dir.join("windows.rs");
-        bindings
-            .write_to_file(&out_path)
-            .expect("unable to write bindings for windows.h");
-    }
-}
-    } else {
-        fn main() {}
-    }
-}
+#[cfg(not(windows))]
+fn main() {}
