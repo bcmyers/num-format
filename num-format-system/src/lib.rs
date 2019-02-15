@@ -20,6 +20,10 @@
 )]
 #![doc(html_root_url = "https://docs.rs/num-format-system/0.3.0")]
 
+#[cfg(unix)]
+#[macro_use]
+extern crate cfg_if;
+
 #[cfg(feature = "serde")]
 #[macro_use]
 extern crate serde;

@@ -50,83 +50,76 @@ cfg_if! {
         target_os = "netbsd"
     ))] {
         fn main() {
-            use std::env;
-            use std::path::Path;
+            // use std::env;
+            // use std::path::Path;
 
-            use bindgen::{Builder, RustTarget};
+            // use bindgen::{Builder, RustTarget};
 
-            let root = env::var("CARGO_MANIFEST_DIR").unwrap();
-            let headers_path = Path::new(&root).join("src").join("build").join("bsd.h");
-            let headers = headers_path.to_str().unwrap();
+            // let root = env::var("CARGO_MANIFEST_DIR").unwrap();
+            // let headers_path = Path::new(&root).join("src").join("build").join("bsd.h");
+            // let headers = headers_path.to_str().unwrap();
 
-            let bindings = Builder::default()
-                .header(headers)
-                .rust_target(RustTarget::Stable_1_28)
-                .whitelist_function("freelocale")
-                .whitelist_function("localeconv_l")
-                .whitelist_function("newlocale")
-                .whitelist_function("nl_langinfo_l")
-                .whitelist_function("querylocale")
-                .whitelist_function("uselocale")
-                .whitelist_type("locale_t")
-                .whitelist_type("lconv")
-                .whitelist_type("nl_item")
-                .whitelist_var("CODESET")
-                .whitelist_var("LC_CTYPE_MASK")
-                .whitelist_var("LC_MONETARY_MASK")
-                .whitelist_var("LC_NUMERIC_MASK")
-                .generate()
-                .expect("unable to generate bindings for langinfo.h and xlocale.h");
+            // let bindings = Builder::default()
+            //     .header(headers)
+            //     .rust_target(RustTarget::Stable_1_28)
+            //     .whitelist_type("lconv")
+            //     .whitelist_type("nl_item")
+            //     .whitelist_var("CODESET")
+            //     .whitelist_var("LC_CTYPE_MASK")
+            //     .whitelist_var("LC_MONETARY_MASK")
+            //     .whitelist_var("LC_NUMERIC_MASK")
+            //     .generate()
+            //     .expect("unable to generate bindings for langinfo.h and xlocale.h");
 
-            let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("bsd.rs");
-            eprintln!("{:?}", &out_path);
-            bindings
-                .write_to_file(&out_path)
-                .expect("unable to write bindings for langinfo.h and xlocale.h");
+            // let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("bsd.rs");
+            // eprintln!("{:?}", &out_path);
+            // bindings
+            //     .write_to_file(&out_path)
+            //     .expect("unable to write bindings for langinfo.h and xlocale.h");
 
-            let development_dir = Path::new(&root).parent().unwrap().join("bindings");
-            if development_dir.exists() {
-                let out_path = development_dir.join("bsd.rs");
-                bindings
-                    .write_to_file(&out_path)
-                    .expect("unable to write bindings for langinfo.h and xlocale.h");
-            }
+            // let development_dir = Path::new(&root).parent().unwrap().join("bindings");
+            // if development_dir.exists() {
+            //     let out_path = development_dir.join("bsd.rs");
+            //     bindings
+            //         .write_to_file(&out_path)
+            //         .expect("unable to write bindings for langinfo.h and xlocale.h");
+            // }
         }
     } else if #[cfg(unix)] {
         fn main() {
-            use std::env;
-            use std::path::Path;
+            // use std::env;
+            // use std::path::Path;
 
-            use bindgen::{Builder, RustTarget};
+            // use bindgen::{Builder, RustTarget};
 
-            let root = env::var("CARGO_MANIFEST_DIR").unwrap();
-            let headers_path = Path::new(&root).join("src").join("build").join("linux.h");
-            let headers = headers_path.to_str().unwrap();
+            // let root = env::var("CARGO_MANIFEST_DIR").unwrap();
+            // let headers_path = Path::new(&root).join("src").join("build").join("linux.h");
+            // let headers = headers_path.to_str().unwrap();
 
-            let bindings = Builder::default()
-                .header(headers)
-                .rust_target(RustTarget::Stable_1_28)
-                .whitelist_function("freelocale")
-                .whitelist_function("newlocale")
-                .whitelist_function("uselocale")
-                .whitelist_type("locale_t")
-                .whitelist_var("LC_MONETARY_MASK")
-                .whitelist_var("LC_NUMERIC_MASK")
-                .generate()
-                .expect("unable to generate bindings for locale.h");
+            // let bindings = Builder::default()
+            //     .header(headers)
+            //     .rust_target(RustTarget::Stable_1_28)
+            //     .whitelist_type("lconv")
+            //     .whitelist_type("nl_item")
+            //     .whitelist_var("CODESET")
+            //     .whitelist_var("LC_CTYPE_MASK")
+            //     .whitelist_var("LC_MONETARY_MASK")
+            //     .whitelist_var("LC_NUMERIC_MASK")
+            //     .generate()
+            //     .expect("unable to generate bindings for locale.h");
 
-            let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("locale.rs");
-            bindings
-                .write_to_file(&out_path)
-                .expect("unable to write bindings for locale.h");
+            // let out_path = Path::new(&env::var("OUT_DIR").unwrap()).join("linux.rs");
+            // bindings
+            //     .write_to_file(&out_path)
+            //     .expect("unable to write bindings for locale.h");
 
-            let development_dir = Path::new(&root).parent().unwrap().join("bindings");
-            if development_dir.exists() {
-                let out_path = development_dir.join("locale.rs");
-                bindings
-                    .write_to_file(&out_path)
-                    .expect("unable to write bindings for locale.h");
-            }
+            // let development_dir = Path::new(&root).parent().unwrap().join("bindings");
+            // if development_dir.exists() {
+            //     let out_path = development_dir.join("linux.rs");
+            //     bindings
+            //         .write_to_file(&out_path)
+            //         .expect("unable to write bindings for locale.h");
+            // }
         }
     } else {
         fn main() {}

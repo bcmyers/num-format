@@ -3,7 +3,6 @@ mod windows;
 
 use std::collections::HashSet;
 
-use cfg_if::cfg_if;
 use num_format_core::Grouping;
 
 use crate::error::Error;
@@ -65,7 +64,7 @@ cfg_if! {
 
             /// TODO
             pub fn default() -> Result<SystemLocale, Error> {
-                unix::default()
+                unix::new(None)
             }
 
             /// TODO
@@ -73,7 +72,7 @@ cfg_if! {
             where
                 S: Into<String>,
             {
-                unix::from_name(name)
+                unix::new(Some(name.into()))
             }
 
             /// TODO
