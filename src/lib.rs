@@ -102,7 +102,7 @@ fn main() {
     assert_eq!(locale.grouping(), Grouping::Standard);
     assert_eq!(locale.minus_sign(), "-");
     assert_eq!(locale.name(), "en");
-    assert_eq!(locale.separator(), Some(','));
+    assert_eq!(locale.separator(), ",");
 
     let locale2 = Locale::from_name("en").unwrap();
     assert_eq!(locale, locale2);
@@ -157,7 +157,7 @@ fn main() -> Result<(), Error> {
     let format = CustomFormat::builder()
         .grouping(Grouping::Indian)
         .minus_sign("🙌")
-        .separator(Some('😀'))
+        .separator("😀")
         .build()?;
 
     let mut buf = Buffer::new();
@@ -250,6 +250,7 @@ mod error;
 mod error_kind;
 mod format;
 mod grouping;
+mod types_;
 mod helpers;
 mod impls;
 mod locale;

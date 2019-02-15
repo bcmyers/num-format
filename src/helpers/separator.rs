@@ -15,8 +15,13 @@ impl Separator {
     where
         F: Format,
     {
-        match (format.grouping(), format.separator()) {
-            (Grouping::Standard, Some(c)) => {
+        let sep = format.separator().into_str();
+        if sep.len() == 0 {
+            return None;
+        }
+        let c = sep.chars().next().unwrap(); // TODO: This is wrong
+        match format.grouping() {
+            Grouping::Standard => {
                 let _ = c.encode_utf8(sep_buf);
                 Some(Separator {
                     len: c.len_utf8(),
@@ -25,7 +30,7 @@ impl Separator {
                     step: 4,
                 })
             }
-            (Grouping::Indian, Some(c)) => {
+            Grouping::Indian => {
                 let _ = c.encode_utf8(sep_buf);
                 Some(Separator {
                     len: c.len_utf8(),

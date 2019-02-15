@@ -35,6 +35,18 @@ impl<'a> DecimalStr<'a> {
     }
 }
 
+impl<'a> fmt::Debug for DecimalStr<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+impl<'a> fmt::Display for DecimalStr<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 /// Simple wrapper type for a `&str` to make sure its length is less than the maximum for
 /// an infinity symbol (128 bytes).
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -180,5 +192,17 @@ impl<'a> SeparatorStr<'a> {
     /// Allows recovery of the initial / wrapped `&str`.
     pub fn into_str(self) -> &'a str {
         self.0
+    }
+}
+
+impl<'a> fmt::Debug for SeparatorStr<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+impl<'a> fmt::Display for SeparatorStr<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
     }
 }

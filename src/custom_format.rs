@@ -14,7 +14,7 @@ use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 ///     let format = CustomFormat::builder()
 ///         .grouping(Grouping::Indian)
 ///         .minus_sign("🙌")
-///         .separator(Some('😀'))
+///         .separator("😀")
 ///         .build()?;
 ///
 ///     let mut buf = Buffer::new();
