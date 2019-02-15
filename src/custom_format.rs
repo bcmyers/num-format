@@ -171,7 +171,7 @@ mod tests {
         let locale = CustomFormat::builder().build().unwrap();
         let s = serde_json::to_string(&locale).unwrap();
         let expected =
-            r#"{"dec":".","grp":"Standard","inf":"∞","min":"-","nan":"NaN","sep":","}"#;
+            r#"{"dec":".","grp":"Standard","inf":"∞","min":"-","nan":"NaN","pos":"+","sep":","}"#;
         assert_eq!(expected, &s);
     }
 }
