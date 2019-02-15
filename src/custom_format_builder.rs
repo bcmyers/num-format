@@ -1,31 +1,31 @@
-use arrayvec::ArrayString;
-
-use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN, MAX_DEC_LEN, MAX_SEP_LEN};
+use crate::strings::{DecString, InfString, MinString, NanString, PosString, SepString};
 use crate::{CustomFormat, Error, Format, Grouping, Locale};
 
 /// Type for building [`CustomFormat`]s.
 ///
 /// [`CustomFormat`]: struct.CustomFormat.html
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct CustomFormatBuilder {
-    dec: Result<ArrayString<[u8; MAX_DEC_LEN]>, Error>,
+    dec: Result<DecString, Error>,
     grp: Grouping,
-    inf: Result<ArrayString<[u8; MAX_INF_LEN]>, Error>,
-    min: Result<ArrayString<[u8; MAX_MIN_LEN]>, Error>,
-    nan: Result<ArrayString<[u8; MAX_NAN_LEN]>, Error>,
-    sep: Result<ArrayString<[u8; MAX_SEP_LEN]>, Error>,
+    inf: Result<InfString, Error>,
+    min: Result<MinString, Error>,
+    nan: Result<NanString, Error>,
+    pos: Result<PosString, Error>,
+    sep: Result<SepString, Error>,
 }
 
 impl CustomFormatBuilder {
     pub(crate) fn new() -> Self {
         Self {
-            dec: ArrayString::from(Locale::en.decimal()).map_err(|_| unreachable!()),
+            dec: DecString::new(Locale::en.decimal()),
             grp: Locale::en.grouping(),
-            inf: ArrayString::from(Locale::en.infinity()).map_err(|_| unreachable!()),
-            min: ArrayString::from(Locale::en.minus_sign()).map_err(|_| unreachable!()),
-            nan: ArrayString::from(Locale::en.nan()).map_err(|_| unreachable!()),
-            sep: ArrayString::from(Locale::en.separator()).map_err(|_| unreachable!()),
+            inf: InfString::new(Locale::en.infinity()),
+            min: MinString::new(Locale::en.minus_sign()),
+            nan: NanString::new(Locale::en.nan()),
+            pos: PosString::new(Locale::en.positive_sign()),
+            sep: SepString::new(Locale::en.separator()),
         }
     }
 
@@ -46,14 +46,17 @@ impl CustomFormatBuilder {
             inf: self.inf?,
             min: self.min?,
             nan: self.nan?,
+            pos: self.pos?,
             sep: self.sep?,
         })
     }
 
     /// Sets the character used to represent decimal points.
-    pub fn decimal<S>(mut self, value: S) -> Self where S: AsRef<str> {
-        let s = value.as_ref();
-        self.dec = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_DEC_LEN));
+    pub fn decimal<S>(mut self, s: S) -> Self
+    where
+        S: AsRef<str>,
+    {
+        self.dec = DecString::new(s);
         self
     }
 
@@ -63,18 +66,12 @@ impl CustomFormatBuilder {
     where
         F: Format,
     {
-        let dec_str = value.decimal().into_str();
-        let inf_str = value.infinity().into_str();
-        let min_str = value.minus_sign().into_str();
-        let nan_str = value.nan().into_str();
-        let sep_str = value.separator().into_str();
-
-        self.dec = ArrayString::from(dec_str).map_err(|_| unreachable!());
+        self.dec = DecString::new(value.decimal());
         self.grp = value.grouping();
-        self.inf = ArrayString::from(inf_str).map_err(|_| unreachable!());
-        self.min = ArrayString::from(min_str).map_err(|_| unreachable!());
-        self.nan = ArrayString::from(nan_str).map_err(|_| unreachable!());
-        self.sep = ArrayString::from(sep_str).map_err(|_| unreachable!());
+        self.inf = InfString::new(value.infinity());
+        self.min = MinString::new(value.minus_sign());
+        self.nan = NanString::new(value.nan());
+        self.sep = SepString::new(value.separator());
         self
     }
 
@@ -90,25 +87,23 @@ impl CustomFormatBuilder {
     /// [`build`] will return an error (see [`build`]).
     ///
     /// [`build`]: struct.CustomFormatBuilder.html#method.build
-    pub fn infinity<S>(mut self, value: S) -> Self
+    pub fn infinity<S>(mut self, s: S) -> Self
     where
         S: AsRef<str>,
     {
-        let s = value.as_ref();
-        self.inf = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_INF_LEN));
+        self.inf = InfString::new(s);
         self
     }
 
-    /// Sets the string used for minus signs. Note: If the length is greater than 7 bytes
+    /// Sets the string used for minus signs. Note: If the length is greater than 8 bytes
     /// [`build`] will return an error (see [`build`]).
     ///
     /// [`build`]: struct.CustomFormatBuilder.html#method.build
-    pub fn minus_sign<S>(mut self, value: S) -> Self
+    pub fn minus_sign<S>(mut self, s: S) -> Self
     where
         S: AsRef<str>,
     {
-        let s = value.as_ref();
-        self.min = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_MIN_LEN));
+        self.min = MinString::new(s);
         self
     }
 
@@ -116,19 +111,32 @@ impl CustomFormatBuilder {
     /// [`build`] will return an error (see [`build`]).
     ///
     /// [`build`]: struct.CustomFormatBuilder.html#method.build
-    pub fn nan<S>(mut self, value: S) -> Self
+    pub fn nan<S>(mut self, s: S) -> Self
     where
         S: AsRef<str>,
     {
-        let s = value.as_ref();
-        self.nan = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_NAN_LEN));
+        self.nan = NanString::new(s);
+        self
+    }
+
+    /// Sets the string used for positive signs. Note: If the length is greater than 8 bytes
+    /// [`build`] will return an error (see [`build`]).
+    ///
+    /// [`build`]: struct.CustomFormatBuilder.html#method.build
+    pub fn positive_sign<S>(mut self, s: S) -> Self
+    where
+        S: AsRef<str>,
+    {
+        self.pos = PosString::new(s);
         self
     }
 
     /// Sets the character, if any, used to represent separtors.
-    pub fn separator<S>(mut self, value: S) -> Self where S: AsRef<str> {
-        let s = value.as_ref();
-        self.sep = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_SEP_LEN));
+    pub fn separator<S>(mut self, s: S) -> Self
+    where
+        S: AsRef<str>,
+    {
+        self.sep = SepString::new(s);
         self
     }
 }
@@ -141,6 +149,7 @@ impl From<CustomFormat> for CustomFormatBuilder {
             inf: Ok(format.inf),
             min: Ok(format.min),
             nan: Ok(format.nan),
+            pos: Ok(format.pos),
             sep: Ok(format.sep),
         }
     }

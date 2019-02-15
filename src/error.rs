@@ -2,8 +2,9 @@ use core::fmt;
 
 use arrayvec::ArrayString;
 
-use crate::constants::MAX_ERR_LEN;
 use crate::ErrorKind;
+
+pub(crate) const MAX_ERR_LEN: usize = 256;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
@@ -40,14 +41,16 @@ impl Error {
     pub fn kind(&self) -> ErrorKind {
         self.kind
     }
+}
 
+#[allow(unused)]
+impl Error {
     pub(crate) fn capacity(len: usize, cap: usize) -> Error {
         Error {
             kind: ErrorKind::Capacity { len, cap },
         }
     }
 
-    #[cfg(all(feature = "std", unix))]
     pub(crate) fn decoding<B, S>(bytes: B, encoding_label: S) -> Error
     where
         B: AsRef<[u8]>,
@@ -58,7 +61,6 @@ impl Error {
         unimplemented!()
     }
 
-    #[cfg(feature = "std")]
     pub(crate) fn null_ptr(function_name: &str) -> Error {
         let _ = function_name;
         unimplemented!()
@@ -72,7 +74,6 @@ impl Error {
         unimplemented!()
     }
 
-    #[cfg(all(feature = "std", unix))]
     pub(crate) fn unix<S>(msg: S) -> Error
     where
         S: AsRef<str>,
@@ -81,7 +82,6 @@ impl Error {
         unimplemented!()
     }
 
-    #[cfg(all(feature = "std", any(unix, windows)))]
     pub(crate) fn unsupported_encoding<S>(encoding_label: S) -> Error
     where
         S: AsRef<str>,

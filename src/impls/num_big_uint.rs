@@ -4,7 +4,6 @@ use std::str;
 
 use num_bigint::BigUint;
 
-use crate::constants::MAX_MIN_LEN;
 use crate::helpers::write_str_to_buffer;
 use crate::sealed::Sealed;
 use crate::{Format, Grouping, ToFormattedString};
@@ -15,10 +14,10 @@ impl ToFormattedString for BigUint {
         F: Format,
         W: io::Write,
     {
-        let sep = format.separator();
+        let sep = format.separator().into_str();
         let grp = format.grouping();
 
-        if sep.is_none() || grp == Grouping::Posix {
+        if sep.is_empty() || grp == Grouping::Posix {
             // If we can just use BigInt's to_string method, let's do it
             let s = self.to_string();
             w.write_all(s.as_bytes())?;
@@ -26,7 +25,6 @@ impl ToFormattedString for BigUint {
         }
 
         let s = self.to_string();
-        let sep = sep.unwrap();
 
         // Create the buffer
         let buf_len = match s.len().checked_mul(3) {
@@ -50,10 +48,10 @@ impl ToFormattedString for BigUint {
         F: Format,
         W: fmt::Write,
     {
-        let sep = format.separator();
+        let sep = format.separator().into_str();
         let grp = format.grouping();
 
-        if sep.is_none() || grp == Grouping::Posix {
+        if sep.is_empty() || grp == Grouping::Posix {
             // If we can just use BigInt's to_string method, let's do it
             let s = self.to_string();
             w.write_str(&s)
@@ -62,11 +60,10 @@ impl ToFormattedString for BigUint {
         }
 
         let s = self.to_string();
-        let sep = sep.unwrap();
 
         // Create the buffer
         let buf_len = match s.len().checked_mul(3) {
-            Some(v) => v + MAX_MIN_LEN,
+            Some(v) => v,
             None => s.len(),
         };
         let mut buf: Vec<u8> = Vec::with_capacity(buf_len);

@@ -14,6 +14,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
     let mut infinities = Vec::new();
     let mut minus_signs = Vec::new();
     let mut nans = Vec::new();
+    let mut positive_signs = Vec::new();
     let mut separators = Vec::new();
     let mut from_strs = Vec::new();
     let mut names = Vec::new();
@@ -21,6 +22,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
     for (variant_name, format) in data.iter() {
         let key = Ident::new(variant_name, Span::call_site());
 
+        // decimals
         let value = Literal::string(&format.dec.to_string());
         let group = Group::new(
             Delimiter::None,
@@ -30,6 +32,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         );
         decimals.push(group);
 
+        // groupings
         let value = format.grp.to_ident();
         let group = Group::new(
             Delimiter::None,
@@ -39,6 +42,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         );
         groupings.push(group);
 
+        // infinities
         let value = Literal::string(&format.inf);
         let group = Group::new(
             Delimiter::None,
@@ -48,6 +52,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         );
         infinities.push(group);
 
+        // minus_signs
         let value = Literal::string(&format.min);
         let group = Group::new(
             Delimiter::None,
@@ -57,6 +62,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         );
         minus_signs.push(group);
 
+        // nans
         let value = Literal::string(&format.nan);
         let group = Group::new(
             Delimiter::None,
@@ -66,6 +72,17 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         );
         nans.push(group);
 
+        // positive_signs
+        let value = Literal::string(&format.pos);
+        let group = Group::new(
+            Delimiter::None,
+            quote! {
+                #key => #value,
+            },
+        );
+        positive_signs.push(group);
+
+        // separtors
         let value = Literal::string(&format.sep.to_string());
         let group = Group::new(
             Delimiter::None,
@@ -75,6 +92,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         );
         separators.push(group);
 
+        // from_strs
         let value = key.clone();
         let key2 = Literal::string(&format.identifier);
         let group = Group::new(
@@ -85,6 +103,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         );
         from_strs.push(group);
 
+        // names
         let value = Literal::string(&format.identifier);
         let group = Group::new(
             Delimiter::None,
@@ -93,6 +112,8 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
             },
         );
         names.push(group);
+
+        // names2
         names2.push(&format.identifier);
     }
 
@@ -105,8 +126,12 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
 
         use core::str::FromStr;
 
-        use crate::utils::{DecimalStr, InfinityStr, MinusSignStr, NanStr, SeparatorStr};
-        use crate::{Error, Format, Grouping};
+        use crate::error::Error;
+        use crate::format::Format;
+        use crate::grouping::Grouping;
+        use crate::strings::{
+            DecimalStr, InfinityStr, MinusSignStr, NanStr, PositiveSignStr, SeparatorStr
+        };
 
         const AVAILABLE_NAMES: [&'static str; #names2_len] = [#(#names2),*];
 
@@ -213,6 +238,14 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
                 }
             }
 
+            /// Returns the locale's positive sign representation.
+            pub fn positive_sign(&self) -> &'static str {
+                use self::Locale::*;
+                match self {
+                    #(#positive_signs)*
+                }
+            }
+
             /// Returns the locale's separator representation, if any.
             pub fn separator(&self) -> &'static str {
                 use self::Locale::*;
@@ -241,6 +274,10 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
 
             fn nan(&self) -> NanStr<'_> {
                 NanStr::new(self.nan()).unwrap()
+            }
+
+            fn positive_sign(&self) -> PositiveSignStr<'_> {
+                PositiveSignStr::new(self.positive_sign()).unwrap()
             }
 
             fn separator(&self) -> SeparatorStr<'_> {

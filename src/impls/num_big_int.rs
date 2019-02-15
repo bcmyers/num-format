@@ -5,7 +5,6 @@ use std::str;
 
 use num_bigint::{BigInt, Sign};
 
-use crate::constants::MAX_MIN_LEN;
 use crate::helpers::write_str_to_buffer;
 use crate::sealed::Sealed;
 use crate::{Format, Grouping, ToFormattedString};
@@ -16,7 +15,7 @@ impl ToFormattedString for BigInt {
         F: Format,
         W: io::Write,
     {
-        let sep = format.separator();
+        let sep = format.separator().into_str();
         let grp = format.grouping();
         let min = format.minus_sign().into_str();
         let is_negative = match self.sign() {
@@ -26,7 +25,7 @@ impl ToFormattedString for BigInt {
         };
 
         // If we can just use BigInt's to_string method, let's do it
-        if (sep.is_none() || grp == Grouping::Posix) && ((min == "-") || !is_negative) {
+        if (sep.is_empty() || grp == Grouping::Posix) && ((min == "-") || !is_negative) {
             let s = self.to_string();
             w.write_all(s.as_bytes())?;
             return Ok(s.len());
@@ -41,13 +40,10 @@ impl ToFormattedString for BigInt {
         };
 
         // If no sep, bail
-        let sep = match sep {
-            Some(sep) => sep,
-            None => {
-                w.write_all(s.as_bytes())?;
-                return Ok(s.len());
-            }
-        };
+        if sep.is_empty() {
+            w.write_all(s.as_bytes())?;
+            return Ok(s.len()); // TODO
+        }
 
         // If posix, bail
         if grp == Grouping::Posix {
@@ -77,7 +73,7 @@ impl ToFormattedString for BigInt {
         F: Format,
         W: fmt::Write,
     {
-        let sep = format.separator();
+        let sep = format.separator().into_str();
         let grp = format.grouping();
         let min = format.minus_sign().into_str();
         let is_negative = match self.sign() {
@@ -87,7 +83,7 @@ impl ToFormattedString for BigInt {
         };
 
         // If we can just use BigInt's to_string method, let's do it
-        if (sep.is_none() || grp == Grouping::Posix) && ((min == "-") || !is_negative) {
+        if (sep.is_empty() || grp == Grouping::Posix) && ((min == "-") || !is_negative) {
             let s = self.to_string();
             w.write_str(&s)
                 .map_err(|e| Error::new(ErrorKind::Other, e))?;
@@ -104,14 +100,11 @@ impl ToFormattedString for BigInt {
         };
 
         // If no sep, bail
-        let sep = match sep {
-            Some(sep) => sep,
-            None => {
-                w.write_str(&s)
-                    .map_err(|e| Error::new(ErrorKind::Other, e))?;
-                return Ok(s.len());
-            }
-        };
+        if sep.is_empty() {
+            w.write_str(&s)
+                .map_err(|e| Error::new(ErrorKind::Other, e))?;
+            return Ok(s.len()); // TODO
+        }
 
         // If posix, bail
         if grp == Grouping::Posix {
@@ -122,7 +115,7 @@ impl ToFormattedString for BigInt {
 
         // Create the buffer
         let buf_len = match s.len().checked_mul(3) {
-            Some(v) => v + MAX_MIN_LEN,
+            Some(v) => v,
             None => s.len(),
         };
         let mut buf: Vec<u8> = Vec::with_capacity(buf_len);

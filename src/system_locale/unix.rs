@@ -26,13 +26,12 @@ use std::ffi::{CStr, CString};
 use std::process::Command;
 use std::ptr::{self, NonNull};
 
-use arrayvec::{Array, ArrayString};
 use libc::{c_char, c_int, c_void};
 
-use crate::constants::{MAX_DEC_LEN, MAX_POS_LEN, MAX_SEP_LEN, MAX_MIN_LEN};
 use crate::error::Error;
 use crate::grouping::Grouping;
 use crate::locale::Locale;
+use crate::strings::{DecString, InfString, MinString, NanString, PosString, SepString};
 use crate::system_locale::SystemLocale;
 
 extern "C" {
@@ -89,10 +88,10 @@ pub(crate) fn new(maybe_name: Option<String>) -> Result<SystemLocale, Error> {
         let system_locale = SystemLocale {
             dec: lconv.dec,
             grp: lconv.grp,
-            inf: ArrayString::from(Locale::en.infinity()).unwrap(),
+            inf: InfString::new(Locale::en.infinity()).unwrap(),
             min: lconv.min,
             name,
-            nan: ArrayString::from(Locale::en.nan()).unwrap(),
+            nan: NanString::new(Locale::en.nan()).unwrap(),
             pos: lconv.pos,
             sep: lconv.sep,
         };
@@ -114,7 +113,7 @@ fn free_locale(locale: *const c_void) {
 
 fn new_locale(name: &Option<String>) -> Result<*const c_void, Error> {
     let name_cstring = match name {
-        Some(ref name) => CString::new(name.as_bytes()).map_err(|_| Error::new("TODO"))?,
+        Some(ref name) => CString::new(name.as_bytes()).map_err(|_| Error::new("TODO: Unable to create cstring"))?,
         None => CString::new("").unwrap(),
     };
     let mask = libc::LC_CTYPE_MASK | libc::LC_MONETARY_MASK | libc::LC_NUMERIC_MASK;
@@ -134,28 +133,40 @@ fn use_locale(locale: *const c_void) -> Result<*const c_void, Error> {
 }
 
 pub(crate) struct Lconv {
-    pub(crate) dec: ArrayString<[u8; MAX_DEC_LEN]>,
+    pub(crate) dec: DecString,
     pub(crate) grp: Grouping,
-    pub(crate) min: ArrayString<[u8; MAX_MIN_LEN]>,
-    pub(crate) pos: ArrayString<[u8; MAX_POS_LEN]>,
-    pub(crate) sep: ArrayString<[u8; MAX_SEP_LEN]>,
+    pub(crate) min: MinString,
+    pub(crate) pos: PosString,
+    pub(crate) sep: SepString,
 }
 
 impl Lconv {
     pub(crate) fn new(lconv: &libc::lconv, encoding: Encoding) -> Result<Lconv, Error> {
-        let dec = StaticCString::new(lconv.decimal_point, encoding, "lconv.decimal_point")?
-            .to_array_string::<[u8; MAX_DEC_LEN]>()?;
+        let dec = {
+            let s = StaticCString::new(lconv.decimal_point, encoding, "lconv.decimal_point")?
+                .to_string()?;
+            DecString::new(&s)?
+        };
 
         let grp = StaticCString::new(lconv.grouping, encoding, "lconv.grouping")?.to_grouping()?;
 
-        let min = StaticCString::new(lconv.negative_sign, encoding, "lconv.negative_sign")?
-            .to_array_string::<[u8; MAX_MIN_LEN]>()?;
+        let min = {
+            let s = StaticCString::new(lconv.negative_sign, encoding, "lconv.negative_sign")?
+                .to_string()?;
+            MinString::new(&s)?
+        };
 
-        let pos = StaticCString::new(lconv.positive_sign, encoding, "lconv.positive_sign")?
-            .to_array_string::<[u8; MAX_POS_LEN]>()?;
+        let pos = {
+            let s = StaticCString::new(lconv.positive_sign, encoding, "lconv.positive_sign")?
+                .to_string()?;
+            PosString::new(&s)?
+        };
 
-        let sep = StaticCString::new(lconv.thousands_sep, encoding, "lconv.thousands_sep")?
-            .to_array_string::<[u8; MAX_SEP_LEN]>()?;
+        let sep = {
+            let s = StaticCString::new(lconv.thousands_sep, encoding, "lconv.thousands_sep")?
+                .to_string()?;
+            SepString::new(&s)?
+        };
 
         Ok(Lconv {
             dec,
@@ -184,27 +195,10 @@ impl StaticCString {
         Ok(StaticCString { encoding, non_null })
     }
 
-    pub(crate) fn to_array_string<A>(&self) -> Result<ArrayString<A>, Error>
-    where
-        A: Array<Item = u8>,
-    {
-        let ptr = self.non_null.as_ptr();
-        let cstr = unsafe { CStr::from_ptr(ptr) };
-        let s = cstr.to_str().map_err(|_| Error::new("TODO"))?;
-        let a = ArrayString::from(s).map_err(|_| Error::new("TODO"))?;
-        Ok(a)
-    }
-
-    pub(crate) fn to_bytes(&self) -> Vec<u8> {
+    pub(crate) fn to_grouping(&self) -> Result<Grouping, Error> {
         let ptr = self.non_null.as_ptr();
         let cstr = unsafe { CStr::from_ptr(ptr) };
         let bytes = cstr.to_bytes();
-        bytes.to_vec()
-    }
-
-    pub(crate) fn to_grouping(&self) -> Result<Grouping, Error> {
-        let bytes = self.to_bytes();
-        let bytes: &[u8] = &bytes;
         let grouping = match bytes {
             [3, 2] | [2, 3] => Grouping::Indian, // TODO
             [] | [127] => Grouping::Posix,
@@ -215,7 +209,9 @@ impl StaticCString {
     }
 
     pub(crate) fn to_string(&self) -> Result<String, Error> {
-        let bytes = self.to_bytes();
-        self.encoding.decode(&bytes)
+        let ptr = self.non_null.as_ptr();
+        let cstr = unsafe { CStr::from_ptr(ptr) };
+        let bytes = cstr.to_bytes();
+        self.encoding.decode(bytes)
     }
 }

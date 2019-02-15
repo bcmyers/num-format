@@ -2,7 +2,7 @@ use core::fmt;
 
 use arrayvec::ArrayString;
 
-use crate::constants::MAX_ERR_LEN;
+use crate::error::MAX_ERR_LEN;
 
 /// This crate's error kind.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]

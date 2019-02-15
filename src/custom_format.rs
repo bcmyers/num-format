@@ -1,7 +1,7 @@
-use arrayvec::ArrayString;
-
-use crate::constants::{MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN, MAX_DEC_LEN, MAX_SEP_LEN};
-use crate::utils::{InfinityStr, MinusSignStr, NanStr, DecimalStr, SeparatorStr};
+use crate::strings::{
+    DecString, DecimalStr, InfString, InfinityStr, MinString, MinusSignStr, NanStr, NanString,
+    PosString, PositiveSignStr, SepString, SeparatorStr,
+};
 use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 
 /// Type for representing your own custom formats. Implements [`Format`].
@@ -26,15 +26,16 @@ use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 /// ```
 ///
 /// [`Format`]: trait.Format.html
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct CustomFormat {
-    pub(crate) dec: ArrayString<[u8; MAX_DEC_LEN]>,
+    pub(crate) dec: DecString,
     pub(crate) grp: Grouping,
-    pub(crate) inf: ArrayString<[u8; MAX_INF_LEN]>,
-    pub(crate) min: ArrayString<[u8; MAX_MIN_LEN]>,
-    pub(crate) nan: ArrayString<[u8; MAX_NAN_LEN]>,
-    pub(crate) sep: ArrayString<[u8; MAX_SEP_LEN]>,
+    pub(crate) inf: InfString,
+    pub(crate) min: MinString,
+    pub(crate) nan: NanString,
+    pub(crate) pos: PosString,
+    pub(crate) sep: SepString,
 }
 
 impl CustomFormat {
@@ -74,6 +75,11 @@ impl CustomFormat {
         &self.min
     }
 
+    /// Returns this format's representation of positive signs.
+    pub fn positive_sign(&self) -> &str {
+        &self.pos
+    }
+
     /// Returns this format's representation of NaN.
     pub fn nan(&self) -> &str {
         &self.nan
@@ -82,6 +88,13 @@ impl CustomFormat {
     /// Returns this format's representation of separators.
     pub fn separator(&self) -> &str {
         &self.sep
+    }
+}
+
+impl Default for CustomFormat {
+    /// Returns a `CustomFormat` with settings equal to `Locale::en`.
+    fn default() -> Self {
+        Locale::en.into()
     }
 }
 
@@ -106,6 +119,10 @@ impl Format for CustomFormat {
         NanStr::new(self.nan()).unwrap()
     }
 
+    fn positive_sign(&self) -> PositiveSignStr<'_> {
+        PositiveSignStr::new(self.positive_sign()).unwrap()
+    }
+
     fn separator(&self) -> SeparatorStr<'_> {
         SeparatorStr::new(self.separator()).unwrap()
     }
@@ -114,32 +131,47 @@ impl Format for CustomFormat {
 impl From<Locale> for CustomFormat {
     fn from(locale: Locale) -> Self {
         Self {
-            dec: ArrayString::from(locale.decimal()).unwrap(),
+            dec: DecString::new(locale.decimal()).unwrap(),
             grp: locale.grouping(),
-            inf: ArrayString::from(locale.infinity()).unwrap(),
-            min: ArrayString::from(locale.minus_sign()).unwrap(),
-            nan: ArrayString::from(locale.nan()).unwrap(),
-            sep: ArrayString::from(locale.separator()).unwrap(),
+            inf: InfString::new(locale.infinity()).unwrap(),
+            min: MinString::new(locale.minus_sign()).unwrap(),
+            nan: NanString::new(locale.nan()).unwrap(),
+            pos: PosString::new(locale.positive_sign()).unwrap(),
+            sep: SepString::new(locale.separator()).unwrap(),
         }
     }
 }
 
-#[cfg(all(feature = "system", any(unix, windows)))]
+#[cfg(all(feature = "std", any(unix, windows)))]
 mod system {
-    use arrayvec::ArrayString;
-
-    use crate::{CustomFormat, SystemLocale};
+    use super::*;
+    use crate::SystemLocale;
 
     impl From<SystemLocale> for CustomFormat {
         fn from(locale: SystemLocale) -> Self {
             Self {
-                dec: ArrayString::from(locale.decimal()).unwrap(),
+                dec: DecString::new(locale.decimal()).unwrap(),
                 grp: locale.grouping(),
-                inf: ArrayString::from(locale.infinity()).unwrap(),
-                min: ArrayString::from(locale.minus_sign()).unwrap(),
-                nan: ArrayString::from(locale.nan()).unwrap(),
-                sep: ArrayString::from(locale.separator()).unwrap(),
+                inf: InfString::new(locale.infinity()).unwrap(),
+                min: MinString::new(locale.minus_sign()).unwrap(),
+                nan: NanString::new(locale.nan()).unwrap(),
+                pos: PosString::new(locale.positive_sign()).unwrap(),
+                sep: SepString::new(locale.separator()).unwrap(),
             }
         }
+    }
+}
+
+#[cfg(all(test, feature = "with-serde"))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_serialization() {
+        let locale = CustomFormat::builder().build().unwrap();
+        let s = serde_json::to_string(&locale).unwrap();
+        let expected =
+            r#"{"dec":".","grp":"Standard","inf":"∞","min":"-","nan":"NaN","sep":","}"#;
+        assert_eq!(expected, &s);
     }
 }

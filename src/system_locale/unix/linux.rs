@@ -23,9 +23,10 @@ extern "C" {
 }
 
 pub(crate) fn get_encoding(_locale: *const c_void) -> Result<Encoding, Error> {
-    let encoding_ptr = unsafe { nl_langinfo(libc::CODESET) }; // TODO: remove as
+    let encoding_ptr = unsafe { nl_langinfo(libc::CODESET) };
     let encoding_static_c_string = StaticCString::new(encoding_ptr, *UTF_8, "nl_langinfo")?;
-    let encoding = Encoding::from_bytes(&encoding_static_c_string.to_bytes())?;
+    let encoding_string = encoding_static_c_string.to_string()?;
+    let encoding = Encoding::from_bytes(encoding_string.as_bytes())?;
     Ok(encoding)
 }
 

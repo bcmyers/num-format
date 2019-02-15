@@ -9,7 +9,8 @@ use walkdir::WalkDir;
 
 use crate::utils::{Format, Grouping};
 
-const MAX_MINUS_SIGN_LEN: usize = 7;
+const MAX_MIN_LEN: usize = 8;
+const MAX_POS_LEN: usize = 8;
 
 /// Walks a directory containing CLDR json files and collects the data they contain into a map.
 pub fn parse_data<P>(data_dir: P) -> Result<IndexMap<String, Format>, failure::Error>
@@ -71,10 +72,15 @@ where
             inf: symbols.infinity,
             min: {
                 let s = symbols.minus_sign.to_string();
-                assert!(s.len() <= MAX_MINUS_SIGN_LEN);
+                assert!(s.len() <= MAX_MIN_LEN);
                 s
             },
             nan: symbols.nan,
+            pos: {
+                let s = symbols.plus_sign.to_string();
+                assert!(s.len() <= MAX_POS_LEN);
+                s
+            },
             sep: symbols.group,
         };
 
@@ -115,4 +121,5 @@ struct Symbols {
     infinity: String,
     minus_sign: String,
     nan: String,
+    plus_sign: String,
 }

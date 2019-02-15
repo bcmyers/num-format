@@ -4,28 +4,24 @@ mod windows;
 
 use std::collections::HashSet;
 
-use arrayvec::ArrayString;
-
-use crate::constants::{
-    MAX_DEC_LEN, MAX_INF_LEN, MAX_MIN_LEN, MAX_NAN_LEN, MAX_POS_LEN, MAX_SEP_LEN,
-};
 use crate::error::Error;
 use crate::format::Format;
 use crate::grouping::Grouping;
-use crate::utils::{InfinityStr, DecimalStr, SeparatorStr, MinusSignStr, NanStr};
+use crate::strings::{DecString, InfString, MinString, NanString, PosString, SepString};
+use crate::utils::{DecimalStr, InfinityStr, MinusSignStr, NanStr, PositiveSignStr, SeparatorStr};
 
 /// TODO
 #[derive(Clone, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub struct SystemLocale {
-    pub(crate) dec: ArrayString<[u8; MAX_DEC_LEN]>,
+    pub(crate) dec: DecString,
     pub(crate) grp: Grouping,
-    pub(crate) inf: ArrayString<[u8; MAX_INF_LEN]>,
-    pub(crate) min: ArrayString<[u8; MAX_MIN_LEN]>,
+    pub(crate) inf: InfString,
+    pub(crate) min: MinString,
     pub(crate) name: String,
-    pub(crate) nan: ArrayString<[u8; MAX_NAN_LEN]>,
-    pub(crate) pos: ArrayString<[u8; MAX_POS_LEN]>,
-    pub(crate) sep: ArrayString<[u8; MAX_SEP_LEN]>,
+    pub(crate) nan: NanString,
+    pub(crate) pos: PosString,
+    pub(crate) sep: SepString,
 }
 
 mod todo {
@@ -159,8 +155,7 @@ impl SystemLocale {
     where
         S: AsRef<str>,
     {
-        let s = s.as_ref();
-        self.inf = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_INF_LEN))?;
+        self.inf = InfString::new(s)?;
         Ok(())
     }
 
@@ -170,8 +165,7 @@ impl SystemLocale {
     where
         S: AsRef<str>,
     {
-        let s = s.as_ref();
-        self.nan = ArrayString::from(s).map_err(|_| Error::capacity(s.len(), MAX_NAN_LEN))?;
+        self.nan = NanString::new(s)?;
         Ok(())
     }
 }
@@ -199,6 +193,9 @@ impl Format for SystemLocale {
     }
     fn nan(&self) -> NanStr<'_> {
         NanStr::new(self.nan()).unwrap()
+    }
+    fn positive_sign(&self) -> PositiveSignStr<'_> {
+        PositiveSignStr::new(self.positive_sign()).unwrap()
     }
     fn separator(&self) -> SeparatorStr<'_> {
         SeparatorStr::new(self.separator()).unwrap()

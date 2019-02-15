@@ -250,15 +250,16 @@ mod error;
 mod error_kind;
 mod format;
 mod grouping;
-mod types_;
 mod helpers;
 mod impls;
 mod locale;
+mod strings;
 #[cfg(all(feature = "std", any(unix, windows)))]
 mod system_locale;
 mod to_formatted_str;
+#[cfg(feature = "std")]
 mod to_formatted_string;
-pub mod utils;
+#[cfg(feature = "std")]
 mod write_formatted;
 
 pub use self::buffer::Buffer;
@@ -279,4 +280,14 @@ pub use self::write_formatted::WriteFormatted;
 
 mod sealed {
     pub trait Sealed {}
+}
+
+pub mod utils {
+    //! Utility types needed if you want to implement [`Format`] on your own type.
+    //!
+    //! [`Format`]: trait.Format.html
+
+    pub use crate::strings::{
+        DecimalStr, InfinityStr, MinusSignStr, NanStr, PositiveSignStr, SeparatorStr,
+    };
 }

@@ -9,5 +9,6 @@ pub struct Format {
     pub(crate) inf: String,
     pub(crate) min: String,
     pub(crate) nan: String,
+    pub(crate) pos: String,
     pub(crate) sep: char,
 }

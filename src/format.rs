@@ -1,4 +1,6 @@
-use crate::utils::{InfinityStr, MinusSignStr, NanStr, DecimalStr, SeparatorStr};
+use crate::strings::{
+    DecimalStr, InfinityStr, MinusSignStr, NanStr, PositiveSignStr, SeparatorStr,
+};
 use crate::Grouping;
 
 /// Trait that abstracts over [`CustomFormat`], [`Locale`], and [`SystemLocale`].
@@ -19,6 +21,8 @@ pub trait Format {
     fn minus_sign(&self) -> MinusSignStr<'_>;
     /// Returns string to use for representing NaN symbols.
     fn nan(&self) -> NanStr<'_>;
+    /// Returns string to use for representing positive signs.
+    fn positive_sign(&self) -> PositiveSignStr<'_>;
     /// Returns character to use, if any, for representing separators.
     fn separator(&self) -> SeparatorStr<'_>;
 }
