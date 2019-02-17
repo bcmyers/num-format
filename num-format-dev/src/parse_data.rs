@@ -117,9 +117,11 @@ fn make_variant_name(identifier: &str) -> String {
 #[serde(rename_all = "camelCase")]
 struct Symbols {
     decimal: char,
+    exponential: String,
     group: char,
     infinity: String,
     minus_sign: String,
     nan: String,
+    percent_sign: String,
     plus_sign: String,
 }

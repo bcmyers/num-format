@@ -104,7 +104,13 @@ fn test_num_big_int() {
         // ToFormattedString
         assert_eq!(expected.to_string(), input.to_formatted_string(*format));
 
-        // WriteFormatted
+        // WriteFormatted (io::Write)
+        let mut v = Vec::new();
+        v.write_formatted(input, *format).unwrap();
+        let s = String::from_utf8(v).unwrap();
+        assert_eq!(expected.to_string(), s);
+
+        // WriteFormatted (fmt::Write)
         let mut s = String::new();
         s.write_formatted(input, *format).unwrap();
         assert_eq!(expected.to_string(), s);
@@ -175,7 +181,13 @@ fn test_num_big_uint() {
         // ToFormattedString
         assert_eq!(expected.to_string(), input.to_formatted_string(*format));
 
-        // WriteFormatted
+        // WriteFormatted (io::Write)
+        let mut v = Vec::new();
+        v.write_formatted(input, *format).unwrap();
+        let s = String::from_utf8(v).unwrap();
+        assert_eq!(expected.to_string(), s);
+
+        // WriteFormatted (fmt::Write)
         let mut s = String::new();
         s.write_formatted(input, *format).unwrap();
         assert_eq!(expected.to_string(), s);

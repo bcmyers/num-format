@@ -23,7 +23,7 @@ use winapi::um::winnt::WCHAR;
 
 use crate::error::Error;
 use crate::grouping::Grouping;
-use crate::strings::{DecString, InfString, MinString, NanString, PosString, SepString};
+use crate::strings::{DecString, InfString, MinString, NanString, PlusString, SepString};
 use crate::system_locale::SystemLocale;
 
 lazy_static! {
@@ -128,9 +128,9 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
         SepString::new(&s).map_err(|_| Error::windows("TODO"))?
     };
 
-    let pos = {
-        let s = get_locale_info_ex(&name, Request::PositiveSign)?;
-        PosString::new(&s).map_err(|_| Error::windows("TODO"))?
+    let plus = {
+        let s = get_locale_info_ex(&name, Request::PlusSign)?;
+        PlusString::new(&s).map_err(|_| Error::windows("TODO"))?
     };
 
     // we already have the name unless unless it was LOCALE_NAME_SYSTEM_DEFAULT, a special
@@ -150,7 +150,7 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
         min,
         name,
         nan,
-        pos,
+        plus,
         sep,
     };
 
@@ -167,7 +167,7 @@ pub enum Request {
     Nan,
     NegativeInfinity,
     PositiveInfinity,
-    PositiveSign,
+    PlusSign,
     Separator,
 }
 
@@ -182,7 +182,7 @@ impl From<Request> for DWORD {
             Nan => LOCALE_SNAN,
             NegativeInfinity => LOCALE_SNEGINFINITY,
             PositiveInfinity => LOCALE_SPOSINFINITY,
-            PositiveSign => LOCALE_SPOSITIVESIGN,
+            PlusSign => LOCALE_SPOSITIVESIGN,
             Separator => LOCALE_STHOUSAND,
         }
     }

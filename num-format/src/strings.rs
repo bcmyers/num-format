@@ -7,7 +7,7 @@ const MAX_DEC_LEN: usize = 8;
 const MAX_INF_LEN: usize = 128;
 pub(crate) const MAX_MIN_LEN: usize = 8;
 const MAX_NAN_LEN: usize = 64;
-const MAX_POS_LEN: usize = 8;
+const MAX_PLUS_LEN: usize = 8;
 pub(crate) const MAX_SEP_LEN: usize = 8;
 
 #[cfg(feature = "with-serde")]
@@ -92,20 +92,20 @@ impl<'a> NanStr<'a> {
 }
 
 /// Simple wrapper type for a `&str` to make sure its length is less than the maximum for
-/// a positive sign (8 bytes).
+/// a plus sign (8 bytes).
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-pub struct PositiveSignStr<'a>(&'a str);
+pub struct PlusSignStr<'a>(&'a str);
 
-impl<'a> PositiveSignStr<'a> {
-    /// Constructs an [`PositiveSignStr`], ensuring that the length is less than the maximum for
-    /// a positive sign (8 bytes).
+impl<'a> PlusSignStr<'a> {
+    /// Constructs an [`PlusSignStr`], ensuring that the length is less than the maximum for
+    /// a plus sign (8 bytes).
     ///
     /// # Errors
     ///
     /// Returns an error if the provided `&str`'s length is more than 8 bytes.
     ///
-    /// [`PositiveSignStr`]: struct.PositiveSignStr.html
-    pub fn new(s: &'a str) -> Result<PositiveSignStr<'a>, Error> {
+    /// [`PlusSignStr`]: struct.PlusSignStr.html
+    pub fn new(s: &'a str) -> Result<PlusSignStr<'a>, Error> {
         Self::_new(s)
     }
 }
@@ -171,7 +171,7 @@ create_impls!(DecimalStr, MAX_DEC_LEN);
 create_impls!(InfinityStr, MAX_INF_LEN);
 create_impls!(MinusSignStr, MAX_MIN_LEN);
 create_impls!(NanStr, MAX_NAN_LEN);
-create_impls!(PositiveSignStr, MAX_POS_LEN);
+create_impls!(PlusSignStr, MAX_PLUS_LEN);
 create_impls!(SeparatorStr, MAX_SEP_LEN);
 
 macro_rules! create_string {
@@ -249,5 +249,6 @@ create_string!(DecString, DecVisitor, MAX_DEC_LEN);
 create_string!(InfString, InfVisitor, MAX_INF_LEN);
 create_string!(MinString, MinVisitor, MAX_MIN_LEN);
 create_string!(NanString, NanVisitor, MAX_NAN_LEN);
-create_string!(PosString, PosVisitor, MAX_POS_LEN);
+// TODO: Still don't like this name
+create_string!(PlusString, PlusVisitor, MAX_PLUS_LEN);
 create_string!(SepString, SepVisitor, MAX_SEP_LEN);

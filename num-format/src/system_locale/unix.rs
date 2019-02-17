@@ -31,7 +31,7 @@ use libc::{c_char, c_int, c_void};
 use crate::error::Error;
 use crate::grouping::Grouping;
 use crate::locale::Locale;
-use crate::strings::{DecString, InfString, MinString, NanString, PosString, SepString};
+use crate::strings::{DecString, InfString, MinString, NanString, PlusString, SepString};
 use crate::system_locale::SystemLocale;
 
 extern "C" {
@@ -41,8 +41,8 @@ extern "C" {
 }
 
 pub(crate) fn available_names() -> HashSet<String> {
-    let inner = || {
-        let output = Command::new("locale").arg("-a").output().ok()?;
+    let inner = |bin| {
+        let output = Command::new(bin).arg("-a").output().ok()?;
         if !output.status.success() {
             return None;
         }
@@ -53,10 +53,10 @@ pub(crate) fn available_names() -> HashSet<String> {
             .collect::<HashSet<String>>();
         Some(set)
     };
-    match inner() {
-        Some(set) => set,
-        None => HashSet::default(),
+    if let Some(set) = inner("locale") {
+        return set;
     }
+    HashSet::default()
 }
 
 pub(crate) fn new(maybe_name: Option<String>) -> Result<SystemLocale, Error> {
@@ -92,7 +92,7 @@ pub(crate) fn new(maybe_name: Option<String>) -> Result<SystemLocale, Error> {
             min: lconv.min,
             name,
             nan: NanString::new(Locale::en.nan()).unwrap(),
-            pos: lconv.pos,
+            plus: lconv.plus,
             sep: lconv.sep,
         };
 
@@ -137,7 +137,7 @@ pub(crate) struct Lconv {
     pub(crate) dec: DecString,
     pub(crate) grp: Grouping,
     pub(crate) min: MinString,
-    pub(crate) pos: PosString,
+    pub(crate) plus: PlusString,
     pub(crate) sep: SepString,
 }
 
@@ -157,10 +157,10 @@ impl Lconv {
             MinString::new(&s)?
         };
 
-        let pos = {
+        let plus = {
             let s = StaticCString::new(lconv.positive_sign, encoding, "lconv.positive_sign")?
                 .to_string()?;
-            PosString::new(&s)?
+            PlusString::new(&s)?
         };
 
         let sep = {
@@ -173,7 +173,7 @@ impl Lconv {
             dec,
             grp,
             min,
-            pos,
+            plus,
             sep,
         })
     }

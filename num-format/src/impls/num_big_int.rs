@@ -1,11 +1,11 @@
+#![cfg(feature = "num-bigint")]
+
 use std::fmt;
-use std::io::{self, Error, ErrorKind};
+use std::io;
 use std::ops::Neg;
-use std::str;
 
-use num_bigint::{BigInt, Sign};
+use num_bigint::{BigInt, BigUint, Sign};
 
-use crate::helpers::write_str_to_buffer;
 use crate::sealed::Sealed;
 use crate::{Format, Grouping, ToFormattedString};
 
@@ -15,122 +15,241 @@ impl ToFormattedString for BigInt {
         F: Format,
         W: io::Write,
     {
-        let sep = format.separator().into_str();
-        let grp = format.grouping();
-        let min = format.minus_sign().into_str();
-        let is_negative = match self.sign() {
-            Sign::Minus => true,
-            Sign::NoSign => false,
-            Sign::Plus => false,
-        };
-
-        // If we can just use BigInt's to_string method, let's do it
-        if (sep.is_empty() || grp == Grouping::Posix) && ((min == "-") || !is_negative) {
-            let s = self.to_string();
-            w.write_all(s.as_bytes())?;
-            return Ok(s.len());
+        match self.sign() {
+            Sign::Minus => {
+                let minus_sign = format.minus_sign().into_str();
+                w.write_all(minus_sign.as_bytes())?;
+                let s = self.neg().to_string();
+                let c = io_algorithm(s, w, format)?;
+                Ok(c + minus_sign.len())
+            }
+            Sign::NoSign | Sign::Plus => {
+                let s = self.to_string();
+                let c = io_algorithm(s, w, format)?;
+                Ok(c)
+            }
         }
-
-        // Write the minus sign
-        let s = if is_negative {
-            w.write_all(min.as_bytes())?;
-            self.neg().to_string()
-        } else {
-            self.to_string()
-        };
-
-        // If no sep, bail
-        if sep.is_empty() {
-            w.write_all(s.as_bytes())?;
-            return Ok(s.len()); // TODO
-        }
-
-        // If posix, bail
-        if grp == Grouping::Posix {
-            w.write_all(s.as_bytes())?;
-            return Ok(s.len());
-        }
-
-        // Create the buffer
-        let buf_len = match s.len().checked_mul(3) {
-            Some(v) => v,
-            None => s.len(),
-        };
-        let mut buf: Vec<u8> = Vec::with_capacity(buf_len);
-        unsafe { buf.set_len(buf_len) };
-
-        // Write to the buffer
-        let buf_pos = write_str_to_buffer(&mut buf, grp, &s, sep);
-
-        // Wrap up
-        w.write_all(&buf[buf_pos..])?;
-
-        Ok(buf_len - buf_pos)
     }
 
-    fn read_to_fmt_writer<F, W>(&self, mut w: W, format: &F) -> Result<usize, io::Error>
+    fn read_to_fmt_writer<F, W>(&self, mut w: W, format: &F) -> Result<usize, fmt::Error>
     where
         F: Format,
         W: fmt::Write,
     {
-        let sep = format.separator().into_str();
-        let grp = format.grouping();
-        let min = format.minus_sign().into_str();
-        let is_negative = match self.sign() {
-            Sign::Minus => true,
-            Sign::NoSign => false,
-            Sign::Plus => false,
-        };
-
-        // If we can just use BigInt's to_string method, let's do it
-        if (sep.is_empty() || grp == Grouping::Posix) && ((min == "-") || !is_negative) {
-            let s = self.to_string();
-            w.write_str(&s)
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
-            return Ok(s.len());
+        match self.sign() {
+            Sign::Minus => {
+                let minus_sign = format.minus_sign().into_str();
+                w.write_str(minus_sign)?;
+                let s = self.neg().to_string();
+                let c = fmt_algorithm(s, w, format)?;
+                Ok(c + minus_sign.len())
+            }
+            Sign::NoSign | Sign::Plus => {
+                let s = self.to_string();
+                let c = fmt_algorithm(s, w, format)?;
+                Ok(c)
+            }
         }
+    }
+}
 
-        // Write the minus sign
-        let s = if is_negative {
-            w.write_str(min)
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
-            self.neg().to_string()
-        } else {
-            self.to_string()
-        };
+impl ToFormattedString for BigUint {
+    fn read_to_io_writer<F, W>(&self, w: W, format: &F) -> Result<usize, io::Error>
+    where
+        F: Format,
+        W: io::Write,
+    {
+        let s = self.to_string();
+        let c = io_algorithm(s, w, format)?;
+        Ok(c)
+    }
 
-        // If no sep, bail
-        if sep.is_empty() {
-            w.write_str(&s)
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
-            return Ok(s.len()); // TODO
-        }
-
-        // If posix, bail
-        if grp == Grouping::Posix {
-            w.write_str(&s)
-                .map_err(|e| Error::new(ErrorKind::Other, e))?;
-            return Ok(s.len());
-        }
-
-        // Create the buffer
-        let buf_len = match s.len().checked_mul(3) {
-            Some(v) => v,
-            None => s.len(),
-        };
-        let mut buf: Vec<u8> = Vec::with_capacity(buf_len);
-        unsafe { buf.set_len(buf_len) };
-
-        // Write to the buffer
-        let buf_pos = write_str_to_buffer(&mut buf, grp, &s, sep);
-
-        // Wrap up
-        let s = unsafe { str::from_utf8_unchecked(&buf[buf_pos..]) };
-        w.write_str(s)
-            .map_err(|e| Error::new(ErrorKind::Other, e))?;
-
-        Ok(buf_len - buf_pos)
+    fn read_to_fmt_writer<F, W>(&self, w: W, format: &F) -> Result<usize, fmt::Error>
+    where
+        F: Format,
+        W: fmt::Write,
+    {
+        let s = self.to_string();
+        let c = fmt_algorithm(s, w, format)?;
+        Ok(c)
     }
 }
 
 impl Sealed for BigInt {}
+impl Sealed for BigUint {}
+
+fn io_algorithm<F, W>(s: String, mut w: W, format: &F) -> Result<usize, io::Error>
+where
+    W: io::Write,
+    F: Format,
+{
+    let separator = format.separator().into_str();
+    let grouping = format.grouping();
+
+    if separator.is_empty() || grouping == Grouping::Posix {
+        w.write_all(s.as_bytes())?;
+        return Ok(s.len());
+    }
+
+    let mut sep_next = match s.len() {
+        s_len if s_len < 4 => {
+            w.write_all(s.as_bytes())?;
+            return Ok(s_len);
+        }
+        s_len => match grouping {
+            Grouping::Standard => match s_len % 3 {
+                0 => 3,
+                2 => 2,
+                1 => 1,
+                _ => unreachable!(),
+            },
+            Grouping::Indian => match s_len % 2 {
+                0 => 1,
+                1 => 2,
+                _ => unreachable!(),
+            },
+            Grouping::Posix => unreachable!(),
+        },
+    };
+    let sep_bytes = separator.as_bytes();
+    let sep_len = separator.len();
+    let sep_step = match grouping {
+        Grouping::Standard => 4,
+        Grouping::Indian => 3,
+        Grouping::Posix => unreachable!(),
+    };
+
+    let mut bytes_written = 0;
+    let mut digits_remaining = s.len();
+    let mut iter = s.as_bytes().iter();
+    while let Some(digit) = iter.next() {
+        if bytes_written == sep_next {
+            w.write_all(sep_bytes)?;
+            bytes_written += sep_len;
+            if digits_remaining > 3 {
+                sep_next += sep_len + sep_step - 1;
+            }
+        }
+        w.write_all(&[*digit])?;
+        bytes_written += 1;
+        digits_remaining -= 1;
+    }
+
+    Ok(bytes_written)
+}
+
+fn fmt_algorithm<F, W>(s: String, mut w: W, format: &F) -> Result<usize, fmt::Error>
+where
+    W: fmt::Write,
+    F: Format,
+{
+    // TODO: bytes vs. chars
+
+    let separator = format.separator().into_str();
+    let grouping = format.grouping();
+
+    // If we can just use BigInt's to_string method, let's do it
+    if separator.is_empty() || grouping == Grouping::Posix {
+        w.write_str(&s)?;
+        return Ok(s.len());
+    }
+
+    let mut sep_next = match s.len() {
+        s_len if s_len < 4 => {
+            w.write_str(&s)?;
+            return Ok(s_len);
+        }
+        s_len => match grouping {
+            Grouping::Standard => match s_len % 3 {
+                0 => 3,
+                2 => 2,
+                1 => 1,
+                _ => unreachable!(),
+            },
+            Grouping::Indian => match s_len % 2 {
+                0 => 1,
+                1 => 2,
+                _ => unreachable!(),
+            },
+            Grouping::Posix => unreachable!(),
+        },
+    };
+    let sep_len = separator.len();
+    let sep_no_chars = separator.chars().count();
+    let sep_step = match grouping {
+        Grouping::Standard => 4,
+        Grouping::Indian => 3,
+        Grouping::Posix => unreachable!(),
+    };
+
+    let mut bytes_written = 0;
+    let mut chars_written = 0;
+    let mut digits_remaining = s.len();
+    let mut iter = s.chars();
+    while let Some(c) = iter.next() {
+        if chars_written == sep_next {
+            w.write_str(separator)?;
+            bytes_written += sep_len;
+            chars_written += sep_no_chars;
+            if digits_remaining > 3 {
+                sep_next += sep_step + sep_no_chars - 1;
+            }
+        }
+        w.write_char(c)?;
+        bytes_written += 1;
+        chars_written += 1;
+        digits_remaining -= 1;
+    }
+
+    Ok(bytes_written)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::custom_format::CustomFormat;
+    use crate::write_formatted::WriteFormatted;
+
+    #[test]
+    fn test_num_bigint_count() {
+        let n = BigInt::new(Sign::Minus, vec![1_000_000_000]);
+
+        let format = CustomFormat::builder()
+            .minus_sign("𠜱")
+            .separator("𠜱")
+            .build()
+            .unwrap();
+        {
+            let mut vec = Vec::new();
+            let c = vec.write_formatted(&n, &format).unwrap();
+            let s = String::from_utf8(vec).unwrap();
+            assert_eq!(&s, "𠜱1𠜱000𠜱000𠜱000");
+            assert_eq!(c, 26);
+        }
+        {
+            let mut s = String::new();
+            let c = s.write_formatted(&n, &format).unwrap();
+            assert_eq!(&s, "𠜱1𠜱000𠜱000𠜱000");
+            assert_eq!(c, 26);
+        }
+
+        let format = format
+            .into_builder()
+            .grouping(Grouping::Indian)
+            .build()
+            .unwrap();
+        {
+            let mut vec = Vec::new();
+            let c = vec.write_formatted(&n, &format).unwrap();
+            let s = String::from_utf8(vec).unwrap();
+            assert_eq!(&s, "𠜱1𠜱00𠜱00𠜱00𠜱000");
+            assert_eq!(c, 30);
+        }
+        {
+            let mut s = String::new();
+            let c = s.write_formatted(&n, &format).unwrap();
+            assert_eq!(&s, "𠜱1𠜱00𠜱00𠜱00𠜱000");
+            assert_eq!(c, 30);
+        }
+    }
+}

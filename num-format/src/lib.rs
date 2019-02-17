@@ -250,7 +250,6 @@ mod error;
 mod error_kind;
 mod format;
 mod grouping;
-mod helpers;
 mod impls;
 mod locale;
 mod strings;
@@ -288,6 +287,6 @@ pub mod utils {
     //! [`Format`]: trait.Format.html
 
     pub use crate::strings::{
-        DecimalStr, InfinityStr, MinusSignStr, NanStr, PositiveSignStr, SeparatorStr,
+        DecimalStr, InfinityStr, MinusSignStr, NanStr, PlusSignStr, SeparatorStr,
     };
 }

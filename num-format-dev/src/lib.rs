@@ -19,9 +19,11 @@
 
 mod create_module;
 mod parse_data;
+#[cfg(feature = "nightly")]
 mod rustfmt;
 mod utils;
 
 pub use self::create_module::create_module;
 pub use self::parse_data::parse_data;
+#[cfg(feature = "nightly")]
 pub use self::rustfmt::rustfmt;

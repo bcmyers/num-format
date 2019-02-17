@@ -7,8 +7,10 @@ use std::collections::HashSet;
 use crate::error::Error;
 use crate::format::Format;
 use crate::grouping::Grouping;
-use crate::strings::{DecString, InfString, MinString, NanString, PosString, SepString};
-use crate::utils::{DecimalStr, InfinityStr, MinusSignStr, NanStr, PositiveSignStr, SeparatorStr};
+use crate::strings::{
+    DecString, DecimalStr, InfString, InfinityStr, MinString, MinusSignStr, NanStr, NanString,
+    PlusSignStr, PlusString, SepString, SeparatorStr,
+};
 
 /// TODO
 #[derive(Clone, Eq, PartialEq, Hash)]
@@ -20,7 +22,7 @@ pub struct SystemLocale {
     pub(crate) min: MinString,
     pub(crate) name: String,
     pub(crate) nan: NanString,
-    pub(crate) pos: PosString,
+    pub(crate) plus: PlusString,
     pub(crate) sep: SepString,
 }
 
@@ -46,7 +48,7 @@ mod todo {
             writeln!(f, "  grp: {:?}", self.grouping())?;
             inner(f, "min", self.minus_sign())?;
             inner(f, "nam", self.name())?;
-            inner(f, "pos", self.positive_sign())?;
+            inner(f, "plu", self.plus_sign())?;
             inner(f, "sep", self.separator())?;
             writeln!(f, "}}")?;
             Ok(())
@@ -140,8 +142,8 @@ impl SystemLocale {
     }
 
     /// TODO
-    pub fn positive_sign(&self) -> &str {
-        &self.pos
+    pub fn plus_sign(&self) -> &str {
+        &self.plus
     }
 
     /// TODO
@@ -194,8 +196,8 @@ impl Format for SystemLocale {
     fn nan(&self) -> NanStr<'_> {
         NanStr::new(self.nan()).unwrap()
     }
-    fn positive_sign(&self) -> PositiveSignStr<'_> {
-        PositiveSignStr::new(self.positive_sign()).unwrap()
+    fn plus_sign(&self) -> PlusSignStr<'_> {
+        PlusSignStr::new(self.plus_sign()).unwrap()
     }
     fn separator(&self) -> SeparatorStr<'_> {
         SeparatorStr::new(self.separator()).unwrap()

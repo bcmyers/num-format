@@ -1,6 +1,6 @@
 use crate::strings::{
     DecString, DecimalStr, InfString, InfinityStr, MinString, MinusSignStr, NanStr, NanString,
-    PosString, PositiveSignStr, SepString, SeparatorStr,
+    PlusSignStr, PlusString, SepString, SeparatorStr,
 };
 use crate::{CustomFormatBuilder, Format, Grouping, Locale};
 
@@ -34,7 +34,7 @@ pub struct CustomFormat {
     pub(crate) inf: InfString,
     pub(crate) min: MinString,
     pub(crate) nan: NanString,
-    pub(crate) pos: PosString,
+    pub(crate) plus: PlusString,
     pub(crate) sep: SepString,
 }
 
@@ -75,9 +75,9 @@ impl CustomFormat {
         &self.min
     }
 
-    /// Returns this format's representation of positive signs.
-    pub fn positive_sign(&self) -> &str {
-        &self.pos
+    /// Returns this format's representation of plus signs.
+    pub fn plus_sign(&self) -> &str {
+        &self.plus
     }
 
     /// Returns this format's representation of NaN.
@@ -119,8 +119,8 @@ impl Format for CustomFormat {
         NanStr::new(self.nan()).unwrap()
     }
 
-    fn positive_sign(&self) -> PositiveSignStr<'_> {
-        PositiveSignStr::new(self.positive_sign()).unwrap()
+    fn plus_sign(&self) -> PlusSignStr<'_> {
+        PlusSignStr::new(self.plus_sign()).unwrap()
     }
 
     fn separator(&self) -> SeparatorStr<'_> {
@@ -136,7 +136,7 @@ impl From<Locale> for CustomFormat {
             inf: InfString::new(locale.infinity()).unwrap(),
             min: MinString::new(locale.minus_sign()).unwrap(),
             nan: NanString::new(locale.nan()).unwrap(),
-            pos: PosString::new(locale.positive_sign()).unwrap(),
+            plus: PlusString::new(locale.plus_sign()).unwrap(),
             sep: SepString::new(locale.separator()).unwrap(),
         }
     }
@@ -155,7 +155,7 @@ mod system {
                 inf: InfString::new(locale.infinity()).unwrap(),
                 min: MinString::new(locale.minus_sign()).unwrap(),
                 nan: NanString::new(locale.nan()).unwrap(),
-                pos: PosString::new(locale.positive_sign()).unwrap(),
+                plus: PlusString::new(locale.plus_sign()).unwrap(),
                 sep: SepString::new(locale.separator()).unwrap(),
             }
         }
@@ -171,7 +171,7 @@ mod tests {
         let locale = CustomFormat::builder().build().unwrap();
         let s = serde_json::to_string(&locale).unwrap();
         let expected =
-            r#"{"dec":".","grp":"Standard","inf":"∞","min":"-","nan":"NaN","pos":"+","sep":","}"#;
+            r#"{"dec":".","grp":"Standard","inf":"∞","min":"-","nan":"NaN","plus":"+","sep":","}"#;
         assert_eq!(expected, &s);
     }
 }

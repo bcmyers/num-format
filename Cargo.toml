@@ -1,5 +1,6 @@
 [workspace]
 members = [
     "num-format",
+    "num-format-dev",
     "num-format-windows",
 ]

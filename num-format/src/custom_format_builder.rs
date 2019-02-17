@@ -1,5 +1,9 @@
-use crate::strings::{DecString, InfString, MinString, NanString, PosString, SepString};
-use crate::{CustomFormat, Error, Format, Grouping, Locale};
+use crate::strings::{DecString, InfString, MinString, NanString, PlusString, SepString};
+use crate::custom_format::CustomFormat;
+use crate::error::Error;
+use crate::format::Format;
+use crate::grouping::Grouping;
+use crate::locale::Locale;
 
 /// Type for building [`CustomFormat`]s.
 ///
@@ -12,7 +16,7 @@ pub struct CustomFormatBuilder {
     inf: Result<InfString, Error>,
     min: Result<MinString, Error>,
     nan: Result<NanString, Error>,
-    pos: Result<PosString, Error>,
+    plus: Result<PlusString, Error>,
     sep: Result<SepString, Error>,
 }
 
@@ -24,7 +28,7 @@ impl CustomFormatBuilder {
             inf: InfString::new(Locale::en.infinity()),
             min: MinString::new(Locale::en.minus_sign()),
             nan: NanString::new(Locale::en.nan()),
-            pos: PosString::new(Locale::en.positive_sign()),
+            plus: PlusString::new(Locale::en.plus_sign()),
             sep: SepString::new(Locale::en.separator()),
         }
     }
@@ -46,7 +50,7 @@ impl CustomFormatBuilder {
             inf: self.inf?,
             min: self.min?,
             nan: self.nan?,
-            pos: self.pos?,
+            plus: self.plus?,
             sep: self.sep?,
         })
     }
@@ -71,6 +75,7 @@ impl CustomFormatBuilder {
         self.inf = InfString::new(value.infinity());
         self.min = MinString::new(value.minus_sign());
         self.nan = NanString::new(value.nan());
+        self.plus = PlusString::new(value.plus_sign());
         self.sep = SepString::new(value.separator());
         self
     }
@@ -119,15 +124,15 @@ impl CustomFormatBuilder {
         self
     }
 
-    /// Sets the string used for positive signs. Note: If the length is greater than 8 bytes
+    /// Sets the string used for plus signs. Note: If the length is greater than 8 bytes
     /// [`build`] will return an error (see [`build`]).
     ///
     /// [`build`]: struct.CustomFormatBuilder.html#method.build
-    pub fn positive_sign<S>(mut self, s: S) -> Self
+    pub fn plus_sign<S>(mut self, s: S) -> Self
     where
         S: AsRef<str>,
     {
-        self.pos = PosString::new(s);
+        self.plus = PlusString::new(s);
         self
     }
 
@@ -149,7 +154,7 @@ impl From<CustomFormat> for CustomFormatBuilder {
             inf: Ok(format.inf),
             min: Ok(format.min),
             nan: Ok(format.nan),
-            pos: Ok(format.pos),
+            plus: Ok(format.plus),
             sep: Ok(format.sep),
         }
     }

@@ -90,13 +90,14 @@ impl Buffer {
     pub(crate) fn write_with_itoa<N: itoa::Integer>(&mut self, n: N) -> usize {
         let mut itoa_buf = itoa::Buffer::new();
         let s = itoa_buf.format(n);
-        let bytes = s.as_bytes();
         let len = s.len();
-        for i in 0..len {
-            self.inner[i] = bytes[i];
+        // TODO
+        for (i, byte) in s.as_bytes().iter().enumerate() {
+            let index = MAX_BUF_LEN - len + i;
+            self.inner[index] = *byte;
         }
-        self.pos = 0;
-        self.end = len;
+        self.pos = MAX_BUF_LEN - len;
+        self.end = MAX_BUF_LEN;
         len
     }
 }

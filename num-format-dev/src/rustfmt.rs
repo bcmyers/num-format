@@ -1,3 +1,5 @@
+#![cfg(feature = "nightly")]
+
 use rustfmt_nightly::{Config, Edition, EmitMode, Input, Session};
 
 /// Programmatically runs rustfmt on a `String`.
@@ -10,7 +12,7 @@ where
     let mut config = Config::default();
     config.set().edition(Edition::Edition2018);
     config.set().emit_mode(EmitMode::Stdout);
-    config.set().max_width(200);
+    // config.set().max_width(200);
 
     let mut output = Vec::new();
     {

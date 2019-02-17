@@ -14,7 +14,7 @@ use crate::{Buffer, Format, ToFormattedStr};
 /// [`to_formatted_string`]: trait.ToFormattedString.html#method.to_formatted_string
 pub trait ToFormattedString: Sealed {
     #[doc(hidden)]
-    fn read_to_fmt_writer<F, W>(&self, w: W, format: &F) -> Result<usize, io::Error>
+    fn read_to_fmt_writer<F, W>(&self, w: W, format: &F) -> Result<usize, fmt::Error>
     where
         F: Format,
         W: fmt::Write;
@@ -41,15 +41,14 @@ where
     T: ToFormattedStr,
 {
     #[inline(always)]
-    fn read_to_fmt_writer<F, W>(&self, mut w: W, format: &F) -> Result<usize, io::Error>
+    fn read_to_fmt_writer<F, W>(&self, mut w: W, format: &F) -> Result<usize, fmt::Error>
     where
         F: Format,
         W: fmt::Write,
     {
         let mut buf = Buffer::default();
         let c = self.read_to_buffer(&mut buf, format);
-        w.write_str(buf.as_str())
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+        w.write_str(buf.as_str())?;
         Ok(c)
     }
 

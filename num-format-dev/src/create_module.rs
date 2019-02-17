@@ -2,11 +2,27 @@ use indexmap::IndexMap;
 use proc_macro2::{Delimiter, Group, Ident, Literal, Span};
 use quote::quote;
 
+#[cfg(feature = "nightly")]
 use crate::rustfmt::rustfmt;
 use crate::utils::Format;
 
+#[cfg(feature = "nightly")]
 /// Takes the map returned from `parse_data` and turns it into a rust module.
 pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Error> {
+    let s = _create_module(data)?;
+    let s = rustfmt(s)?;
+    Ok(s)
+}
+
+#[cfg(not(feature = "nightly"))]
+/// Takes the map returned from `parse_data` and turns it into a rust module.
+pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Error> {
+    let s = _create_module(data)?;
+    Ok(s)
+}
+
+/// Takes the map returned from `parse_data` and turns it into a rust module.
+fn _create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Error> {
     let variant_names = data.keys().map(|s| Ident::new(s, Span::call_site()));
 
     let mut decimals = Vec::new();
@@ -14,7 +30,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
     let mut infinities = Vec::new();
     let mut minus_signs = Vec::new();
     let mut nans = Vec::new();
-    let mut positive_signs = Vec::new();
+    let mut plus_signs = Vec::new();
     let mut separators = Vec::new();
     let mut from_strs = Vec::new();
     let mut names = Vec::new();
@@ -72,7 +88,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         );
         nans.push(group);
 
-        // positive_signs
+        // plus_signs
         let value = Literal::string(&format.pos);
         let group = Group::new(
             Delimiter::None,
@@ -80,7 +96,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
                 #key => #value,
             },
         );
-        positive_signs.push(group);
+        plus_signs.push(group);
 
         // separtors
         let value = Literal::string(&format.sep.to_string());
@@ -130,7 +146,7 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
         use crate::format::Format;
         use crate::grouping::Grouping;
         use crate::strings::{
-            DecimalStr, InfinityStr, MinusSignStr, NanStr, PositiveSignStr, SeparatorStr
+            DecimalStr, InfinityStr, MinusSignStr, NanStr, PlusSignStr, SeparatorStr
         };
 
         const AVAILABLE_NAMES: [&'static str; #names2_len] = [#(#names2),*];
@@ -238,11 +254,11 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
                 }
             }
 
-            /// Returns the locale's positive sign representation.
-            pub fn positive_sign(&self) -> &'static str {
+            /// Returns the locale's plus sign representation.
+            pub fn plus_sign(&self) -> &'static str {
                 use self::Locale::*;
                 match self {
-                    #(#positive_signs)*
+                    #(#plus_signs)*
                 }
             }
 
@@ -276,8 +292,8 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
                 NanStr::new(self.nan()).unwrap()
             }
 
-            fn positive_sign(&self) -> PositiveSignStr<'_> {
-                PositiveSignStr::new(self.positive_sign()).unwrap()
+            fn plus_sign(&self) -> PlusSignStr<'_> {
+                PlusSignStr::new(self.plus_sign()).unwrap()
             }
 
             fn separator(&self) -> SeparatorStr<'_> {
@@ -300,6 +316,5 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
     };
 
     let s = format!("{}", &token_stream);
-    let s = rustfmt(s)?;
     Ok(s)
 }
