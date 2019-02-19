@@ -202,24 +202,24 @@ fn main() -> Result<(), Error> {
 at your option.
 
 [bindgen]: https://crates.io/crates/bindgen
-[`Buffer`]: https://docs.rs/num-format/0.3.0/num_format/struct.Buffer.html
+[`Buffer`]: https://docs.rs/num-format/0.4.0/num_format/struct.Buffer.html
 [Common Locale Data Repository]: https://en.wikipedia.org/wiki/Common_Locale_Data_Repository
-[`CustomFormat`]: https://docs.rs/num-format/0.3.0/num_format/struct.CustomFormat.html
+[`CustomFormat`]: https://docs.rs/num-format/0.4.0/num_format/struct.CustomFormat.html
 [`File`]: https://doc.rust-lang.org/std/fs/struct.File.html
 [`fmt::Write`]: https://doc.rust-lang.org/std/fmt/fn.write.html
-[`Format`]: https://docs.rs/num-format/0.3.0/num_format/trait.Format.html
+[`Format`]: https://docs.rs/num-format/0.4.0/num_format/trait.Format.html
 [`io::Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
-[`Locale`]: https://docs.rs/num-format/0.3.0/num_format/enum.Locale.html
+[`Locale`]: https://docs.rs/num-format/0.4.0/num_format/enum.Locale.html
 [`num_bigint::BigInt`]: https://docs.rs/num-bigint/0.2.2/num_bigint/struct.BigInt.html
 [picking a format]: #picking-a-format
 [`String`]: https://doc.rust-lang.org/std/string/struct.String.html
 [The Apache License, Version 2.0]: http://www.apache.org/licenses/LICENSE-2.0
 [The MIT license]: http://opensource.org/licenses/MIT
-[`ToFormattedString`]: https://docs.rs/num-format/0.3.0/num_format/trait.ToFormattedString.html
-[`to_formatted_string`]: https://docs.rs/num-format/0.3.0/num_format/trait.ToFormattedString.html#method.to_formatted_string
+[`ToFormattedString`]: https://docs.rs/num-format/0.4.0/num_format/trait.ToFormattedString.html
+[`to_formatted_string`]: https://docs.rs/num-format/0.4.0/num_format/trait.ToFormattedString.html#method.to_formatted_string
 [Unicode Consortium]: https://en.wikipedia.org/wiki/Unicode_Consortium
 [`Vec`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
-[`WriteFormatted`]: https://docs.rs/num-format/0.3.0/num_format/trait.WriteFormatted.html
+[`WriteFormatted`]: https://docs.rs/num-format/0.4.0/num_format/trait.WriteFormatted.html
 */
 
 #![cfg_attr(not(feature = "std"), no_std)]
