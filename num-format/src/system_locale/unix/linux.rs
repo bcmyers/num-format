@@ -1,5 +1,5 @@
 #![cfg(all(
-    feature = "std",
+    feature = "with-system-locale",
     unix,
     not(any(
         target_os = "dragonfly",
@@ -16,7 +16,7 @@ use std::env;
 use libc::{c_char, c_void};
 
 use crate::error::Error;
-use crate::system_locale::unix::{StaticCString, Lconv, Encoding, UTF_8};
+use crate::system_locale::unix::{Encoding, Lconv, StaticCString, UTF_8};
 
 extern "C" {
     fn localeconv() -> *const libc::lconv;
@@ -36,7 +36,7 @@ pub(crate) fn get_lconv(_locale: *const c_void, encoding: Encoding) -> Result<Lc
     if lconv_ptr.is_null() {
         return Err(Error::system_invalid_return(
             "localeconv_l",
-            "localeconv_l unexpectedly returned a null pointer."
+            "localeconv_l unexpectedly returned a null pointer.",
         ));
     }
     let lconv: &libc::lconv = unsafe { lconv_ptr.as_ref() }.unwrap();
@@ -46,16 +46,16 @@ pub(crate) fn get_lconv(_locale: *const c_void, encoding: Encoding) -> Result<Lc
 
 pub(crate) fn get_name(_locale: *const c_void, _encoding: Encoding) -> Result<String, Error> {
     if let Ok(name) = env::var("LC_ALL") {
-        return Ok(name)
+        return Ok(name);
     }
     if let Ok(name) = env::var("LC_NUMERIC") {
-        return Ok(name)
+        return Ok(name);
     }
     if let Ok(name) = env::var("LC_MONETARY") {
-        return Ok(name)
+        return Ok(name);
     }
     if let Ok(name) = env::var("LANG") {
-        return Ok(name)
+        return Ok(name);
     }
     Ok("C".to_string())
 }

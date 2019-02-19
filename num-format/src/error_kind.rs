@@ -18,7 +18,7 @@ pub enum ErrorKind {
         cap: usize,
     },
 
-    #[cfg(all(feature = "std", any(unix, windows)))]
+    #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
     /// Locale name contains an interior nul byte, which is not allowed.
     InteriorNulByte(String),
 
@@ -38,7 +38,7 @@ pub enum ErrorKind {
     /// Failed to parse input into a valid locale.
     ParseLocale(ArrayString<[u8; MAX_ERR_LEN]>),
 
-    #[cfg(all(feature = "std", any(unix, windows)))]
+    #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
     /// Call to C standard library or Windows API unexpectedly returned invalid data.
     SystemInvalidReturn {
         /// The name of the C standard library or Windows API function called.
@@ -47,12 +47,12 @@ pub enum ErrorKind {
         message: String,
     },
 
-    #[cfg(all(feature = "std", unix))]
+    #[cfg(all(feature = "with-system-locale", unix))]
     /// Attempted to use a system locale that relies on an encoding that is not currently supported
     /// by num-format.
     SystemUnsupportedEncoding(String),
 
-    #[cfg(all(feature = "std", any(unix, windows)))]
+    #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
     /// The operating system returned grouping data that is currently unsuppported by num-format.
     SystemUnsupportedGrouping(Vec<u8>),
 }
@@ -68,7 +68,7 @@ impl fmt::Display for ErrorKind {
                 len, cap
             ),
 
-            #[cfg(all(feature = "std", any(unix, windows)))]
+            #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
             InteriorNulByte(ref locale_name) => write!(
                 f,
                 "Locale name {} contains an interior nul byte, which is not allowed.",
@@ -79,10 +79,10 @@ impl fmt::Display for ErrorKind {
 
             ParseLocale(ref input) => write!(f, "Failed to parse {} into a valid locale.", input),
 
-            #[cfg(all(feature = "std", any(unix, windows)))]
+            #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
             SystemInvalidReturn { message, .. } => write!(f, "{}", message),
 
-            #[cfg(all(feature = "std", unix))]
+            #[cfg(all(feature = "with-system-locale", unix))]
             SystemUnsupportedEncoding(ref encoding_name) => write!(
                 f,
                 "Attempted to use a system locale that relies on an encoding that is not \
@@ -90,7 +90,7 @@ impl fmt::Display for ErrorKind {
                 encoding_name
             ),
 
-            #[cfg(all(feature = "std", any(unix, windows)))]
+            #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
             SystemUnsupportedGrouping(ref bytes) => write!(
                 f,
                 "The operating system returned grouping data of {:?}, which is not currently \

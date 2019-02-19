@@ -1,4 +1,4 @@
-#![cfg(feature = "num-bigint")]
+#![cfg(feature = "with-num-bigint")]
 
 use std::fmt;
 use std::io;

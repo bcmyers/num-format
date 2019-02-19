@@ -1,4 +1,4 @@
-#![cfg(all(feature = "std", windows))]
+#![cfg(all(feature = "with-system-locale", windows))]
 
 use num_format::SystemLocale;
 

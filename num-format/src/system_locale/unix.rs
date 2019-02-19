@@ -1,6 +1,8 @@
-#![cfg(all(feature = "std", unix))]
+#![cfg(all(feature = "with-system-locale", unix))]
 
+mod bsd;
 mod encoding;
+mod linux;
 
 pub(crate) use self::encoding::{Encoding, UTF_8};
 
@@ -13,10 +15,8 @@ cfg_if! {
         target_os = "openbsd",
         target_os = "netbsd"
     ))] {
-        mod bsd;
         use self::bsd::{get_encoding, get_lconv, get_name};
     } else {
-        mod linux;
         use self::linux::{get_encoding, get_lconv, get_name};
     }
 }

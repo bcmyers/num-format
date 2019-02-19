@@ -148,7 +148,7 @@ impl From<Locale> for CustomFormatBuilder {
     }
 }
 
-#[cfg(all(feature = "std", any(unix, windows)))]
+#[cfg(all(feature = "with-system-locale", any(unix, windows)))]
 mod standard {
     use super::*;
     use crate::system_locale::SystemLocale;

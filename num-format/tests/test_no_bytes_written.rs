@@ -1,11 +1,8 @@
-#![cfg(features = "std")]
+#![cfg(feature = "std")]
 
 use std::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroUsize};
 
-use num_format::{
-    format::{CustomFormat, Locale},
-    WriteFormatted,
-};
+use num_format::{CustomFormat, Locale, WriteFormatted};
 
 #[test]
 fn test_no_bytes_written() {
@@ -44,7 +41,7 @@ fn test_no_bytes_written() {
             {
                 $(
                     let mut s = String::new();
-                    let format = CustomFormat::builder().separator(Some('𠜱')).build().unwrap();
+                    let format = CustomFormat::builder().separator("𠜱").build().unwrap();
                     let c = s.write_formatted(&$n, &format).unwrap();
                     assert_eq!(c, 8);
                 )*

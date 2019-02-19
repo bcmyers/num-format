@@ -205,6 +205,8 @@ mod serialization {
 
     #[cfg(test)]
     mod tests {
+        use arrayvec::ArrayString;
+
         use crate::constants::MAX_BUF_LEN;
         use crate::{Buffer, Locale};
 
@@ -226,7 +228,7 @@ mod serialization {
             assert_eq!("1,000", buf.as_str());
 
             // should fail
-            let mut should_fail = String::new();
+            let mut should_fail = ArrayString::<[u8; 1024]>::new();
             should_fail.push_str("[0");
             for _ in 0..MAX_BUF_LEN {
                 should_fail.push_str(",0");

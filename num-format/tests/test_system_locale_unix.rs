@@ -1,4 +1,4 @@
-#![cfg(all(feature = "std", unix))]
+#![cfg(all(feature = "with-system-locale", unix))]
 
 use std::cmp::Ordering;
 use std::env;

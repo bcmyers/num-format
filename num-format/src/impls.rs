@@ -1,3 +1,3 @@
 mod integers;
-#[cfg(feature = "num-bigint")]
+#[cfg(feature = "with-num-bigint")]
 mod num_bigint;

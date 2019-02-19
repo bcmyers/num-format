@@ -69,11 +69,7 @@ library that implement [`io::Write`] or [`fmt::Write`] implement [`WriteFormatte
 
 If you're writing a number type that can use the [`Buffer`] API, there is **no** heap allocation.
 That said, the [`io::Write`] and [`fmt::Write`] machinery adds a bit of overhead; so it's faster
-to use the [`Buffer`] type directly.
-
-You can also use this API with types where the [`Buffer`] API will not work, like
-[`num_bigint::BigInt`], in which case there will be heap allocation. As such, this trait is
-**not** available in a `no_std` environment.
+to use the [`Buffer`] type directly. This trait is **not** available in a `no_std` environment.
 
 ```rust
 use num_format::{Locale, WriteFormatted};
@@ -120,16 +116,16 @@ fn main() {
 }
 ```
 
-#### `SystemLocale`
+#### `SystemLocale` *(available behind feature flag `with-system-locale`)*
 
 The [`SystemLocale`] type is another type that implements [`Format`]. It allows you to access your
 OS's locale information. It has a very similar API to [`Locale`] and should work on all major
 operating systems (i.e. macOS, linux, the BSDs, and Windows).
 
-* On Unix-based systems, the underlying implementation uses [`locale`], [`newlocale`],
-  [`uselocale`] and other POSIX functions from the C standard library.
-* On Windows, the [`GetLocaleInfoEx`] and [`EnumSystemLocalesEx`] functions from the Windows API
-  are used.
+<i>Since this type requires several dependencies (especially on Windows), it is behind a feature
+flag. To use it, include `num-format = { version = "0.4", features = ["with-system-locale"] }`
+in your `Cargo.toml`. Additionally, on Windows (but **only** on Windows), using [`SystemLocale`]
+requires Clang 3.9 or higher.</i>
 
 ```rust
 use num_format::SystemLocale;
@@ -176,17 +172,18 @@ fn main() -> Result<(), Error> {
 ## Requirements
 
 * Rust 1.31 or greater
-* The **Windows** version of **num-format** depends on [bindgen], which requires Clang 3.9 or
-  greater. See [here](https://rust-lang.github.io/rust-bindgen/requirements.html) for installation
-  instructions.
+* If you're using the `with-system-locale` feature **and** you're on Windows, Clang 3.9 or higher
+  is also required. See [here](https://rust-lang.github.io/rust-bindgen/requirements.html) for
+  installation instructions.
 
 ## Extra features
 
-| Available features | What to put in your `Cargo.toml`                              |
-| :----------------- | :------------------------------------------------------------ |
-| `no_std`           | `num-format = { version = "0.3", default-features = false }`  |
-| `num-bigint`       | `num-format = { version = "0.3", features = ["num-bigint"] }` |
-| `serde`            | `num-format = { version = "0.3", features = ["with-serde"] }` |
+| Available features   | What to put in your `Cargo.toml`                                      |
+| :------------------- | :-------------------------------------------------------------------- |
+| `no_std`             | `num-format = { version = "0.4", default-features = false }`          |
+| `with-num-bigint`    | `num-format = { version = "0.4", features = ["with-num-bigint"] }`    |
+| `with-serde`         | `num-format = { version = "0.4", features = ["with-serde"] }`         |
+| `with-system-locale` | `num-format = { version = "0.4", features = ["with-system-locale"] }` |
 
 ## License
 
@@ -201,19 +198,13 @@ at your option.
 [`Buffer`]: struct.Buffer.html
 [Common Locale Data Repository]: https://en.wikipedia.org/wiki/Common_Locale_Data_Repository
 [`CustomFormat`]: format/struct.CustomFormat.html
-[`EnumSystemLocalesEx`]: https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-enumsystemlocalesex
 [`File`]: https://doc.rust-lang.org/std/fs/struct.File.html
 [`fmt::Write`]: https://doc.rust-lang.org/std/fmt/fn.write.html
 [`Format`]: format/trait.Format.html
-[`GetLocaleInfoEx`]: https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-getlocaleinfoex
 [`io::Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
-[`locale`]: http://man7.org/linux/man-pages/man1/locale.1.html
 [`Locale`]: format/enum.Locale.html
-[`localeconv`]: https://www.gnu.org/software/libc/manual/html_node/The-Lame-Way-to-Locale-Data.html#The-Lame-Way-to-Locale-Data
-[`newlocale`]: http://man7.org/linux/man-pages/man3/newlocale.3.html
 [`num_bigint::BigInt`]: https://docs.rs/num-bigint/0.2.2/num_bigint/struct.BigInt.html
 [picking a format]: #picking-a-format
-[`setlocale`]: https://www.gnu.org/software/libc/manual/html_node/Setting-the-Locale.html
 [`String`]: https://doc.rust-lang.org/std/string/struct.String.html
 [`SystemLocale`]: format/struct.SystemLocale.html
 [The Apache License, Version 2.0]: http://www.apache.org/licenses/LICENSE-2.0
@@ -221,6 +212,5 @@ at your option.
 [`ToFormattedString`]: trait.ToFormattedString.html
 [`to_formatted_string`]: trait.ToFormattedString.html#method.to_formatted_string
 [Unicode Consortium]: https://en.wikipedia.org/wiki/Unicode_Consortium
-[`uselocale`]: http://man7.org/linux/man-pages/man3/uselocale.3.html
 [`Vec`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
 [`WriteFormatted`]: trait.WriteFormatted.html

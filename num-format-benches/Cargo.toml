@@ -1,0 +1,19 @@
+[package]
+name = "num-format-benches"
+version = "0.1.0"
+
+authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
+edition = "2018"
+license = "MIT/Apache-2.0"
+publish = false
+
+[dependencies]
+num-format = { path = "../num-format" }
+
+[dev-dependencies]
+criterion = "0.2"
+itoa = { version = "0.4", features = ["i128"] }
+
+[[bench]]
+name = "bench_usize"
+harness = false

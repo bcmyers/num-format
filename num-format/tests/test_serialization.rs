@@ -1,8 +1,9 @@
-#[cfg(feature = "with-serde")]
+#![cfg(feature = "with-serde")]
+
 #[test]
 fn test_serialization() {
     use num_format::{
-        Buffer, CustomFormat, CustomFormatBuilder, Error, ErrorKind, Grouping, Locale, SystemLocale,
+        Buffer, CustomFormat, CustomFormatBuilder, Error, ErrorKind, Grouping, Locale,
     };
     use serde::{Deserialize, Serialize};
 
@@ -15,7 +16,6 @@ fn test_serialization() {
     serializable::<ErrorKind>();
     serializable::<Grouping>();
     serializable::<Locale>();
-    serializable::<SystemLocale>();
 
     fn deserializable<'de, T: Deserialize<'de>>() {}
 
@@ -26,5 +26,17 @@ fn test_serialization() {
     deserializable::<ErrorKind>();
     deserializable::<Grouping>();
     deserializable::<Locale>();
+}
+
+#[cfg(feature = "with-system-locale")]
+#[test]
+fn test_serialization_system() {
+    use num_format::SystemLocale;
+    use serde::{Deserialize, Serialize};
+
+    fn serializable<T: Serialize>() {}
+    serializable::<SystemLocale>();
+
+    fn deserializable<'de, T: Deserialize<'de>>() {}
     deserializable::<SystemLocale>();
 }

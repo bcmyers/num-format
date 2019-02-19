@@ -1,4 +1,4 @@
-#![cfg(all(feature = "std", any(unix, windows)))]
+#![cfg(all(feature = "with-system-locale", any(unix, windows)))]
 
 mod unix;
 mod windows;

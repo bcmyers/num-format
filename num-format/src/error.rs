@@ -46,7 +46,7 @@ impl Error {
         }
     }
 
-    #[cfg(all(feature = "std", any(unix, windows)))]
+    #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
     pub(crate) fn interior_nul_byte<S>(locale_name: S) -> Error
     where
         S: Into<String>,
@@ -71,7 +71,7 @@ impl Error {
         };
     }
 
-    #[cfg(all(feature = "std", any(unix, windows)))]
+    #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
     pub(crate) fn system_invalid_return<S, T>(function_name: S, message: T) -> Error
     where
         S: Into<String>,
@@ -85,7 +85,7 @@ impl Error {
         }
     }
 
-    #[cfg(all(feature = "std", unix))]
+    #[cfg(all(feature = "with-system-locale", unix))]
     pub(crate) fn system_unsupported_encoding<S>(encoding_name: S) -> Error
     where
         S: Into<String>,
@@ -95,7 +95,7 @@ impl Error {
         }
     }
 
-    #[cfg(all(feature = "std", any(unix, windows)))]
+    #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
     pub(crate) fn system_unsupported_grouping<B>(bytes: B) -> Error
     where
         B: Into<Vec<u8>>,
