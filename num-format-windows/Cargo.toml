@@ -7,19 +7,15 @@ categories = []
 description = "A helper crate for num-format. Do not use directly."
 documentation = "https://docs.rs/num-format-windows"
 edition = "2018"
-homepage = "https://github.com/bcmyers/num-format"
+homepage = "https://github.com/bcmyers/num-format/num-format-windows"
 keywords = []
 license = "MIT/Apache-2.0"
-publish = false # TODO
+publish = true
 readme = "README.md"
-repository = "https://github.com/bcmyers/num-format"
+repository = "https://github.com/bcmyers/num-format/num-format-windows"
 
 build = "build.rs"
-include = ["wrapper.h"]
-
-[badges]
-maintenance = { status = "actively-developed" }
-travis-ci = { repository = "bcmyers/num-format", branch = "master" }
+include = ["build.rs", "Cargo.toml", "src/**/*", "wrapper.h"]
 
 [build-dependencies]
 bindgen = "0.47"
