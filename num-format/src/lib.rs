@@ -180,6 +180,13 @@ fn main() -> Result<(), Error> {
 }
 ```
 
+# Requirements
+
+* Rust 1.31 or greater
+* The **Windows** version of **num-format** depends on [bindgen], which requires Clang 3.9 or
+  greater. See [here](https://rust-lang.github.io/rust-bindgen/requirements.html) for installation
+  instructions.
+
 # Extra features
 
 | Available features | What to put in your `Cargo.toml`                              |
@@ -197,6 +204,7 @@ fn main() -> Result<(), Error> {
 
 at your option.
 
+[bindgen]: https://crates.io/crates/bindgen
 [`Buffer`]: struct.Buffer.html
 [Common Locale Data Repository]: https://en.wikipedia.org/wiki/Common_Locale_Data_Repository
 [`CustomFormat`]: format/struct.CustomFormat.html
