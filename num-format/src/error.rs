@@ -85,7 +85,7 @@ impl Error {
         }
     }
 
-    #[cfg(all(feature = "std", any(unix, windows)))]
+    #[cfg(all(feature = "std", unix))]
     pub(crate) fn system_unsupported_encoding<S>(encoding_name: S) -> Error
     where
         S: Into<String>,

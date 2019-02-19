@@ -33,7 +33,7 @@ lazy_static! {
             )
         })?.to_str().map_err(|_| {
             Error::system_invalid_return(
-                "LOCALE_NAME_SYSTEM_DEFAULT"
+                "LOCALE_NAME_SYSTEM_DEFAULT",
                 "LOCALE_NAME_SYSTEM_DEFAULT from windows.h unexpectedly contains invalid UTF-8.",
             )
         })
@@ -47,7 +47,7 @@ pub(crate) fn available_names() -> Result<HashSet<String>, Error> {
 pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
     let name: Cow<str> = match name {
         Some(name) => name.into(),
-        None => (*SYSTEM_DEFAULT)?.into(),
+        None => (*SYSTEM_DEFAULT).clone()?.into(),
     };
 
     let max_len = LOCALE_NAME_MAX_LENGTH as usize - 1;
@@ -294,6 +294,7 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
     // inner function that represents actual call to GetLocaleInfoEx (will be used twice below)
     #[allow(non_snake_case)]
     fn inner(
+        locale_name: &str,
         lpLocaleName: *const WCHAR,
         LCType: DWORD,
         buf_ptr: *mut WCHAR,
@@ -302,6 +303,9 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
         let size = unsafe { winnls::GetLocaleInfoEx(lpLocaleName, LCType, buf_ptr, size) };
         if size == 0 {
             let err = unsafe { GetLastError() };
+            if err == 87 {
+                return Err(Error::parse_locale(locale_name));
+            }
             return Err(Error::system_invalid_return(
                 "GetLocaleInfoEx",
                 format!("GetLocaleInfoEx failed with error code {}", err),
@@ -329,20 +333,21 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
     }
 
     // turn locale_name into windows string
-    let locale_name = U16CString::from_str(locale_name).map_err(|_| Error::windows("TODO"))?;
+    let locale_name_windows_string =
+        U16CString::from_str(locale_name).map_err(|_| Error::interior_nul_byte(locale_name))?;
 
     #[allow(non_snake_case)]
-    let lpLocaleName = locale_name.as_ptr();
+    let lpLocaleName = locale_name_windows_string.as_ptr();
 
     #[allow(non_snake_case)]
     let LCType = DWORD::from(request);
 
     // first call to GetLocaleInfoEx to get size of the data it will write.
-    let size = inner(lpLocaleName, LCType, ptr::null_mut(), 0)?;
+    let size = inner(locale_name, lpLocaleName, LCType, ptr::null_mut(), 0)?;
 
     // second call to GetLocaleInfoEx to write data into our buffer.
     let mut buf: [WCHAR; BUF_LEN] = unsafe { mem::uninitialized() };
-    let written = inner(lpLocaleName, LCType, buf.as_mut_ptr(), size)?;
+    let written = inner(locale_name, lpLocaleName, LCType, buf.as_mut_ptr(), size)?;
     if written != size {
         return Err(Error::system_invalid_return(
             "GetLocaleInfoEx",

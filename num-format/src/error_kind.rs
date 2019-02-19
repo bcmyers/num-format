@@ -47,7 +47,7 @@ pub enum ErrorKind {
         message: String,
     },
 
-    #[cfg(all(feature = "std", any(unix, windows)))]
+    #[cfg(all(feature = "std", unix))]
     /// Attempted to use a system locale that relies on an encoding that is not currently supported
     /// by num-format.
     SystemUnsupportedEncoding(String),
@@ -82,7 +82,7 @@ impl fmt::Display for ErrorKind {
             #[cfg(all(feature = "std", any(unix, windows)))]
             SystemInvalidReturn { message, .. } => write!(f, "{}", message),
 
-            #[cfg(all(feature = "std", any(unix, windows)))]
+            #[cfg(all(feature = "std", unix))]
             SystemUnsupportedEncoding(ref encoding_name) => write!(
                 f,
                 "Attempted to use a system locale that relies on an encoding that is not \

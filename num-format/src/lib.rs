@@ -245,7 +245,7 @@ at your option.
 )]
 #![doc(html_root_url = "https://docs.rs/num-format/0.3.0")]
 
-#[cfg(all(feature = "std", any(unix, windows)))]
+#[cfg(all(feature = "std", unix))]
 #[macro_use]
 extern crate cfg_if;
 
