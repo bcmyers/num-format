@@ -131,10 +131,10 @@ in your `Cargo.toml`. Additionally, on Windows (but **only** on Windows), using 
 requires Clang 3.9 or higher.</i>
 
 ```rust
-# #[cfg(all(feature = "system", any(unix, windows)))]
+# #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
 use num_format::SystemLocale;
 
-# #[cfg(all(feature = "system", any(unix, windows)))]
+# #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
 fn main() {
     let locale = SystemLocale::default().unwrap();
     println!("My system's default locale is...");
@@ -149,7 +149,7 @@ fn main() {
         Err(_) => println!("The 'en_US' locale is not included with my system."),
     }
 }
-# #[cfg(not(all(feature = "system", any(unix, windows))))]
+# #[cfg(not(all(feature = "with-system-locale", any(unix, windows))))]
 # fn main() {}
 ```
 
