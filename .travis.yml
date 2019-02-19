@@ -14,5 +14,6 @@ script:
   - cargo test --verbose --all-features
 matrix:
   allow_failures:
+    - os: windows
     - rust: nightly
   fast_finish: true
