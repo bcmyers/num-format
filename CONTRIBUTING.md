@@ -34,10 +34,10 @@ tests for you.
 
 To run the full test suite:
 
+* Make sure you're in the root directory (the directory with the workspace Cargo.toml), and then...
+
 ```bash
-$ cargo test
-$ cargo test --no-default-features
-$ cargo test --all-features
+$ ./scripts/test.sh
 ```
 
 ### num-format-dev
@@ -52,14 +52,15 @@ output a new `num-format/src/locale.rs`.
 
 To run num-format-dev (thereby re-creating `num-format/src/locale.rs`):
 
+* Make sure you're in the root directory (the directory with the workspace Cargo.toml), and then...
+
 ```bash
-# starting from the num-format root
-$ cargo run -p num-format-dev
+$ ./scripts/locale.sh
 ```
 
 You only need to run num-format-dev if you wish to modify `num-format/src/locale.rs`.
-If you do **not** wish to modify `num-format/src/locale.rs`, the above commands
-are unnecessary.
+If you do **not** wish to modify `num-format/src/locale.rs`, the above is not
+necessary.
 
 ## Code of Conduct
 

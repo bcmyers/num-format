@@ -1,9 +1,19 @@
-0.3.0 (TODO)
+0.4.0 (2019-02-19)
+==================
+**Breaking changes:**
+
+* Because `SystemLocale` requires a lot of dependencies (especially for Windows users),
+  it's now only available behind a feature flag (`with-system-locale`). The upside is,
+  of course, that those using num-format without this feature will only need to download and
+  compile a small handful of dependencies.
+
+0.3.0 (2019-02-18)
 ==================
 **Breaking changes:**
 
 * `Environment` was renamed to `SystemLocale`.
-* TODO
+* `Error` and `ErrorKind` were refactored.
+* Compiling for Windows depends on bindgen and so requires Clang 3.9 or above.
 
 **Bug fixes:**
 
@@ -11,6 +21,7 @@
 
 **Enhancements:**
 
+* Major overhaul of the code that interacts with operating systems (linux, macOS, freebsd, Windows, etc.)
 * Methods `available_names`, `from_name`, and `name` were added to both `Locale` and `SystemLocale`.
 * Several error messages now provide more detail about what exactly went wrong.
 

@@ -1,17 +1,19 @@
 language: rust
-rust:
-  - stable
-  - beta
-  - nightly
-os:
-  - linux
-  - osx
-  - windows
 cache: cargo
-script:
-  - ./scripts/test.sh
+git:
+  submodules: false
 matrix:
   allow_failures:
     - os: windows
     - rust: nightly
   fast_finish: true
+os:
+  - linux
+  - osx
+  - windows
+rust:
+  - stable
+  - beta
+  - nightly
+script:
+  - ./scripts/test.sh
