@@ -121,13 +121,13 @@ fn main() {
 
 ### `SystemLocale` *(available behind feature flag `with-system-locale`)*
 
-The [`SystemLocale`] type is another type that implements [`Format`]. It allows you to access your
+The `SystemLocale` type is another type that implements [`Format`]. It allows you to access your
 OS's locale information. It has a very similar API to [`Locale`] and should work on all major
 operating systems (i.e. macOS, linux, the BSDs, and Windows).
 
 <i>Since this type requires several dependencies (especially on Windows), it is behind a feature
 flag. To use it, include `num-format = { version = "0.4", features = ["with-system-locale"] }`
-in your `Cargo.toml`. Additionally, on Windows (but **only** on Windows), using [`SystemLocale`]
+in your `Cargo.toml`. Additionally, on Windows (but **only** on Windows), using `SystemLocale`
 requires Clang 3.9 or higher.</i>
 
 ```rust
@@ -202,25 +202,24 @@ fn main() -> Result<(), Error> {
 at your option.
 
 [bindgen]: https://crates.io/crates/bindgen
-[`Buffer`]: struct.Buffer.html
+[`Buffer`]: https://docs.rs/num-format/0.3.0/num_format/struct.Buffer.html
 [Common Locale Data Repository]: https://en.wikipedia.org/wiki/Common_Locale_Data_Repository
-[`CustomFormat`]: format/struct.CustomFormat.html
+[`CustomFormat`]: https://docs.rs/num-format/0.3.0/num_format/struct.CustomFormat.html
 [`File`]: https://doc.rust-lang.org/std/fs/struct.File.html
 [`fmt::Write`]: https://doc.rust-lang.org/std/fmt/fn.write.html
-[`Format`]: format/trait.Format.html
+[`Format`]: https://docs.rs/num-format/0.3.0/num_format/trait.Format.html
 [`io::Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
-[`Locale`]: format/enum.Locale.html
+[`Locale`]: https://docs.rs/num-format/0.3.0/num_format/enum.Locale.html
 [`num_bigint::BigInt`]: https://docs.rs/num-bigint/0.2.2/num_bigint/struct.BigInt.html
 [picking a format]: #picking-a-format
 [`String`]: https://doc.rust-lang.org/std/string/struct.String.html
-[`SystemLocale`]: format/struct.SystemLocale.html
 [The Apache License, Version 2.0]: http://www.apache.org/licenses/LICENSE-2.0
 [The MIT license]: http://opensource.org/licenses/MIT
-[`ToFormattedString`]: trait.ToFormattedString.html
-[`to_formatted_string`]: trait.ToFormattedString.html#method.to_formatted_string
+[`ToFormattedString`]: https://docs.rs/num-format/0.3.0/num_format/trait.ToFormattedString.html
+[`to_formatted_string`]: https://docs.rs/num-format/0.3.0/num_format/trait.ToFormattedString.html#method.to_formatted_string
 [Unicode Consortium]: https://en.wikipedia.org/wiki/Unicode_Consortium
 [`Vec`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
-[`WriteFormatted`]: trait.WriteFormatted.html
+[`WriteFormatted`]: https://docs.rs/num-format/0.3.0/num_format/trait.WriteFormatted.html
 */
 
 #![cfg_attr(not(feature = "std"), no_std)]
