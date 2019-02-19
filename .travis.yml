@@ -9,8 +9,8 @@ os:
   - windows
 cache: cargo
 script:
-  - cargo test --verbose --no-default-features
   - cargo test --verbose
+  - cargo test --verbose --no-default-features
   - cargo test --verbose --all-features
 matrix:
   allow_failures:

@@ -1,12 +1,10 @@
 use core::fmt;
 
-use arrayvec::ArrayString;
+use crate::error_kind::ErrorKind;
+#[cfg(not(feature = "std"))]
+use crate::strings::ErrString;
 
-use crate::ErrorKind;
-
-pub(crate) const MAX_ERR_LEN: usize = 256;
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 /// This crate's error type.
 pub struct Error {
@@ -18,32 +16,29 @@ impl Error {
     ///
     /// [`Error`]: struct.Error.html
     /// [`ErrorKind::Other`]: enum.ErrorKind.html#variant.Other
-    pub fn new<S>(msg: S) -> Error
+    pub fn new<S>(message: S) -> Error
     where
         S: AsRef<str>,
     {
-        let s = msg.as_ref();
-        let s = if s.len() > MAX_ERR_LEN {
-            &s[0..MAX_ERR_LEN]
-        } else {
-            s
+        #[cfg(feature = "std")]
+        return Error {
+            kind: ErrorKind::Other(message.as_ref().into()),
         };
-        Error {
-            kind: ErrorKind::Other {
-                msg: ArrayString::from(s).unwrap(),
-            },
-        }
+
+        #[cfg(not(feature = "std"))]
+        return Error {
+            kind: ErrorKind::Other(ErrString::truncated(message).into()),
+        };
     }
 
     /// Returns the [`ErrorKind`].
     ///
     /// [`ErrorKind`]: enum.ErrorKind.html
-    pub fn kind(&self) -> ErrorKind {
-        self.kind
+    pub fn kind(&self) -> &ErrorKind {
+        &self.kind
     }
 }
 
-#[allow(unused)]
 impl Error {
     pub(crate) fn capacity(len: usize, cap: usize) -> Error {
         Error {
@@ -51,50 +46,63 @@ impl Error {
         }
     }
 
-    pub(crate) fn decoding<B, S>(bytes: B, encoding_label: S) -> Error
+    #[cfg(all(feature = "std", any(unix, windows)))]
+    pub(crate) fn interior_nul_byte<S>(locale_name: S) -> Error
     where
-        B: AsRef<[u8]>,
-        S: AsRef<str>,
+        S: Into<String>,
     {
-        let _ = bytes;
-        let _ = encoding_label;
-        unimplemented!()
+        Error {
+            kind: ErrorKind::InteriorNulByte(locale_name.into()),
+        }
     }
 
-    pub(crate) fn null_ptr(function_name: &str) -> Error {
-        let _ = function_name;
-        unimplemented!()
-    }
-
-    pub(crate) fn parse_locale<S>(msg: S) -> Error
+    pub(crate) fn parse_locale<S>(input: S) -> Error
     where
         S: AsRef<str>,
     {
-        let _ = msg;
-        unimplemented!()
+        #[cfg(feature = "std")]
+        return Error {
+            kind: ErrorKind::ParseLocale(input.as_ref().into()),
+        };
+
+        #[cfg(not(feature = "std"))]
+        return Error {
+            kind: ErrorKind::ParseLocale(ErrString::truncated(input.as_ref()).into()),
+        };
     }
 
-    pub(crate) fn unix<S>(msg: S) -> Error
+    #[cfg(all(feature = "std", any(unix, windows)))]
+    pub(crate) fn system_invalid_return<S, T>(function_name: S, message: T) -> Error
     where
-        S: AsRef<str>,
+        S: Into<String>,
+        T: Into<String>,
     {
-        let _ = msg;
-        unimplemented!()
+        Error {
+            kind: ErrorKind::SystemInvalidReturn {
+                function_name: function_name.into(),
+                message: message.into(),
+            },
+        }
     }
 
-    pub(crate) fn unsupported_encoding<S>(encoding_label: S) -> Error
+    #[cfg(all(feature = "std", any(unix, windows)))]
+    pub(crate) fn system_unsupported_encoding<S>(encoding_name: S) -> Error
     where
-        S: AsRef<str>,
+        S: Into<String>,
     {
-        let _ = encoding_label;
-        unimplemented!()
+        Error {
+            kind: ErrorKind::SystemUnsupportedEncoding(encoding_name.into()),
+        }
     }
 
-    pub(crate) fn windows<S>(msg: S) -> Error
+    #[cfg(all(feature = "std", any(unix, windows)))]
+    pub(crate) fn system_unsupported_grouping<B>(bytes: B) -> Error
     where
-        S: AsRef<str>,
+        B: Into<Vec<u8>>,
     {
-        unimplemented!()
+        Error {
+            kind: ErrorKind::SystemUnsupportedGrouping(bytes.into()),
+        }
     }
 }
 
@@ -112,15 +120,11 @@ impl From<ErrorKind> for Error {
 
 #[cfg(feature = "std")]
 mod standard {
-    use crate::{Error, ErrorKind};
+    use super::*;
 
     impl std::error::Error for Error {
         fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-            use self::ErrorKind::*;
-            match self.kind {
-                Capacity { .. } => None,
-                Other { .. } => None,
-            }
+            None
         }
     }
 }

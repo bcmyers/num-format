@@ -7,20 +7,20 @@ use crate::Grouping;
 /// [`Locale`]: enum.Locale.html
 /// [`SystemLocale`]: struct.SystemLocale.html
 pub trait Format {
-    /// Returns character to use for representing decimal points.
+    /// Returns the string representation of a decimal point.
     fn decimal(&self) -> DecimalStr<'_>;
-    /// Returns [`Grouping`] to use for separating digits. (see [`Grouping`])
+    /// Returns the [`Grouping`] to use for separating digits. (see [`Grouping`])
     ///
     /// [`Grouping`]: enum.Grouping.html
     fn grouping(&self) -> Grouping;
-    /// Returns string to use for representing infinity symbols.
+    /// Returns the string representation of an infinity symbol.
     fn infinity(&self) -> InfinityStr<'_>;
-    /// Returns string to use for representing minus signs.
+    /// Returns the string representation of a minus sign.
     fn minus_sign(&self) -> MinusSignStr<'_>;
-    /// Returns string to use for representing NaN symbols.
+    /// Returns the string representation of NaN.
     fn nan(&self) -> NanStr<'_>;
-    /// Returns string to use for representing plus signs.
+    /// Returns the string representation of a plus sign.
     fn plus_sign(&self) -> PlusSignStr<'_>;
-    /// Returns character to use, if any, for representing separators.
+    /// Returns the string representation of a thousands separator.
     fn separator(&self) -> SeparatorStr<'_>;
 }

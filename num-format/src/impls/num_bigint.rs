@@ -10,6 +10,7 @@ use crate::sealed::Sealed;
 use crate::{Format, Grouping, ToFormattedString};
 
 impl ToFormattedString for BigInt {
+    #[inline(always)]
     fn read_to_io_writer<F, W>(&self, mut w: W, format: &F) -> Result<usize, io::Error>
     where
         F: Format,
@@ -31,6 +32,7 @@ impl ToFormattedString for BigInt {
         }
     }
 
+    #[inline(always)]
     fn read_to_fmt_writer<F, W>(&self, mut w: W, format: &F) -> Result<usize, fmt::Error>
     where
         F: Format,
@@ -54,6 +56,7 @@ impl ToFormattedString for BigInt {
 }
 
 impl ToFormattedString for BigUint {
+    #[inline(always)]
     fn read_to_io_writer<F, W>(&self, w: W, format: &F) -> Result<usize, io::Error>
     where
         F: Format,
@@ -64,6 +67,7 @@ impl ToFormattedString for BigUint {
         Ok(c)
     }
 
+    #[inline(always)]
     fn read_to_fmt_writer<F, W>(&self, w: W, format: &F) -> Result<usize, fmt::Error>
     where
         F: Format,
@@ -78,6 +82,7 @@ impl ToFormattedString for BigUint {
 impl Sealed for BigInt {}
 impl Sealed for BigUint {}
 
+#[inline(always)]
 fn io_algorithm<F, W>(s: String, mut w: W, format: &F) -> Result<usize, io::Error>
 where
     W: io::Write,
@@ -138,17 +143,15 @@ where
     Ok(bytes_written)
 }
 
+#[inline(always)]
 fn fmt_algorithm<F, W>(s: String, mut w: W, format: &F) -> Result<usize, fmt::Error>
 where
     W: fmt::Write,
     F: Format,
 {
-    // TODO: bytes vs. chars
-
     let separator = format.separator().into_str();
     let grouping = format.grouping();
 
-    // If we can just use BigInt's to_string method, let's do it
     if separator.is_empty() || grouping == Grouping::Posix {
         w.write_str(&s)?;
         return Ok(s.len());

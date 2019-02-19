@@ -1,6 +1,4 @@
-// TODO: Add support for LOCALE_NAME_USER_DEFAULT
-
-#![cfg(windows)]
+#![cfg(all(feature = "std", windows))]
 
 use std::borrow::Cow;
 use std::collections::HashSet;
@@ -29,11 +27,13 @@ use crate::system_locale::SystemLocale;
 lazy_static! {
     static ref SYSTEM_DEFAULT: Result<&'static str, Error> = {
         CStr::from_bytes_with_nul(LOCALE_NAME_SYSTEM_DEFAULT).map_err(|_| {
-            Error::windows(
+            Error::system_invalid_return(
+                "LOCALE_NAME_SYSTEM_DEFAULT",
                 "LOCALE_NAME_SYSTEM_DEFAULT from windows.h unexpectedly contains interior nul byte.",
             )
         })?.to_str().map_err(|_| {
-            Error::windows(
+            Error::system_invalid_return(
+                "LOCALE_NAME_SYSTEM_DEFAULT"
                 "LOCALE_NAME_SYSTEM_DEFAULT from windows.h unexpectedly contains invalid UTF-8.",
             )
         })
@@ -41,8 +41,6 @@ lazy_static! {
 }
 
 pub(crate) fn available_names() -> Result<HashSet<String>, Error> {
-    // call safe wrapper for EnumSystemLocalesEx
-    // see https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-enumsystemlocalesex
     enum_system_locales_ex()
 }
 
@@ -54,15 +52,23 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
 
     let max_len = LOCALE_NAME_MAX_LENGTH as usize - 1;
     if name.len() > max_len {
-        return Err(Error::windows(format!(
-            "locale names on windows may not exceed {} bytes (including a null byte).",
-            max_len,
-        )));
+        return Err(Error::parse_locale(name));
     }
 
     let dec = {
         let s = get_locale_info_ex(&name, Request::Decimal)?;
-        DecString::new(&s).map_err(|_| Error::windows("TODO"))?
+        DecString::new(&s).map_err(|_| {
+            Error::system_invalid_return(
+                "get_locale_info_ex",
+                format!(
+                "get_locale_info_ex function from Windows API unexpectedly returned decimal \
+                 string whose length ({} bytes) exceeds maximum currently supported by num-format \
+                 ({} bytes).",
+                 s.len(),
+                 DecString::capacity(),
+            ),
+            )
+        })?
     };
 
     let grp = {
@@ -72,11 +78,9 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             "3;2;0" | "3;2" => Grouping::Indian,
             "" => Grouping::Posix,
             _ => {
-                return Err(Error::windows(format!(
-                "for the locale {:?}, windows returned a grouping value of {:?}, which num-format \
-                does not currently support. if you need support this grouping value, please file \
-                an issue at https://github.com/bcmyers/num-format.",
-                &name, &grp_string)));
+                return Err(Error::system_unsupported_grouping(
+                    grp_string.as_bytes().to_vec(),
+                ));
             }
         }
     };
@@ -84,53 +88,81 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
     let inf = {
         let s = get_locale_info_ex(&name, Request::PositiveInfinity)?;
         InfString::new(&s).map_err(|_| {
-            Error::windows(format!(
-                "for the locale {:?}, windows returned an infinity sign of length {} bytes, \
-                 which exceeds the maximum length for infinity signs that num-format currently \
-                 supports. if you need support longer infinity signs, please file an \
-                 issue at https://github.com/bcmyers/num-format.",
-                &name,
-                s.len()
-            ))
+            Error::system_invalid_return(
+                "get_locale_info_ex",
+                format!(
+                "get_locale_info_ex function from Windows API unexpectedly returned infinity \
+                 string whose length ({} bytes) exceeds maximum currently supported by num-format \
+                 ({} bytes).",
+                 s.len(),
+                 InfString::capacity(),
+            ),
+            )
         })?
     };
 
     let min = {
         let s = get_locale_info_ex(&name, Request::MinusSign)?;
         MinString::new(&s).map_err(|_| {
-            Error::windows(format!(
-                "for the locale {:?}, windows returned a minus sign of length {} bytes, \
-                 which exceeds the maximum length for minus signs that num-format currently \
-                 supports. if you need support longer minus signs, please file an issue \
-                 at https://github.com/bcmyers/num-format.",
-                &name,
-                s.len()
-            ))
+            Error::system_invalid_return(
+                "get_locale_info_ex",
+                format!(
+                "get_locale_info_ex function from Windows API unexpectedly returned minus sign \
+                 string whose length ({} bytes) exceeds maximum currently supported by num-format \
+                 ({} bytes).",
+                 s.len(),
+                 MinString::capacity(),
+            ),
+            )
         })?
     };
 
     let nan = {
         let s = get_locale_info_ex(&name, Request::Nan)?;
         NanString::new(&s).map_err(|_| {
-            Error::windows(format!(
-                "for the locale {:?}, windows returned a NaN value of length {} bytes, \
-                 which exceeds the maximum length for NaN values that num-format currently \
-                 supports. if you need support longer NaN values, please file an issue \
-                 at https://github.com/bcmyers/num-format.",
-                &name,
-                s.len()
-            ))
+            Error::system_invalid_return(
+                "get_locale_info_ex",
+                format!(
+                "get_locale_info_ex function from Windows API unexpectedly returned NaN \
+                 string whose length ({} bytes) exceeds maximum currently supported by num-format \
+                 ({} bytes).",
+                 s.len(),
+                 NanString::capacity(),
+            ),
+            )
+        })?
+    };
+
+    let plus = {
+        let s = get_locale_info_ex(&name, Request::PlusSign)?;
+        PlusString::new(&s).map_err(|_| {
+            Error::system_invalid_return(
+                "get_locale_info_ex",
+                format!(
+                "get_locale_info_ex function from Windows API unexpectedly returned plus sign \
+                 string whose length ({} bytes) exceeds maximum currently supported by num-format \
+                 ({} bytes).",
+                 s.len(),
+                 PlusString::capacity(),
+            ),
+            )
         })?
     };
 
     let sep = {
         let s = get_locale_info_ex(&name, Request::Separator)?;
-        SepString::new(&s).map_err(|_| Error::windows("TODO"))?
-    };
-
-    let plus = {
-        let s = get_locale_info_ex(&name, Request::PlusSign)?;
-        PlusString::new(&s).map_err(|_| Error::windows("TODO"))?
+        SepString::new(&s).map_err(|_| {
+            Error::system_invalid_return(
+                "get_locale_info_ex",
+                format!(
+                "get_locale_info_ex function from Windows API unexpectedly returned separator \
+                 string whose length ({} bytes) exceeds maximum currently supported by num-format \
+                 ({} bytes).",
+                 s.len(),
+                 SepString::capacity(),
+            ),
+            )
+        })?
     };
 
     // we already have the name unless unless it was LOCALE_NAME_SYSTEM_DEFAULT, a special
@@ -238,10 +270,10 @@ fn enum_system_locales_ex() -> Result<HashSet<String>, Error> {
             unsafe { winnls::EnumSystemLocalesEx(Some(lpLocaleEnumProcEx), 0, 0, ptr::null_mut()) };
         if ret == 0 {
             let err = unsafe { GetLastError() };
-            return Err(Error::windows(format!(
-                "EnumSystemLocalesEx failed with error code: {}",
-                err
-            )));
+            return Err(Error::system_invalid_return(
+                "EnumSystemLocaleEx",
+                format!("EnumSystemLocaleEx failed with error code {}", err),
+            ));
         }
         let set = {
             let inner_guard = INNER_MUTEX.lock().unwrap();
@@ -270,19 +302,22 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
         let size = unsafe { winnls::GetLocaleInfoEx(lpLocaleName, LCType, buf_ptr, size) };
         if size == 0 {
             let err = unsafe { GetLastError() };
-            return Err(Error::windows(format!(
-                "GetLocaleInfoEx failed with error code: {}",
-                err
-            )));
+            return Err(Error::system_invalid_return(
+                "GetLocaleInfoEx",
+                format!("GetLocaleInfoEx failed with error code {}", err),
+            ));
         } else if size < 0 {
-            return Err(Error::windows(format!(
-                "GetLocaleInfoEx unexpectedly returned a negative value of {}",
-                size
-            )));
+            return Err(Error::system_invalid_return(
+                "GetLocaleInfoEx",
+                format!(
+                    "GetLocaleInfoEx unexpectedly returned a negative value of {}",
+                    size
+                ),
+            ));
         }
         // cast is OK because we've already checked that size is positive
         if size as usize > BUF_LEN {
-            return Err(Error::windows(format!(
+            return Err(Error::new(format!(
                 "GetLocaleInfoEx wants to write a string of {} WCHARs, which num-format does not \
                  currently support (current max is {}). if you would like num-format to support \
                  GetLocaleInfoEx writing longer strings, please please file an issue at \
@@ -309,20 +344,26 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
     let mut buf: [WCHAR; BUF_LEN] = unsafe { mem::uninitialized() };
     let written = inner(lpLocaleName, LCType, buf.as_mut_ptr(), size)?;
     if written != size {
-        return Err(Error::windows(
-            "unexpected return value from GetLocaleInfoEx.",
+        return Err(Error::system_invalid_return(
+            "GetLocaleInfoEx",
+            "GetLocaleInfoEx returned an unexpected value for number of characters retrieved.",
         ));
     }
 
     let s = U16CStr::from_slice_with_nul(&buf[..written as usize])
         .map_err(|_| {
-            Error::windows("data written by GetLocaleInfoEx unexpectedly missing null byte.")
+            Error::system_invalid_return(
+                "GetLocaleInfoEx",
+                "Data written by GetLocaleInfoEx unexpectedly missing null byte.",
+            )
         })?
         .to_string()
         .map_err(|_| {
-            Error::windows("data written by GetLocaleInfoEx unexpectedly contains invalid UTF-16.")
+            Error::system_invalid_return(
+                "GetLocaleInfoEx",
+                "Data written by GetLocaleInfoEx unexpectedly contains invalid UTF-16.",
+            )
         })?;
-
     Ok(s)
 }
 

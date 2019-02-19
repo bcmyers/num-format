@@ -3,8 +3,7 @@
 **Breaking changes:**
 
 * `Environment` was renamed to `SystemLocale`.
-* `ErrorKind::C` was renamed to `ErrorKind::Unix`.
-* `ErrorKind::Windows` was added.
+* TODO
 
 **Bug fixes:**
 

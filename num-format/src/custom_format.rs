@@ -75,14 +75,14 @@ impl CustomFormat {
         &self.min
     }
 
-    /// Returns this format's representation of plus signs.
-    pub fn plus_sign(&self) -> &str {
-        &self.plus
-    }
-
     /// Returns this format's representation of NaN.
     pub fn nan(&self) -> &str {
         &self.nan
+    }
+
+    /// Returns this format's representation of plus signs.
+    pub fn plus_sign(&self) -> &str {
+        &self.plus
     }
 
     /// Returns this format's representation of separators.
@@ -99,30 +99,37 @@ impl Default for CustomFormat {
 }
 
 impl Format for CustomFormat {
+    #[inline(always)]
     fn decimal(&self) -> DecimalStr<'_> {
         DecimalStr::new(self.decimal()).unwrap()
     }
 
+    #[inline(always)]
     fn grouping(&self) -> Grouping {
         self.grouping()
     }
 
+    #[inline(always)]
     fn infinity(&self) -> InfinityStr<'_> {
         InfinityStr::new(self.infinity()).unwrap()
     }
 
+    #[inline(always)]
     fn minus_sign(&self) -> MinusSignStr<'_> {
         MinusSignStr::new(self.minus_sign()).unwrap()
     }
 
+    #[inline(always)]
     fn nan(&self) -> NanStr<'_> {
         NanStr::new(self.nan()).unwrap()
     }
 
+    #[inline(always)]
     fn plus_sign(&self) -> PlusSignStr<'_> {
         PlusSignStr::new(self.plus_sign()).unwrap()
     }
 
+    #[inline(always)]
     fn separator(&self) -> SeparatorStr<'_> {
         SeparatorStr::new(self.separator()).unwrap()
     }

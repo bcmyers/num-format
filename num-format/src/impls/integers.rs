@@ -70,7 +70,6 @@ macro_rules! impl_signed {
                     let minus_sign = format.minus_sign().into_str();
                     let min_len = minus_sign.len();
                     buf.pos -= min_len;
-                    // TODO
                     for (i, byte) in minus_sign.as_bytes().iter().enumerate() {
                         buf.inner[buf.pos + i] = *byte;
                     }

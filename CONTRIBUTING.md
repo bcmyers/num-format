@@ -43,19 +43,18 @@ $ cargo test --all-features
 ### num-format-dev
 
 `num-format/src/locale.rs` is a programatically generated rust module. To modify
-it, you will need to work with **num-format-dev**, a *separate* rust crate 
+it, you will need to work with **num-format-dev**, a *separate* rust crate
 included at the root of the repository but **not** published to crates.io.
 
-num-format-dev produces a binary whose purpose is to parse the json files 
-located in the git submodule `num-format/num-format-dev/cldr-numbers-full` and 
+num-format-dev produces a binary whose purpose is to parse the json files
+located in the git submodule `num-format-dev/cldr-numbers-full` and
 output a new `num-format/src/locale.rs`.
 
 To run num-format-dev (thereby re-creating `num-format/src/locale.rs`):
 
 ```bash
 # starting from the num-format root
-$ cd num-format-dev
-$ cargo +nightly run
+$ cargo run -p num-format-dev
 ```
 
 You only need to run num-format-dev if you wish to modify `num-format/src/locale.rs`.

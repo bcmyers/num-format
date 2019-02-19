@@ -165,7 +165,7 @@ fn _create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Er
         ///    assert_eq!("-1\u{202f}000\u{202f}000", buf.as_str());
         ///
         ///    // Note:
-        ///    // U+202F is the "NARROW NO-BREAK SPACE" character.
+        ///    // U+202F is the "NARROW NO-BREAK SPACE" code point.
         ///    // When displayed to the screen, it looks like a space.
         ///}
         ///```
@@ -181,16 +181,16 @@ fn _create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Er
         }
 
         impl Locale {
-            /// Constructs a [`Locale`] from its name. Does the
-            /// same things as [`Locale::from_str`].
+            /// Constructs a [`Locale`] from its name. For a list of available names, see
+            /// [`available_names`].
             ///
             /// # Errors
             ///
             /// Returns an error if the name provided cannot be
             /// parsed into a [`Locale`].
             ///
+            /// [`available_names`]: enum.Locale.html#method.available_names
             /// [`Locale`]: enum.Locale.html
-            /// [`Locale::from_str`]: enum.Locale.html#method.from_str
             pub fn from_name<S>(name: S) -> Result<Locale, Error>
                 where S: AsRef<str>,
             {
@@ -272,30 +272,37 @@ fn _create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Er
         }
 
         impl Format for Locale {
+            #[inline(always)]
             fn decimal(&self) -> DecimalStr<'_> {
                 DecimalStr::new(self.decimal()).unwrap()
             }
 
+            #[inline(always)]
             fn grouping(&self) -> Grouping {
                 self.grouping()
             }
 
+            #[inline(always)]
             fn infinity(&self) -> InfinityStr<'_> {
                 InfinityStr::new(self.infinity()).unwrap()
             }
 
+            #[inline(always)]
             fn minus_sign(&self) -> MinusSignStr<'_> {
                 MinusSignStr::new(self.minus_sign()).unwrap()
             }
 
+            #[inline(always)]
             fn nan(&self) -> NanStr<'_> {
                 NanStr::new(self.nan()).unwrap()
             }
 
+            #[inline(always)]
             fn plus_sign(&self) -> PlusSignStr<'_> {
                 PlusSignStr::new(self.plus_sign()).unwrap()
             }
 
+            #[inline(always)]
             fn separator(&self) -> SeparatorStr<'_> {
                 SeparatorStr::new(self.separator()).unwrap()
             }
@@ -304,6 +311,9 @@ fn _create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Er
         impl FromStr for Locale {
             type Err = Error;
 
+            /// Same as [`from_name`].
+            ///
+            /// [`from_name`]: enum.Locale.html#method.from_name
             fn from_str(s: &str) -> Result<Self, Self::Err> {
                 use self::Locale::*;
                 let locale = match s {

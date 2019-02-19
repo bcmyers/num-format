@@ -1,4 +1,4 @@
-#![cfg(unix)]
+#![cfg(all(feature = "std", unix))]
 
 use crate::error::Error;
 
@@ -16,7 +16,15 @@ impl Encoding {
     pub(crate) fn decode<'a>(&self, bytes: &'a [u8]) -> Result<String, Error> {
         let (cow, _encoding, is_err) = self.0.decode(bytes);
         if is_err {
-            return Err(Error::decoding(bytes, self.name()));
+            return Err(Error::system_invalid_return(
+                "nl_langinfo",
+                format!(
+                    "nl_langinfo unexpectedly returned data that could not be decoded \
+                     using the proscribed encoding {}. the invalid data was {:?}.",
+                    self.name(),
+                    bytes
+                ),
+            ));
         }
         Ok(cow.into())
     }
@@ -55,8 +63,8 @@ impl Encoding {
 
             // If all of the above fail, return an error ...
             _ => {
-                let label = String::from_utf8_lossy(bytes);
-                return Err(Error::unsupported_encoding(&label));
+                let name = String::from_utf8_lossy(bytes);
+                return Err(Error::system_unsupported_encoding(name));
             }
         };
 

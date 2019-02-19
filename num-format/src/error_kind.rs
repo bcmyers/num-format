@@ -1,14 +1,16 @@
 use core::fmt;
 
+#[cfg(not(feature = "std"))]
 use arrayvec::ArrayString;
 
-use crate::error::MAX_ERR_LEN;
+#[cfg(not(feature = "std"))]
+use crate::strings::MAX_ERR_LEN;
 
 /// This crate's error kind.
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub enum ErrorKind {
-    /// Input exceeds capacity.
+    /// Input exceeds buffer capacity.
     Capacity {
         /// Length of the input in bytes.
         len: usize,
@@ -16,11 +18,43 @@ pub enum ErrorKind {
         cap: usize,
     },
 
+    #[cfg(all(feature = "std", any(unix, windows)))]
+    /// Locale name contains an interior nul byte, which is not allowed.
+    InteriorNulByte(String),
+
+    #[cfg(feature = "std")]
     /// Other miscellaneous error.
-    Other {
-        /// Additional details.
-        msg: ArrayString<[u8; MAX_ERR_LEN]>,
+    Other(String),
+
+    #[cfg(not(feature = "std"))]
+    /// Other miscellaneous error.
+    Other(ArrayString<[u8; MAX_ERR_LEN]>),
+
+    #[cfg(feature = "std")]
+    /// Failed to parse input into a valid locale.
+    ParseLocale(String),
+
+    #[cfg(not(feature = "std"))]
+    /// Failed to parse input into a valid locale.
+    ParseLocale(ArrayString<[u8; MAX_ERR_LEN]>),
+
+    #[cfg(all(feature = "std", any(unix, windows)))]
+    /// Call to C standard library or Windows API unexpectedly returned invalid data.
+    SystemInvalidReturn {
+        /// The name of the C standard library or Windows API function called.
+        function_name: String,
+        /// Details about the invalid data returned.
+        message: String,
     },
+
+    #[cfg(all(feature = "std", any(unix, windows)))]
+    /// Attempted to use a system locale that relies on an encoding that is not currently supported
+    /// by num-format.
+    SystemUnsupportedEncoding(String),
+
+    #[cfg(all(feature = "std", any(unix, windows)))]
+    /// The operating system returned grouping data that is currently unsuppported by num-format.
+    SystemUnsupportedGrouping(Vec<u8>),
 }
 
 impl fmt::Display for ErrorKind {
@@ -29,10 +63,40 @@ impl fmt::Display for ErrorKind {
         match self {
             Capacity { len, cap } => write!(
                 f,
-                "attempted to write input of length {} bytes into buffer with capacity {} bytes.",
+                "Attempted to write input of length {} bytes into a buffer with \
+                 capacity {} bytes.",
                 len, cap
             ),
-            Other { msg } => write!(f, "miscellaneous error: {}", msg),
+
+            #[cfg(all(feature = "std", any(unix, windows)))]
+            InteriorNulByte(ref locale_name) => write!(
+                f,
+                "Locale name {} contains an interior nul byte, which is not allowed.",
+                locale_name
+            ),
+
+            Other(ref message) => write!(f, "{}", message),
+
+            ParseLocale(ref input) => write!(f, "Failed to parse {} into a valid locale.", input),
+
+            #[cfg(all(feature = "std", any(unix, windows)))]
+            SystemInvalidReturn { message, .. } => write!(f, "{}", message),
+
+            #[cfg(all(feature = "std", any(unix, windows)))]
+            SystemUnsupportedEncoding(ref encoding_name) => write!(
+                f,
+                "Attempted to use a system locale that relies on an encoding that is not \
+                 currently supported by num-format. The unsupported encoding is {}.",
+                encoding_name
+            ),
+
+            #[cfg(all(feature = "std", any(unix, windows)))]
+            SystemUnsupportedGrouping(ref bytes) => write!(
+                f,
+                "The operating system returned grouping data of {:?}, which is not currently \
+                 suppported by num-format.",
+                bytes
+            ),
         }
     }
 }

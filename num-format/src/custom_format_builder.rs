@@ -1,9 +1,9 @@
-use crate::strings::{DecString, InfString, MinString, NanString, PlusString, SepString};
 use crate::custom_format::CustomFormat;
 use crate::error::Error;
 use crate::format::Format;
 use crate::grouping::Grouping;
 use crate::locale::Locale;
+use crate::strings::{DecString, InfString, MinString, NanString, PlusString, SepString};
 
 /// Type for building [`CustomFormat`]s.
 ///
@@ -38,9 +38,12 @@ impl CustomFormatBuilder {
     /// # Errors
     ///
     /// Return an error if:
+    /// - The "decimal" is longer than 8 bytes
     /// - The "infinity sign" is longer than 128 bytes
-    /// - The "minus sign" is longer than 7 bytes
+    /// - The "minus sign" is longer than 8 bytes
     /// - The "nan symbol" is longer than 64 bytes
+    /// - The "plus sign" is longer than 8 bytes
+    /// - The "separator" is longer than 8 bytes
     ///
     /// [`CustomFormat`]: struct.CustomFormat.html
     pub fn build(self) -> Result<CustomFormat, Error> {
@@ -64,8 +67,7 @@ impl CustomFormatBuilder {
         self
     }
 
-    /// Sets the decimal, grouping, infinity, minus sign, nan, and separator representations
-    /// according to the provided format.
+    /// Sets all fields based on the provided format.
     pub fn format<F>(mut self, value: &F) -> Self
     where
         F: Format,
@@ -88,10 +90,7 @@ impl CustomFormatBuilder {
         self
     }
 
-    /// Sets the string used for infinity. Note: If the length is greater than 128 bytes
-    /// [`build`] will return an error (see [`build`]).
-    ///
-    /// [`build`]: struct.CustomFormatBuilder.html#method.build
+    /// Sets the string representation of infinity.
     pub fn infinity<S>(mut self, s: S) -> Self
     where
         S: AsRef<str>,
@@ -100,10 +99,7 @@ impl CustomFormatBuilder {
         self
     }
 
-    /// Sets the string used for minus signs. Note: If the length is greater than 8 bytes
-    /// [`build`] will return an error (see [`build`]).
-    ///
-    /// [`build`]: struct.CustomFormatBuilder.html#method.build
+    /// Sets the string representation of a minus sign.
     pub fn minus_sign<S>(mut self, s: S) -> Self
     where
         S: AsRef<str>,
@@ -112,10 +108,7 @@ impl CustomFormatBuilder {
         self
     }
 
-    /// Sets the string used for NaN. Note: If the length is greater than 64 bytes
-    /// [`build`] will return an error (see [`build`]).
-    ///
-    /// [`build`]: struct.CustomFormatBuilder.html#method.build
+    /// Sets the string representation of NaN.
     pub fn nan<S>(mut self, s: S) -> Self
     where
         S: AsRef<str>,
@@ -124,10 +117,7 @@ impl CustomFormatBuilder {
         self
     }
 
-    /// Sets the string used for plus signs. Note: If the length is greater than 8 bytes
-    /// [`build`] will return an error (see [`build`]).
-    ///
-    /// [`build`]: struct.CustomFormatBuilder.html#method.build
+    /// Sets the string representation of a plus sign.
     pub fn plus_sign<S>(mut self, s: S) -> Self
     where
         S: AsRef<str>,
@@ -136,7 +126,7 @@ impl CustomFormatBuilder {
         self
     }
 
-    /// Sets the character, if any, used to represent separtors.
+    /// Sets the string representation of a thousands separator.
     pub fn separator<S>(mut self, s: S) -> Self
     where
         S: AsRef<str>,
@@ -147,15 +137,25 @@ impl CustomFormatBuilder {
 }
 
 impl From<CustomFormat> for CustomFormatBuilder {
-    fn from(format: CustomFormat) -> CustomFormatBuilder {
-        CustomFormatBuilder {
-            dec: Ok(format.dec),
-            grp: format.grp,
-            inf: Ok(format.inf),
-            min: Ok(format.min),
-            nan: Ok(format.nan),
-            plus: Ok(format.plus),
-            sep: Ok(format.sep),
+    fn from(format: CustomFormat) -> Self {
+        CustomFormat::builder().format(&format)
+    }
+}
+
+impl From<Locale> for CustomFormatBuilder {
+    fn from(locale: Locale) -> Self {
+        CustomFormat::builder().format(&locale)
+    }
+}
+
+#[cfg(all(feature = "std", any(unix, windows)))]
+mod standard {
+    use super::*;
+    use crate::system_locale::SystemLocale;
+
+    impl From<SystemLocale> for CustomFormatBuilder {
+        fn from(locale: SystemLocale) -> Self {
+            CustomFormat::builder().format(&locale)
         }
     }
 }

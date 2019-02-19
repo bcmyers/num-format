@@ -24,8 +24,8 @@ fn bench_usize(c: &mut Criterion) {
             })
         })
         .with_function("itoa/write/10_000", |b| {
+            let mut s = String::new();
             b.iter(|| {
-                let mut s = String::new();
                 itoa::fmt(&mut s, 10_000usize).unwrap();
             })
         })
@@ -36,8 +36,8 @@ fn bench_usize(c: &mut Criterion) {
             })
         })
         .with_function("num-format/write/10_000", |b| {
+            let mut s = String::new();
             b.iter(|| {
-                let mut s = String::new();
                 s.write_formatted(&10_000usize, &Locale::en).unwrap();
             })
         })
@@ -58,8 +58,8 @@ fn bench_usize(c: &mut Criterion) {
             })
         })
         .with_function("itoa/write/MAX", |b| {
+            let mut s = String::new();
             b.iter(|| {
-                let mut s = String::new();
                 itoa::fmt(&mut s, std::usize::MAX).unwrap();
             })
         })
@@ -70,8 +70,8 @@ fn bench_usize(c: &mut Criterion) {
             })
         })
         .with_function("num-format/write/MAX", |b| {
+            let mut s = String::new();
             b.iter(|| {
-                let mut s = String::new();
                 s.write_formatted(&std::usize::MAX, &Locale::en).unwrap();
             })
         })

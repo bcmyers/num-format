@@ -19,13 +19,13 @@ use crate::to_formatted_str::ToFormattedStr;
 ///     // Create a stack-allocated buffer...
 ///     let mut buf = Buffer::default();
 ///
-///     // Write '"1,000,000"' into the buffer...
+///     // Write "1,000,000" into the buffer...
 ///     buf.write_formatted(&1000000, &Locale::en);
 ///
-///     // Get a view into the buffer as a `&str`...
+///     // Get a view into the buffer as a &str...
 ///     let s = buf.as_str();
 ///
-///     // Do what you want with the `&str`...
+///     // Do what you want with the &str...
 ///     assert_eq!("1,000,000", s);
 /// }
 /// ```
@@ -89,26 +89,29 @@ impl Buffer {
     #[inline(always)]
     pub(crate) fn write_with_itoa<N: itoa::Integer>(&mut self, n: N) -> usize {
         let mut itoa_buf = itoa::Buffer::new();
+
         let s = itoa_buf.format(n);
-        let len = s.len();
-        // TODO
-        for (i, byte) in s.as_bytes().iter().enumerate() {
-            let index = MAX_BUF_LEN - len + i;
-            self.inner[index] = *byte;
-        }
-        self.pos = MAX_BUF_LEN - len;
+        let s_len = s.len();
+
+        self.pos = MAX_BUF_LEN - s_len;
         self.end = MAX_BUF_LEN;
-        len
+
+        let dst = &mut self.inner[self.pos..self.end];
+        dst.copy_from_slice(s.as_bytes());
+
+        s_len
     }
 }
 
 impl AsRef<str> for Buffer {
+    #[inline(always)]
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
 impl Borrow<str> for Buffer {
+    #[inline(always)]
     fn borrow(&self) -> &str {
         self.as_str()
     }

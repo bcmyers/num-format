@@ -4,6 +4,7 @@ use core::ops::Deref;
 use arrayvec::ArrayString;
 
 const MAX_DEC_LEN: usize = 8;
+pub(crate) const MAX_ERR_LEN: usize = 256;
 const MAX_INF_LEN: usize = 128;
 pub(crate) const MAX_MIN_LEN: usize = 8;
 const MAX_NAN_LEN: usize = 64;
@@ -54,13 +55,13 @@ impl<'a> InfinityStr<'a> {
 }
 
 /// Simple wrapper type for a `&str` to make sure its length is less than the maximum for
-/// a minus sign (7 bytes).
+/// a minus sign (8 bytes).
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
 pub struct MinusSignStr<'a>(&'a str);
 
 impl<'a> MinusSignStr<'a> {
     /// Constructs a [`MinusSignStr`], ensuring that the length is less than the maximum for
-    /// a minus sign (7 bytes).
+    /// a minus sign (8 bytes).
     ///
     /// # Errors
     ///
@@ -132,12 +133,13 @@ impl<'a> SeparatorStr<'a> {
 macro_rules! create_impls {
     ( $name:ident, $max_len:expr ) => {
         impl<'a> $name<'a> {
+            #[inline(always)]
             /// Allows recovery of the initial / wrapped `&str`.
             pub fn into_str(self) -> &'a str {
                 self.0
             }
 
-            #[inline]
+            #[inline(always)]
             fn _new(s: &'a str) -> Result<$name<'a>, Error> {
                 let len = s.len();
                 if len > $max_len {
@@ -148,6 +150,7 @@ macro_rules! create_impls {
         }
 
         impl<'a> AsRef<str> for $name<'a> {
+            #[inline(always)]
             fn as_ref(&self) -> &str {
                 self.0
             }
@@ -180,6 +183,7 @@ macro_rules! create_string {
         pub(crate) struct $name(ArrayString<[u8; $max_len]>);
 
         impl $name {
+            #[allow(dead_code)]
             pub(crate) fn new<S>(s: S) -> Result<Self, Error>
             where
                 S: AsRef<str>,
@@ -189,8 +193,23 @@ macro_rules! create_string {
                 Ok($name(a))
             }
 
-            #[allow(unused)]
-            pub(crate) fn max_len() -> usize {
+            #[allow(dead_code)]
+            pub(crate) fn truncated<S>(s: S) -> Self
+            where
+                S: AsRef<str>,
+            {
+                let s = s.as_ref();
+                let s = if s.len() > $max_len {
+                    &s[0..$max_len]
+                } else {
+                    s
+                };
+                $name(ArrayString::from(s).unwrap())
+            }
+
+            #[allow(dead_code)]
+            #[inline(always)]
+            pub(crate) fn capacity() -> usize {
                 $max_len
             }
         }
@@ -198,9 +217,21 @@ macro_rules! create_string {
         impl Deref for $name {
             type Target = str;
 
-            #[inline]
+            #[inline(always)]
             fn deref(&self) -> &str {
                 self.0.deref()
+            }
+        }
+
+        impl fmt::Display for $name {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                write!(f, "{}", self.0)
+            }
+        }
+
+        impl From<$name> for ArrayString<[u8; $max_len]> {
+            fn from(s: $name) -> Self {
+                s.0
             }
         }
 
@@ -246,9 +277,9 @@ macro_rules! create_string {
 }
 
 create_string!(DecString, DecVisitor, MAX_DEC_LEN);
+create_string!(ErrString, ErrVisitor, MAX_ERR_LEN);
 create_string!(InfString, InfVisitor, MAX_INF_LEN);
 create_string!(MinString, MinVisitor, MAX_MIN_LEN);
 create_string!(NanString, NanVisitor, MAX_NAN_LEN);
-// TODO: Still don't like this name
 create_string!(PlusString, PlusVisitor, MAX_PLUS_LEN);
 create_string!(SepString, SepVisitor, MAX_SEP_LEN);

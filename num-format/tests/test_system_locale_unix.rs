@@ -18,8 +18,8 @@ fn test_unix() {
     });
     assert!(!vec.is_empty());
     for name in &vec {
+        println!("{}", name);
         let locale1 = SystemLocale::from_name(name.to_string()).unwrap();
-        println!("{:?}", &locale1);
         env::set_var("LC_ALL", name);
         let locale2 = SystemLocale::default().unwrap();
         assert_eq!(locale1, locale2);

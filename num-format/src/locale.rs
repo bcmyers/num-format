@@ -557,7 +557,7 @@ const AVAILABLE_NAMES: [&'static str; 538usize] = [
 #[doc = r#"    assert_eq!("-1\u{202f}000\u{202f}000", buf.as_str());"#]
 #[doc = r""]
 #[doc = r"    // Note:"]
-#[doc = r#"    // U+202F is the "NARROW NO-BREAK SPACE" character."#]
+#[doc = r#"    // U+202F is the "NARROW NO-BREAK SPACE" code point."#]
 #[doc = r"    // When displayed to the screen, it looks like a space."]
 #[doc = r"}"]
 #[doc = r"```"]
@@ -1109,16 +1109,16 @@ pub enum Locale {
     zu,
 }
 impl Locale {
-    #[doc = r" Constructs a [`Locale`] from its name. Does the"]
-    #[doc = r" same things as [`Locale::from_str`]."]
+    #[doc = r" Constructs a [`Locale`] from its name. For a list of available names, see"]
+    #[doc = r" [`available_names`]."]
     #[doc = r""]
     #[doc = r" # Errors"]
     #[doc = r""]
     #[doc = r" Returns an error if the name provided cannot be"]
     #[doc = r" parsed into a [`Locale`]."]
     #[doc = r""]
+    #[doc = r" [`available_names`]: enum.Locale.html#method.available_names"]
     #[doc = r" [`Locale`]: enum.Locale.html"]
-    #[doc = r" [`Locale::from_str`]: enum.Locale.html#method.from_str"]
     pub fn from_name<S>(name: S) -> Result<Locale, Error>
     where
         S: AsRef<str>,
@@ -4948,30 +4948,40 @@ impl Locale {
     }
 }
 impl Format for Locale {
+    #[inline(always)]
     fn decimal(&self) -> DecimalStr<'_> {
         DecimalStr::new(self.decimal()).unwrap()
     }
+    #[inline(always)]
     fn grouping(&self) -> Grouping {
         self.grouping()
     }
+    #[inline(always)]
     fn infinity(&self) -> InfinityStr<'_> {
         InfinityStr::new(self.infinity()).unwrap()
     }
+    #[inline(always)]
     fn minus_sign(&self) -> MinusSignStr<'_> {
         MinusSignStr::new(self.minus_sign()).unwrap()
     }
+    #[inline(always)]
     fn nan(&self) -> NanStr<'_> {
         NanStr::new(self.nan()).unwrap()
     }
+    #[inline(always)]
     fn plus_sign(&self) -> PlusSignStr<'_> {
         PlusSignStr::new(self.plus_sign()).unwrap()
     }
+    #[inline(always)]
     fn separator(&self) -> SeparatorStr<'_> {
         SeparatorStr::new(self.separator()).unwrap()
     }
 }
 impl FromStr for Locale {
     type Err = Error;
+    #[doc = r" Same as [`from_name`]."]
+    #[doc = r""]
+    #[doc = r" [`from_name`]: enum.Locale.html#method.from_name"]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         use self::Locale::*;
         let locale = match s {

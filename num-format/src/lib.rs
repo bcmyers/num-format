@@ -4,7 +4,7 @@
 [![Documentation](https://docs.rs/num-format/badge.svg)](https://docs.rs/num-format/)
 ![License](https://img.shields.io/crates/l/num_format.svg)
 
-A Rust crate for producing string-representations of numbers, formatted according to international
+A Rust crate for producing string representations of numbers, formatted according to international
 standards, e.g.
 
 * `"1,000,000"` for US English
@@ -13,14 +13,15 @@ standards, e.g.
 
 # Creating a string representation
 
-**num-format** offers **three** principle APIs...
+**num-format** offers **three** principal APIs...
 
 ### `ToFormattedString`
 
-Using the [`ToFormattedString`] trait is the simplist API, just call [`to_formatted_string`] on a
-type that implements it (all the number types in the standard library implement it) with a desired
-format (see [picking a format] below). That said, using [`ToFormattedString`] will always heap
-allocate; so it is the slowest of the three APIs and cannot be used in a `no_std` environment.
+The [`ToFormattedString`] trait is the simplist of the three APIs. Just call
+[`to_formatted_string`] on a type that implements it (all the integer types in the standard library
+implement it) while providing a desired format (see [picking a format] below). That said, using
+[`ToFormattedString`] will always heap allocate; so it is the slowest of the three APIs and cannot
+be used in a `no_std` environment.
 
 ```rust
 # use cfg_if::cfg_if; cfg_if! { if #[cfg(feature = "std")] {
@@ -35,11 +36,12 @@ fn main() {
 
 ### `Buffer`
 
-Using the [`Buffer`] type is the fastest API, as it does **not** heap allocate. Instead, the formatted representation
-is written into a stack-allocated buffer. As such, you can use it in a `no_std` environment.
+Using the [`Buffer`] type is the fastest API, as it does **not** heap allocate. Instead, the
+formatted representation is written into a stack-allocated buffer. As such, you can use it in a
+`no_std` environment.
 
-Although this API is available for all the number types in the standard library, it is **not** available
-for third party types like [`num_bigint::BigInt`] since their maximum size cannot be known in advance.
+Although this API is available for all the integer types in the standard library, it is **not**
+available for types like [`num_bigint::BigInt`] whose maximum size cannot be known in advance.
 
 ```rust
 use num_format::{Buffer, Locale};
@@ -48,23 +50,31 @@ fn main() {
     // Create a stack-allocated buffer...
     let mut buf = Buffer::default();
 
-    // Write '"1,000,000"' into the buffer...
+    // Write "1,000,000" into the buffer...
     buf.write_formatted(&1000000, &Locale::en);
 
-    assert_eq!(buf.as_str(), "1,000,000");
+    // Get a view into the buffer as a &str...
+    let s = buf.as_str();
+
+    // Do what you want with the &str...
+    assert_eq!("1,000,000", s);
 }
 ```
 
 ### `WriteFormatted`
 
-The [`WriteFormatted`] trait is in between the other two APIs. You can write a formatted representation into
-any type that implements [`WriteFormatted`] (all the types in the standard library that implement [`io::Write`] or
-[`fmt::Write`] implement it, such as [`Vec`], [`String`], [`File`], etc.).
+The [`WriteFormatted`] trait is in between the other two APIs. You can write a formatted
+representation into any type that implements [`WriteFormatted`] (all the types in the standard
+library that implement [`io::Write`] or [`fmt::Write`] implement [`WriteFormatted`], such as
+[`Vec`], [`String`], [`File`], etc.).
 
-If you're writing a number type that can use the [`Buffer`] API (e.g. any number type in the standard library), there
-is **no** heap allocation. That said, you can also use this API with types where the [`Buffer`] API will not work, like
-[`num_bigint::BigInt`], in which case there will be heap allocations used. This trait is **not** available
-in a `no_std` environment.
+If you're writing a number type that can use the [`Buffer`] API, there is **no** heap allocation.
+That said, the [`io::Write`] and [`fmt::Write`] machinery adds a bit of overhead; so it's faster
+to use the [`Buffer`] type directly.
+
+You can also use this API with types where the [`Buffer`] API will not work, like
+[`num_bigint::BigInt`], in which case there will be heap allocation. As such, this trait is
+**not** available in a `no_std` environment.
 
 ```rust
 # use cfg_if::cfg_if; cfg_if! { if #[cfg(feature = "std")] {
@@ -74,7 +84,7 @@ fn main() {
     // Create a writer...
     let mut writer = String::new(); // Could also be Vec::new(), File::open(...), ...
 
-    // Write '"1,000,000"' into the writer...
+    // Write "1,000,000" into the writer...
     writer.write_formatted(&1000000, &Locale::en);
 
     assert_eq!(&writer, "1,000,000");
@@ -84,9 +94,9 @@ fn main() {
 
 # Picking a format
 
-Formatting options (e.g. which thousands separator to use, what the minus sign looks like, etc.) are
-represented by the [`Format`] trait. This crate offers **three** concrete implementations of the
-[`Format`] trait...
+Formatting options (e.g. which thousands separator to use, what the minus sign looks like, etc.)
+are represented by the [`Format`] trait. This crate offers **three** concrete implementations of
+the [`Format`] trait...
 
 ### `Locale`
 
@@ -116,17 +126,19 @@ fn main() {
 ### `SystemLocale`
 
 The [`SystemLocale`] type is another type that implements [`Format`]. It allows you to access your
-system's locale information. It has a very similar API to [`Locale`]. It is not available in
-`no_std` environments.
+OS's locale information. It has a very similar API to [`Locale`] and should work on all major
+operating systems (i.e. macOS, linux, the BSDs, and Windows).
 
-* On Unix systems, the [`setlocale`] and [`localeconv`] APIs are used to speak with your OS.
-* On Windows, the [`GetLocaleInfoEx`] and [`EnumSystemLocalesEx`] APIs are used.
+* On Unix-based systems, the underlying implementation uses [`locale`], [`newlocale`],
+  [`uselocale`] and other POSIX functions from the C standard library.
+* On Windows, the [`GetLocaleInfoEx`] and [`EnumSystemLocalesEx`] functions from the Windows API
+  are used.
 
 ```rust
-# #[cfg(feature = "system")]
+# #[cfg(all(feature = "std", any(unix, windows)))]
 use num_format::SystemLocale;
 
-# #[cfg(feature = "system")]
+# #[cfg(all(feature = "std", any(unix, windows)))]
 fn main() {
     let locale = SystemLocale::default().unwrap();
     println!("My system's default locale is...");
@@ -141,7 +153,7 @@ fn main() {
         Err(_) => println!("The 'en_US' locale is not included with my system."),
     }
 }
-# #[cfg(not(feature = "system"))]
+# #[cfg(not(all(feature = "std", any(unix, windows))))]
 # fn main() {}
 ```
 
@@ -194,8 +206,10 @@ at your option.
 [`Format`]: format/trait.Format.html
 [`GetLocaleInfoEx`]: https://docs.microsoft.com/en-us/windows/desktop/api/winnls/nf-winnls-getlocaleinfoex
 [`io::Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
+[`locale`]: http://man7.org/linux/man-pages/man1/locale.1.html
 [`Locale`]: format/enum.Locale.html
 [`localeconv`]: https://www.gnu.org/software/libc/manual/html_node/The-Lame-Way-to-Locale-Data.html#The-Lame-Way-to-Locale-Data
+[`newlocale`]: http://man7.org/linux/man-pages/man3/newlocale.3.html
 [`num_bigint::BigInt`]: https://docs.rs/num-bigint/0.2.2/num_bigint/struct.BigInt.html
 [picking a format]: #picking-a-format
 [`setlocale`]: https://www.gnu.org/software/libc/manual/html_node/Setting-the-Locale.html
@@ -206,6 +220,7 @@ at your option.
 [`ToFormattedString`]: trait.ToFormattedString.html
 [`to_formatted_string`]: trait.ToFormattedString.html#method.to_formatted_string
 [Unicode Consortium]: https://en.wikipedia.org/wiki/Unicode_Consortium
+[`uselocale`]: http://man7.org/linux/man-pages/man3/uselocale.3.html
 [`Vec`]: https://doc.rust-lang.org/std/vec/struct.Vec.html
 [`WriteFormatted`]: trait.WriteFormatted.html
 */
@@ -214,7 +229,7 @@ at your option.
 #![deny(
     dead_code,
     deprecated,
-    missing_copy_implementations,
+    // missing_copy_implementations,
     missing_debug_implementations,
     missing_docs,
     trivial_casts,

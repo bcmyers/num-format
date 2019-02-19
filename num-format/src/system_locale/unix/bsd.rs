@@ -1,4 +1,5 @@
 #![cfg(all(
+    feature = "std",
     unix,
     any(
         target_os = "dragonfly",
@@ -32,7 +33,10 @@ pub(crate) fn get_encoding(locale: *const c_void) -> Result<Encoding, Error> {
 pub(crate) fn get_lconv(locale: *const c_void, encoding: Encoding) -> Result<Lconv, Error> {
     let lconv_ptr = unsafe { localeconv_l(locale) };
     if lconv_ptr.is_null() {
-        return Err(Error::null_ptr("localeconv_l"));
+        return Err(Error::system_invalid_return(
+            "localeconv_l",
+            "localeconv_l unexpectedly returned a null pointer."
+        ));
     }
     let lconv: &libc::lconv = unsafe { lconv_ptr.as_ref() }.unwrap();
     let lconv = Lconv::new(lconv, encoding)?;

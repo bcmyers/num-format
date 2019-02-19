@@ -1,4 +1,4 @@
-#![cfg(unix)]
+#![cfg(all(feature = "std", unix))]
 
 mod encoding;
 
@@ -113,14 +113,23 @@ fn free_locale(locale: *const c_void) {
 
 fn new_locale(name: &Option<String>) -> Result<*const c_void, Error> {
     let name_cstring = match name {
-        Some(ref name) => CString::new(name.as_bytes())
-            .map_err(|_| Error::new("TODO: Unable to create cstring"))?,
+        Some(ref name) => {
+            CString::new(name.as_bytes()).map_err(|_| Error::interior_nul_byte(name.to_string()))?
+        }
         None => CString::new("").unwrap(),
     };
     let mask = libc::LC_CTYPE_MASK | libc::LC_MONETARY_MASK | libc::LC_NUMERIC_MASK;
     let new_locale = unsafe { newlocale(mask, name_cstring.as_ptr(), ptr::null()) };
     if new_locale.is_null() {
-        return Err(Error::null_ptr("newlocale"));
+        match name {
+            Some(name) => return Err(Error::parse_locale(name)),
+            None => {
+                return Err(Error::system_invalid_return(
+                    "newlocale",
+                    "newlocale unexpectedly returned a null pointer.",
+                ));
+            }
+        }
     }
     Ok(new_locale)
 }
@@ -128,7 +137,10 @@ fn new_locale(name: &Option<String>) -> Result<*const c_void, Error> {
 fn use_locale(locale: *const c_void) -> Result<*const c_void, Error> {
     let old_locale = unsafe { uselocale(locale) };
     if old_locale.is_null() {
-        return Err(Error::null_ptr("uselocale"));
+        return Err(Error::system_invalid_return(
+            "uselocale",
+            "uselocale unexpectedly returned a null pointer.",
+        ));
     }
     Ok(old_locale)
 }
@@ -191,8 +203,12 @@ impl StaticCString {
         encoding: Encoding,
         function_name: &str,
     ) -> Result<StaticCString, Error> {
-        let non_null =
-            NonNull::new(ptr as *mut c_char).ok_or_else(|| Error::null_ptr(function_name))?;
+        let non_null = NonNull::new(ptr as *mut c_char).ok_or_else(|| {
+            Error::system_invalid_return(
+                function_name,
+                format!("{} unexpectedly returned a null pointer.", function_name),
+            )
+        })?;
         Ok(StaticCString { encoding, non_null })
     }
 
@@ -201,10 +217,10 @@ impl StaticCString {
         let cstr = unsafe { CStr::from_ptr(ptr) };
         let bytes = cstr.to_bytes();
         let grouping = match bytes {
-            [3, 2] | [2, 3] => Grouping::Indian, // TODO
+            [3, 2] | [2, 3] => Grouping::Indian,
             [] | [127] => Grouping::Posix,
             [3] | [3, 3] => Grouping::Standard,
-            _ => return Err(Error::unix(&format!("unsupported grouping: {:?}", bytes))),
+            _ => return Err(Error::system_unsupported_grouping(bytes)),
         };
         Ok(grouping)
     }
