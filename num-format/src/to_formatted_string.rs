@@ -5,6 +5,7 @@ use std::io;
 
 use crate::constants::MAX_BUF_LEN;
 use crate::sealed::Sealed;
+use crate::error::Error;
 use crate::{Buffer, Format, ToFormattedStr};
 
 /// <b><u>A key trait</u></b>. Gives numbers the [`to_formatted_string`] method.
@@ -12,7 +13,7 @@ use crate::{Buffer, Format, ToFormattedStr};
 /// This trait is sealed; so you may not implement it on your own types.
 ///
 /// [`to_formatted_string`]: trait.ToFormattedString.html#method.to_formatted_string
-pub trait ToFormattedString: Sealed {
+pub trait ToFormattedString: Sealed + Sized {
     #[doc(hidden)]
     fn read_to_fmt_writer<F, W>(&self, w: W, format: &F) -> Result<usize, fmt::Error>
     where
@@ -34,6 +35,9 @@ pub trait ToFormattedString: Sealed {
         let _ = self.read_to_fmt_writer(&mut s, format).unwrap();
         s
     }
+
+    #[doc(hidden)]
+    fn from_formatted_str<F>(s: &str, format: &F) -> Result<Self, Error> where Self: Sized, F: Format;
 }
 
 impl<T> ToFormattedString for T
@@ -62,5 +66,10 @@ where
         let c = self.read_to_buffer(&mut buf, format);
         w.write_all(buf.as_bytes())?;
         Ok(c)
+    }
+
+    #[doc(hidden)]
+    fn from_formatted_str<F>(s: &str, format: &F) -> Result<Self, Error> where Self: Sized, F: Format {
+        Self::from_formatted_str(s, format)
     }
 }

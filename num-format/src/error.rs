@@ -71,6 +71,21 @@ impl Error {
         };
     }
 
+    pub(crate) fn parse_number<S>(input: S) -> Error
+    where
+        S: AsRef<str>,
+    {
+        #[cfg(feature = "std")]
+        return Error {
+            kind: ErrorKind::ParseNumber(input.as_ref().into()),
+        };
+
+        #[cfg(not(feature = "std"))]
+        return Error {
+            kind: ErrorKind::ParseNumber(ErrString::truncated(input.as_ref()).into()),
+        };
+    }
+
     #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
     pub(crate) fn system_invalid_return<S, T>(function_name: S, message: T) -> Error
     where

@@ -27,6 +27,10 @@ use crate::to_formatted_str::ToFormattedStr;
 ///
 ///     // Do what you want with the &str...
 ///     assert_eq!("1,000,000", s);
+///
+///     // No need to clear the buffer before further calls to `write_formatted`...
+///     buf.write_formatted(&1000000, &Locale::fr);
+///     assert_eq!("1\u{202f}000\u{202f}000", buf.as_str());
 /// }
 /// ```
 #[derive(Copy, Clone)]

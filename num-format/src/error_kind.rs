@@ -38,6 +38,14 @@ pub enum ErrorKind {
     /// Failed to parse input into a valid locale.
     ParseLocale(ArrayString<[u8; MAX_ERR_LEN]>),
 
+    #[cfg(feature = "std")]
+    /// Failed to parse input into a number.
+    ParseNumber(String),
+
+    #[cfg(not(feature = "std"))]
+    /// Failed to parse input into a number.
+    ParseNumber(ArrayString<[u8; MAX_ERR_LEN]>),
+
     #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
     /// Call to C standard library or Windows API unexpectedly returned invalid data.
     SystemInvalidReturn {
@@ -78,6 +86,8 @@ impl fmt::Display for ErrorKind {
             Other(ref message) => write!(f, "{}", message),
 
             ParseLocale(ref input) => write!(f, "Failed to parse {} into a valid locale.", input),
+
+            ParseNumber(ref input) => write!(f, "Failed to parse {} into a number.", input),
 
             #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
             SystemInvalidReturn { message, .. } => write!(f, "{}", message),

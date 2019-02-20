@@ -1,11 +1,10 @@
 use crate::strings::{DecimalStr, InfinityStr, MinusSignStr, NanStr, PlusSignStr, SeparatorStr};
 use crate::Grouping;
 
-/// Trait that abstracts over [`CustomFormat`], [`Locale`], and [`SystemLocale`].
+/// Trait that abstracts over [`CustomFormat`], [`Locale`], and `SystemLocale`.
 ///
 /// [`CustomFormat`]: struct.CustomFormat.html
 /// [`Locale`]: enum.Locale.html
-/// [`SystemLocale`]: struct.SystemLocale.html
 pub trait Format {
     /// Returns the string representation of a decimal point.
     fn decimal(&self) -> DecimalStr<'_>;

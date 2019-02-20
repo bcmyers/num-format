@@ -3,6 +3,8 @@
 use core::marker::PhantomData;
 use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
 use core::ptr;
+use core::mem;
+use core::str;
 
 use crate::buffer::Buffer;
 use crate::constants::{MAX_BUF_LEN, TABLE};
@@ -10,6 +12,99 @@ use crate::format::Format;
 use crate::grouping::Grouping;
 use crate::sealed::Sealed;
 use crate::to_formatted_str::ToFormattedStr;
+use crate::error::Error;
+
+const U8_MAX_LEN: usize = 3;
+const U16_MAX_LEN: usize = 5;
+const U32_MAX_LEN: usize = 10;
+const USIZE_MAX_LEN: usize = 20;
+const U64_MAX_LEN: usize = 20;
+const U128_MAX_LEN: usize = 39;
+
+const I8_MAX_LEN: usize = 4;
+const I16_MAX_LEN: usize = 6;
+const I32_MAX_LEN: usize = 11;
+const ISIZE_MAX_LEN: usize = 20;
+const I64_MAX_LEN: usize = 20;
+const I128_MAX_LEN: usize = 40;
+
+///////////////////////////////
+
+macro_rules! from_formatted_str_integers {
+    ($type:ty, $max_len:expr) => {
+        #[doc(hidden)]
+        fn from_formatted_str<F>(s: &str, format: &F) -> Result<Self, Error> where F: Format {
+            const BUF_LEN: usize = $max_len;
+            let mut buf: [u8; BUF_LEN] = unsafe { mem::uninitialized() };
+
+            let minus_sign = format.minus_sign().into_str();
+            let is_negative = s.starts_with(minus_sign);
+
+            let mut index = 0;
+            if is_negative {
+                buf[index] = '-' as u8;
+                index += 1;
+            }
+            for c in s.chars() {
+                if c.is_numeric() {
+                    if index > BUF_LEN {
+                        return Err(Error::parse_number(s));
+                    }
+                    buf[index] = c as u8;
+                    index += 1;
+                }
+            }
+
+            if index == 0 {
+                return Err(Error::parse_number(s));
+            }
+
+            let s2 = unsafe { str::from_utf8_unchecked(&buf[..index]) };
+            let n = s2.parse::<Self>().map_err(|_| Error::parse_locale(s))?;
+
+            Ok(n)
+        }
+    }
+}
+
+macro_rules! from_formatted_str_non_zero {
+    ($type:ty, $related_type:ty, $max_len:expr) => {
+        #[doc(hidden)]
+        fn from_formatted_str<F>(s: &str, format: &F) -> Result<Self, Error> where F: Format {
+            const BUF_LEN: usize = $max_len;
+            let mut buf: [u8; BUF_LEN] = unsafe { mem::uninitialized() };
+
+            let minus_sign = format.minus_sign().into_str();
+            if s.starts_with(minus_sign) {
+                return Err(Error::parse_number(s));
+            }
+
+            let mut index = 0;
+            for c in s.chars() {
+                if c.is_numeric() {
+                    if index > BUF_LEN {
+                        return Err(Error::parse_number(s));
+                    }
+                    buf[index] = c as u8;
+                    index += 1;
+                }
+            }
+
+            if index == 0 {
+                return Err(Error::parse_number(s));
+            }
+
+            let s2 = unsafe { str::from_utf8_unchecked(&buf[..index]) };
+            let n = s2.parse::<$related_type>().map_err(|_| Error::parse_number(s))?;
+            match Self::new(n) {
+                Some(n) => Ok(n),
+                None => Err(Error::parse_number(s))
+            }
+        }
+    }
+}
+
+///////////////////////////////
 
 // unsigned integers
 
@@ -22,10 +117,12 @@ impl ToFormattedStr for u8 {
     {
         buf.write_with_itoa(*self)
     }
+
+    from_formatted_str_integers!(u8, U8_MAX_LEN);
 }
 
 macro_rules! impl_unsigned {
-    ($type:ty) => {
+    ($type:ty, $max_len:expr) => {
         impl ToFormattedStr for $type {
             #[doc(hidden)]
             #[inline(always)]
@@ -36,15 +133,17 @@ macro_rules! impl_unsigned {
                 let n = *self as u128;
                 run_core_algorithm(n, buf, format)
             }
+
+            from_formatted_str_integers!($type, $max_len);
         }
     };
 }
 
-impl_unsigned!(u16);
-impl_unsigned!(u32);
-impl_unsigned!(usize);
-impl_unsigned!(u64);
-impl_unsigned!(u128);
+impl_unsigned!(u16, U16_MAX_LEN);
+impl_unsigned!(u32, U32_MAX_LEN);
+impl_unsigned!(usize, USIZE_MAX_LEN);
+impl_unsigned!(u64, U64_MAX_LEN);
+impl_unsigned!(u128, U128_MAX_LEN);
 
 impl Sealed for u8 {}
 impl Sealed for u16 {}
@@ -56,7 +155,7 @@ impl Sealed for u128 {}
 // signed integers
 
 macro_rules! impl_signed {
-    ($type:ty) => {
+    ($type:ty, $max_len:expr) => {
         impl ToFormattedStr for $type {
             #[doc(hidden)]
             #[inline(always)]
@@ -80,16 +179,18 @@ macro_rules! impl_signed {
                     c
                 }
             }
+
+            from_formatted_str_integers!($type, $max_len);
         }
     };
 }
 
-impl_signed!(i8);
-impl_signed!(i16);
-impl_signed!(i32);
-impl_signed!(isize);
-impl_signed!(i64);
-impl_signed!(i128);
+impl_signed!(i8, I8_MAX_LEN);
+impl_signed!(i16, I16_MAX_LEN);
+impl_signed!(i32, I32_MAX_LEN);
+impl_signed!(isize, ISIZE_MAX_LEN);
+impl_signed!(i64, I64_MAX_LEN);
+impl_signed!(i128, I128_MAX_LEN);
 
 impl Sealed for i8 {}
 impl Sealed for i16 {}
@@ -109,10 +210,12 @@ impl ToFormattedStr for NonZeroU8 {
     {
         buf.write_with_itoa(self.get())
     }
+
+    from_formatted_str_non_zero!(NonZeroU8, u8, U8_MAX_LEN);
 }
 
 macro_rules! impl_non_zero {
-    ($type:ty) => {
+    ($type:ty, $related_type:ty, $max_len:expr) => {
         impl ToFormattedStr for $type {
             #[doc(hidden)]
             #[inline(always)]
@@ -123,15 +226,17 @@ macro_rules! impl_non_zero {
                 let n = self.get() as u128;
                 run_core_algorithm(n, buf, format)
             }
+
+            from_formatted_str_non_zero!($type, $related_type, $max_len);
         }
     };
 }
 
-impl_non_zero!(NonZeroU16);
-impl_non_zero!(NonZeroU32);
-impl_non_zero!(NonZeroUsize);
-impl_non_zero!(NonZeroU64);
-impl_non_zero!(NonZeroU128);
+impl_non_zero!(NonZeroU16, u16, U16_MAX_LEN);
+impl_non_zero!(NonZeroU32, u32, U32_MAX_LEN);
+impl_non_zero!(NonZeroUsize, usize, USIZE_MAX_LEN);
+impl_non_zero!(NonZeroU64, u64, U64_MAX_LEN);
+impl_non_zero!(NonZeroU128, u128, U128_MAX_LEN);
 
 impl Sealed for NonZeroU8 {}
 impl Sealed for NonZeroU16 {}

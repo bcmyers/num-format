@@ -263,6 +263,7 @@ mod error_kind;
 mod format;
 mod grouping;
 mod impls;
+mod parse_formatted;
 mod locale;
 mod strings;
 #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
@@ -279,6 +280,7 @@ pub use self::custom_format_builder::CustomFormatBuilder;
 pub use self::error::Error;
 pub use self::error_kind::ErrorKind;
 pub use self::format::Format;
+pub use self::parse_formatted::ParseFormatted;
 pub use self::grouping::Grouping;
 pub use self::locale::Locale;
 #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
