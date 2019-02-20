@@ -1,13 +1,11 @@
-use crate::to_formatted_string::ToFormattedString;
+use crate::to_formatted_str::ToFormattedStr;
 use crate::error::Error;
 use crate::format::Format;
-
-// TODO: Eliminate FromFormattedStr and put it on ToFormattedString
 
 /// TODO
 pub trait ParseFormatted {
     /// A relatively liberal parsing function for turning a formatted `&str` into a number
-    /// (any type that implements `ToFormattedString`). The implementation is "liberal" in the
+    /// (any type that implements `ToFormattedStr`). The implementation is "liberal" in the
     /// sense that it errs on the side of not failing.
     ///
     /// The underlying algorithm is as follows...
@@ -30,11 +28,11 @@ pub trait ParseFormatted {
     ///     assert_eq!(n, -1_000_000i32);
     /// }
     /// ```
-    fn parse_formatted<F, N>(&self, format: &F) -> Result<N, Error> where F: Format, N: ToFormattedString;
+    fn parse_formatted<F, N>(&self, format: &F) -> Result<N, Error> where F: Format, N: ToFormattedStr;
 }
 
 impl<S> ParseFormatted for S where S: AsRef<str> {
-    fn parse_formatted<F, N>(&self, format: &F) -> Result<N, Error> where F: Format, N: ToFormattedString {
-        ToFormattedString::from_formatted_str(self.as_ref(), format)
+    fn parse_formatted<F, N>(&self, format: &F) -> Result<N, Error> where F: Format, N: ToFormattedStr {
+        ToFormattedStr::from_formatted_str(self.as_ref(), format)
     }
 }

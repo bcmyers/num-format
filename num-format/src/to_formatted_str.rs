@@ -1,7 +1,7 @@
 use crate::buffer::Buffer;
+use crate::error::Error;
 use crate::format::Format;
 use crate::sealed::Sealed;
-use crate::error::Error;
 
 /// Marker trait for number types that can be formatted without heap allocation (see [`Buffer`]).
 ///
