@@ -7,8 +7,8 @@ use crate::format::Format;
 /// TODO
 pub trait ParseFormatted {
     /// A relatively liberal parsing function for turning a formatted `&str` into a number
-    /// ("number" means any type that implements `ToFormattedString`). The implementation is
-    /// "liberal" in the sense that it errs on the side of not failing.
+    /// (any type that implements `ToFormattedString`). The implementation is "liberal" in the
+    /// sense that it errs on the side of not failing.
     ///
     /// The underlying algorithm is as follows...
     /// * Look at the first characters of the input to see if they match the provided `Format`s
@@ -23,18 +23,18 @@ pub trait ParseFormatted {
     /// use num_format::{Locale, ParseFormatted};
     ///
     /// fn main() {
-    ///     let n = "-1,000,000".parse_formatted::<Locale, i32>(&Locale::en).unwrap();
+    ///     let n = "-1,000,000".parse_formatted::<_, i32>(&Locale::en).unwrap();
     ///     assert_eq!(n, -1_000_000i32);
     ///
-    ///     let n = "-1foo0bar0baz0,000".parse_formatted::<Locale, i32>(&Locale::en).unwrap();
+    ///     let n = "-1foo0bar0baz0,000".parse_formatted::<_, i32>(&Locale::en).unwrap();
     ///     assert_eq!(n, -1_000_000i32);
     /// }
     /// ```
     fn parse_formatted<F, N>(&self, format: &F) -> Result<N, Error> where F: Format, N: ToFormattedString;
 }
 
-impl<'a> ParseFormatted for &'a str  {
+impl<S> ParseFormatted for S where S: AsRef<str> {
     fn parse_formatted<F, N>(&self, format: &F) -> Result<N, Error> where F: Format, N: ToFormattedString {
-        ToFormattedString::from_formatted_str(self, format)
+        ToFormattedString::from_formatted_str(self.as_ref(), format)
     }
 }
