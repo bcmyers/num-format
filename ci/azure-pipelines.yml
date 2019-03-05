@@ -11,7 +11,7 @@ jobs:
     pool:
       vmImage: $(imageName)
     steps:
-    - template: ci/azure-install-rust.yml
+    - template: azure-install-rust.yml
       parameters:
         rust_version: stable
     - bash: |
