@@ -10,9 +10,12 @@ steps:
       RUSTUP_TOOLCHAIN: ${{parameters.rust_version}}
 
   # Windows.
-  - powershell: |
-      Invoke-WebRequest http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe -OutFile LLVM-7.0.1-win64.exe
+  - bash: |
+      wget http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe
       LLVM-7.0.1-win64.exe
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    displayName: "Install LLVM (Windows)"
+  - script:
       curl -sSf -o rustup-init.exe https://win.rustup.rs
       rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
       set PATH=%PATH%;%USERPROFILE%\.cargo\bin
