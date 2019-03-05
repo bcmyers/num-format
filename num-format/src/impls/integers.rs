@@ -1,18 +1,18 @@
 #![allow(trivial_numeric_casts)]
 
 use core::marker::PhantomData;
+use core::mem;
 use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
 use core::ptr;
-use core::mem;
 use core::str;
 
 use crate::buffer::Buffer;
 use crate::constants::{MAX_BUF_LEN, TABLE};
+use crate::error::Error;
 use crate::format::Format;
 use crate::grouping::Grouping;
 use crate::sealed::Sealed;
 use crate::to_formatted_str::ToFormattedStr;
-use crate::error::Error;
 
 const U8_MAX_LEN: usize = 3;
 const U16_MAX_LEN: usize = 5;
@@ -33,7 +33,10 @@ const I128_MAX_LEN: usize = 40;
 macro_rules! from_formatted_str_integers {
     ($type:ty, $max_len:expr) => {
         #[doc(hidden)]
-        fn from_formatted_str<F>(s: &str, format: &F) -> Result<Self, Error> where F: Format {
+        fn from_formatted_str<F>(s: &str, format: &F) -> Result<Self, Error>
+        where
+            F: Format,
+        {
             const BUF_LEN: usize = $max_len;
             let mut buf: [u8; BUF_LEN] = unsafe { mem::uninitialized() };
 
@@ -64,13 +67,16 @@ macro_rules! from_formatted_str_integers {
 
             Ok(n)
         }
-    }
+    };
 }
 
 macro_rules! from_formatted_str_non_zero {
     ($type:ty, $related_type:ty, $max_len:expr) => {
         #[doc(hidden)]
-        fn from_formatted_str<F>(s: &str, format: &F) -> Result<Self, Error> where F: Format {
+        fn from_formatted_str<F>(s: &str, format: &F) -> Result<Self, Error>
+        where
+            F: Format,
+        {
             const BUF_LEN: usize = $max_len;
             let mut buf: [u8; BUF_LEN] = unsafe { mem::uninitialized() };
 
@@ -95,13 +101,15 @@ macro_rules! from_formatted_str_non_zero {
             }
 
             let s2 = unsafe { str::from_utf8_unchecked(&buf[..index]) };
-            let n = s2.parse::<$related_type>().map_err(|_| Error::parse_number(s))?;
+            let n = s2
+                .parse::<$related_type>()
+                .map_err(|_| Error::parse_number(s))?;
             match Self::new(n) {
                 Some(n) => Ok(n),
-                None => Err(Error::parse_number(s))
+                None => Err(Error::parse_number(s)),
             }
         }
-    }
+    };
 }
 
 ///////////////////////////////

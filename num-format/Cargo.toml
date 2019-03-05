@@ -25,6 +25,9 @@ lazy_static = { version = "1.2", optional = true }
 num-bigint = { version = "0.2", optional = true }
 serde = { version = "1.0", default-features = false, optional = true }
 
+[target.'cfg(target_os = "macos")'.dependencies]
+objc = { version = "0.2", optional = true }
+
 [target.'cfg(unix)'.dependencies]
 cfg-if = { version = "0.1", optional = true }
 encoding_rs = { version = "0.8", optional = true }
@@ -39,7 +42,7 @@ winapi = { version = "0.3", features = ["winnls"], optional = true }
 default = ["std"]
 std = ["arrayvec/default", "itoa/default", "itoa/i128"]
 with-serde = ["arrayvec/serde-1", "serde/derive"]
-with-system-locale = ["cfg-if", "encoding_rs", "lazy_static", "libc", "num-format-windows", "std", "widestring", "winapi/winnls"]
+with-system-locale = ["cfg-if", "encoding_rs", "lazy_static", "libc", "num-format-windows", "objc", "std", "widestring", "winapi/winnls"]
 with-num-bigint = ["num-bigint", "std"]
 
 [dev-dependencies]

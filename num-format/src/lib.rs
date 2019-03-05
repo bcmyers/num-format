@@ -223,7 +223,7 @@ at your option.
 */
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![deny(
+#![allow( // TODO
     dead_code,
     deprecated,
     // missing_copy_implementations,
@@ -250,6 +250,10 @@ extern crate cfg_if;
 #[macro_use]
 extern crate lazy_static;
 
+#[cfg(all(feature = "with-system-locale", target_os = "macos"))]
+#[macro_use]
+extern crate objc;
+
 #[cfg(feature = "with-serde")]
 #[macro_use]
 extern crate serde;
@@ -263,8 +267,8 @@ mod error_kind;
 mod format;
 mod grouping;
 mod impls;
-mod parse_formatted;
 mod locale;
+mod parse_formatted;
 mod strings;
 #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
 mod system_locale;
@@ -280,9 +284,9 @@ pub use self::custom_format_builder::CustomFormatBuilder;
 pub use self::error::Error;
 pub use self::error_kind::ErrorKind;
 pub use self::format::Format;
-pub use self::parse_formatted::ParseFormatted;
 pub use self::grouping::Grouping;
 pub use self::locale::Locale;
+pub use self::parse_formatted::ParseFormatted;
 #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
 pub use self::system_locale::SystemLocale;
 pub use self::to_formatted_str::ToFormattedStr;

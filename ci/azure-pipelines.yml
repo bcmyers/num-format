@@ -1,0 +1,22 @@
+pr: ["azure-pipelines"]
+
+jobs:
+  - job:
+    strategy:
+      matrix:
+        mac:
+          imageName: 'macos-10.13'
+        windows:
+          imageName: 'vs2017-win2016'
+    pool:
+      vmImage: $(imageName)
+    steps:
+    - template: ci/azure-install-rust.yml
+      parameters:
+        rust_version: stable
+    - bash: |
+        set -ex
+        export RUST_BACKTRACE=1
+        ./scripts check.sh
+        ./scripts test.sh
+      displayName: Run cargo check and test
