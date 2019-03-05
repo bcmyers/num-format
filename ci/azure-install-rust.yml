@@ -11,11 +11,12 @@ steps:
 
   # Windows.
   - script: |
+      curl http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe
+      LLVM-7.0.1-win64.exe
       curl -sSf -o rustup-init.exe https://win.rustup.rs
       rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
       set PATH=%PATH%;%USERPROFILE%\.cargo\bin
       echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
-      Find-Package clang
     condition: eq(variables['Agent.OS'], 'Windows_NT')
     displayName: "Install rust (Windows)"
     env:
