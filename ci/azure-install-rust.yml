@@ -11,7 +11,7 @@ steps:
 
   # Windows.
   - script: |
-      Invoke-WebRequest -OutFile LLVM-7.0.1-win64.exe http://superuser.com
+      wget http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe
       LLVM-7.0.1-win64.exe
       curl -sSf -o rustup-init.exe https://win.rustup.rs
       rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
