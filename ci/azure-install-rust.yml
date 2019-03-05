@@ -10,7 +10,7 @@ steps:
       RUSTUP_TOOLCHAIN: ${{parameters.rust_version}}
 
   # Windows.
-  - script: |
+  - powershell: |
       Invoke-FastWebRequest http://releases.llvm.org/7.0.1/LLVM-7.0.1-win64.exe -OutFile LLVM-7.0.1-win64.exe
       LLVM-7.0.1-win64.exe
       curl -sSf -o rustup-init.exe https://win.rustup.rs
