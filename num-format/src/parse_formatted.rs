@@ -1,6 +1,6 @@
-use crate::to_formatted_str::ToFormattedStr;
 use crate::error::Error;
 use crate::format::Format;
+use crate::to_formatted_str::ToFormattedStr;
 
 /// TODO
 pub trait ParseFormatted {
@@ -28,11 +28,21 @@ pub trait ParseFormatted {
     ///     assert_eq!(n, -1_000_000i32);
     /// }
     /// ```
-    fn parse_formatted<F, N>(&self, format: &F) -> Result<N, Error> where F: Format, N: ToFormattedStr;
+    fn parse_formatted<F, N>(&self, format: &F) -> Result<N, Error>
+    where
+        F: Format,
+        N: ToFormattedStr;
 }
 
-impl<S> ParseFormatted for S where S: AsRef<str> {
-    fn parse_formatted<F, N>(&self, format: &F) -> Result<N, Error> where F: Format, N: ToFormattedStr {
+impl<S> ParseFormatted for S
+where
+    S: AsRef<str>,
+{
+    fn parse_formatted<F, N>(&self, format: &F) -> Result<N, Error>
+    where
+        F: Format,
+        N: ToFormattedStr,
+    {
         ToFormattedStr::from_formatted_str(self.as_ref(), format)
     }
 }
