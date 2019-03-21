@@ -149,3 +149,72 @@ impl_from_formatted_str_non_zero!(NonZeroU32, u32, U32_MAX_LEN);
 impl_from_formatted_str_non_zero!(NonZeroUsize, usize, USIZE_MAX_LEN);
 impl_from_formatted_str_non_zero!(NonZeroU64, u64, U64_MAX_LEN);
 impl_from_formatted_str_non_zero!(NonZeroU128, u128, U128_MAX_LEN);
+
+#[cfg(feature = "with-num-bigint")]
+mod num {
+    use num_bigint::{BigInt, BigUint};
+
+    use super::*;
+
+    macro_rules! impl_from_formatted_str_num_bigint {
+        ($type:ty) => {
+            impl FromFormattedStr for $type {
+                fn from_formatted_str<F>(s: &str, format: &F) -> Result<Self, Error>
+                where
+                    F: Format,
+                {
+                    let mut buf = Vec::new();
+
+                    let minus_sign = format.minus_sign().into_str();
+                    let is_negative = s.starts_with(minus_sign);
+
+                    if is_negative {
+                        buf.push('-' as u8);
+                    }
+                    for c in s.chars() {
+                        if c.is_numeric() {
+                            buf.push(c as u8);
+                        }
+                    }
+
+                    if buf.is_empty() {
+                        return Err(Error::parse_number(&s));
+                    }
+
+                    let s2 = unsafe { str::from_utf8_unchecked(&buf[..]) };
+                    let n = s2.parse::<$type>().map_err(|_| Error::parse_locale(&s))?;
+
+                    Ok(n)
+                }
+            }
+        };
+    }
+
+    impl_from_formatted_str_num_bigint!(BigInt);
+    impl_from_formatted_str_num_bigint!(BigUint);
+
+    #[cfg(test)]
+    mod tests {
+        use num_bigint::{ToBigInt, ToBigUint};
+
+        use super::*;
+        use crate::locale::Locale;
+
+        #[test]
+        fn test_parsing_num_bigint() {
+            assert_eq!(
+                "1,000,000"
+                    .parse_formatted::<_, BigUint>(&Locale::en)
+                    .unwrap(),
+                1_000_000.to_biguint().unwrap()
+            );
+            assert_eq!(
+                "-1,000,000"
+                    .parse_formatted::<_, BigInt>(&Locale::en)
+                    .unwrap(),
+                (-1_000_000).to_bigint().unwrap()
+            );
+        }
+    }
+
+}
