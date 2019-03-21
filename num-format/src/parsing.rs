@@ -1,4 +1,16 @@
 //! Module with traits for parsing a formatted string into a number.
+//!
+//! # Examples
+//! ```
+//! use num_format::Locale;
+//! use num_format::parsing::ParseFormatted;
+//!
+//! fn main() {
+//!     let s = "1,000,000";
+//!     let n = s.parse_formatted::<_, u32>(&Locale::en).unwrap();
+//!     assert_eq!(n, 1_000_000);
+//! }
+//! ```
 
 use core::mem;
 use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
