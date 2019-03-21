@@ -63,6 +63,8 @@ where
 /// Marker trait for number types (e.g. `u32`) that string-like types can be parsed
 /// into via the [`ParseFormatted`] trait.
 ///
+/// This trait is sealed; so you may not implement it on your own types.
+///
 /// [`ParseFormatted`]: trait.ParseFormatted.html
 pub trait FromFormattedStr: Sealed + Sized {
     #[allow(missing_docs)]
@@ -133,35 +135,7 @@ macro_rules! impl_from_formatted_str_non_zero {
             where
                 F: Format,
             {
-                const BUF_LEN: usize = $max_len;
-                let mut buf: [u8; BUF_LEN] = unsafe { mem::uninitialized() };
-
-                let minus_sign = format.minus_sign().into_str();
-                let is_negative = s.starts_with(minus_sign);
-
-                let mut index = 0;
-                if is_negative {
-                    buf[index] = '-' as u8;
-                    index += 1;
-                }
-                for c in s.chars() {
-                    if c.is_numeric() {
-                        if index > BUF_LEN {
-                            return Err(Error::parse_number(&s));
-                        }
-                        buf[index] = c as u8;
-                        index += 1;
-                    }
-                }
-
-                if index == 0 {
-                    return Err(Error::parse_number(&s));
-                }
-
-                let s2 = unsafe { str::from_utf8_unchecked(&buf[..index]) };
-                let n = s2
-                    .parse::<$related_type>()
-                    .map_err(|_| Error::parse_locale(&s))?;
+                let n = s.parse_formatted::<_, $related_type>(format)?;
                 let n = Self::new(n).ok_or_else(|| Error::parse_number(s))?;
                 Ok(n)
             }
