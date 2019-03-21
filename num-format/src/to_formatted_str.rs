@@ -1,5 +1,4 @@
 use crate::buffer::Buffer;
-use crate::error::Error;
 use crate::format::Format;
 use crate::sealed::Sealed;
 
@@ -10,8 +9,7 @@ use crate::sealed::Sealed;
 /// [`Buffer`]: struct.Buffer.html
 pub trait ToFormattedStr: Sealed + Sized {
     #[doc(hidden)]
-    fn read_to_buffer<F>(&self, buf: &mut Buffer, format: &F) -> usize where F: Format;
-
-    #[doc(hidden)]
-    fn from_formatted_str<F>(s: &str, format: &F) -> Result<Self, Error> where F: Format;
+    fn read_to_buffer<F>(&self, buf: &mut Buffer, format: &F) -> usize
+    where
+        F: Format;
 }

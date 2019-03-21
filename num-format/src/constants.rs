@@ -12,3 +12,17 @@ pub(crate) const TABLE: &[u8] = b"\
     4041424344454647484950515253545556575859\
     6061626364656667686970717273747576777879\
     8081828384858687888990919293949596979899";
+
+pub(crate) const U8_MAX_LEN: usize = 3;
+pub(crate) const U16_MAX_LEN: usize = 5;
+pub(crate) const U32_MAX_LEN: usize = 10;
+pub(crate) const USIZE_MAX_LEN: usize = 20;
+pub(crate) const U64_MAX_LEN: usize = 20;
+pub(crate) const U128_MAX_LEN: usize = 39;
+
+pub(crate) const I8_MAX_LEN: usize = 4;
+pub(crate) const I16_MAX_LEN: usize = 6;
+pub(crate) const I32_MAX_LEN: usize = 11;
+pub(crate) const ISIZE_MAX_LEN: usize = 20;
+pub(crate) const I64_MAX_LEN: usize = 20;
+pub(crate) const I128_MAX_LEN: usize = 40;
