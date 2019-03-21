@@ -16,7 +16,7 @@ use std::env;
 use libc::{c_char, c_void};
 
 use crate::error::Error;
-use crate::system_locale::unix::{Encoding, Lconv, StaticCString, UTF_8};
+use crate::system_locale::nix::{Encoding, Lconv, StaticCString, UTF_8};
 
 extern "C" {
     fn localeconv() -> *const libc::lconv;

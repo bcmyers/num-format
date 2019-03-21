@@ -14,7 +14,7 @@
 use libc::{c_char, c_int, c_void};
 
 use crate::error::Error;
-use crate::system_locale::unix::{Encoding, Lconv, StaticCString, UTF_8};
+use crate::system_locale::nix::{Encoding, Lconv, StaticCString, UTF_8};
 
 extern "C" {
     fn localeconv_l(locale: *const c_void) -> *const libc::lconv;

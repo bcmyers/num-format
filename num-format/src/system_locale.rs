@@ -1,6 +1,6 @@
 #![cfg(all(feature = "with-system-locale", any(unix, windows)))]
 
-mod unix;
+mod nix;
 mod windows;
 
 use std::collections::HashSet;
@@ -76,7 +76,7 @@ impl SystemLocale {
     /// [`SystemLocale`]: struct.SystemLocale.html
     pub fn default() -> Result<SystemLocale, Error> {
         #[cfg(unix)]
-        return self::unix::new(None);
+        return self::nix::new(None);
 
         #[cfg(windows)]
         return self::windows::new(None);
@@ -100,7 +100,7 @@ impl SystemLocale {
         S: Into<String>,
     {
         #[cfg(unix)]
-        return self::unix::new(Some(name.into()));
+        return self::nix::new(Some(name.into()));
 
         #[cfg(windows)]
         return self::windows::new(Some(name.into()));
@@ -123,7 +123,7 @@ impl SystemLocale {
     /// [`locale`]: http://man7.org/linux/man-pages/man1/locale.1.html
     pub fn available_names() -> Result<HashSet<String>, Error> {
         #[cfg(unix)]
-        return Ok(self::unix::available_names());
+        return Ok(self::nix::available_names());
 
         #[cfg(windows)]
         return self::windows::available_names();
