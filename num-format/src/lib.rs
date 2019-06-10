@@ -240,7 +240,7 @@ at your option.
     unused_unsafe,
     unused_variables
 )]
-#![doc(html_root_url = "https://docs.rs/num-format/0.4.0")]
+#![doc(html_root_url = "https://docs.rs/num-format/0.4.1")]
 
 #[cfg(all(feature = "with-system-locale", unix))]
 #[macro_use]

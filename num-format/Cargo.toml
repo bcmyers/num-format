@@ -1,6 +1,6 @@
 [package]
 name = "num-format"
-version = "0.4.0" # Remember to keep html_root_url in lib.rs in sync!
+version = "0.4.1" # Remember to keep html_root_url in lib.rs in sync!
 
 authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
 categories = ["encoding", "internationalization", "localization", "no-std", "value-formatting"]
@@ -31,7 +31,7 @@ encoding_rs = { version = "0.8", optional = true }
 libc = { version = "0.2", optional = true }
 
 [target.'cfg(windows)'.dependencies]
-num-format-windows = { version = "0.3", optional = true }
+num-format-windows = { path = "../num-format-windows", optional = true }
 widestring = { version = "0.4", optional = true }
 winapi = { version = "0.3", features = ["winnls"], optional = true }
 
