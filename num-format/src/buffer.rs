@@ -1,6 +1,5 @@
 use core::borrow::Borrow;
 use core::fmt;
-use core::mem;
 use core::ops::Deref;
 use core::str;
 
@@ -45,7 +44,7 @@ impl Buffer {
     #[inline(always)]
     pub fn new() -> Buffer {
         Buffer {
-            inner: unsafe { mem::uninitialized() },
+            inner: [0u8; MAX_BUF_LEN],
             pos: MAX_BUF_LEN,
             end: MAX_BUF_LEN,
         }
@@ -185,7 +184,7 @@ mod serialization {
                 where
                     V: de::SeqAccess<'de>,
                 {
-                    let mut inner: [u8; MAX_BUF_LEN] = unsafe { mem::uninitialized() };
+                    let mut inner: [u8; MAX_BUF_LEN] = [0u8; MAX_BUF_LEN];
                     let mut index = 0;
                     while let Some(value) = seq.next_element()? {
                         if index < MAX_BUF_LEN {

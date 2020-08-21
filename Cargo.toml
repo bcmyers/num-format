@@ -3,5 +3,4 @@ members = [
     "num-format",
     "num-format-benches",
     "num-format-dev",
-    "num-format-windows",
 ]
