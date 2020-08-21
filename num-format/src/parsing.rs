@@ -12,7 +12,6 @@
 //! }
 //! ```
 
-use core::mem;
 use core::num::{NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize};
 use core::str;
 
@@ -81,7 +80,7 @@ macro_rules! impl_from_formatted_str {
                 F: Format,
             {
                 const BUF_LEN: usize = $max_len;
-                let mut buf: [u8; BUF_LEN] = unsafe { mem::uninitialized() };
+                let mut buf: [u8; BUF_LEN] = [0u8; BUF_LEN];
 
                 let minus_sign = format.minus_sign().into_str();
                 let is_negative = s.starts_with(minus_sign);

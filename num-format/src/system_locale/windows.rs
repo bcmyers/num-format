@@ -3,7 +3,6 @@
 use std::borrow::Cow;
 use std::collections::HashSet;
 use std::ffi::CStr;
-use std::mem;
 use std::ptr;
 use std::sync::{Arc, Mutex};
 
@@ -346,7 +345,7 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
     let size = inner(locale_name, lpLocaleName, LCType, ptr::null_mut(), 0)?;
 
     // second call to GetLocaleInfoEx to write data into our buffer.
-    let mut buf: [WCHAR; BUF_LEN] = unsafe { mem::uninitialized() };
+    let mut buf: [WCHAR; BUF_LEN] = [0; BUF_LEN];
     let written = inner(locale_name, lpLocaleName, LCType, buf.as_mut_ptr(), size)?;
     if written != size {
         return Err(Error::system_invalid_return(
