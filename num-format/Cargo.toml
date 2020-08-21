@@ -31,7 +31,6 @@ encoding_rs = { version = "0.8", optional = true }
 libc = { version = "0.2", optional = true }
 
 [target.'cfg(windows)'.dependencies]
-num-format-windows = { path = "../num-format-windows", optional = true }
 widestring = { version = "0.4", optional = true }
 winapi = { version = "0.3", features = ["winnls"], optional = true }
 
@@ -39,7 +38,7 @@ winapi = { version = "0.3", features = ["winnls"], optional = true }
 default = ["std"]
 std = ["arrayvec/default", "itoa/default", "itoa/i128"]
 with-serde = ["arrayvec/serde", "serde/derive"]
-with-system-locale = ["cfg-if", "encoding_rs", "lazy_static", "libc", "num-format-windows", "std", "widestring", "winapi/winnls"]
+with-system-locale = ["cfg-if", "encoding_rs", "lazy_static", "libc", "std", "widestring", "winapi/winnls"]
 with-num-bigint = ["num-bigint", "std"]
 
 [dev-dependencies]
