@@ -11,7 +11,7 @@ publish = false
 num-format = { path = "../num-format" }
 
 [dev-dependencies]
-criterion = "0.2"
+criterion = "0.3"
 itoa = { version = "0.4", features = ["i128"] }
 
 [[bench]]
