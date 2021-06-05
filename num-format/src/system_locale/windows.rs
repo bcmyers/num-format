@@ -61,12 +61,12 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             Error::system_invalid_return(
                 "get_locale_info_ex",
                 format!(
-                "get_locale_info_ex function from Windows API unexpectedly returned decimal \
+                    "get_locale_info_ex function from Windows API unexpectedly returned decimal \
                  string whose length ({} bytes) exceeds maximum currently supported by num-format \
                  ({} bytes).",
-                 s.len(),
-                 DecString::capacity(),
-            ),
+                    s.len(),
+                    DecString::capacity(),
+                ),
             )
         })?
     };
@@ -91,12 +91,12 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             Error::system_invalid_return(
                 "get_locale_info_ex",
                 format!(
-                "get_locale_info_ex function from Windows API unexpectedly returned infinity \
+                    "get_locale_info_ex function from Windows API unexpectedly returned infinity \
                  string whose length ({} bytes) exceeds maximum currently supported by num-format \
                  ({} bytes).",
-                 s.len(),
-                 InfString::capacity(),
-            ),
+                    s.len(),
+                    InfString::capacity(),
+                ),
             )
         })?
     };
@@ -123,12 +123,12 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             Error::system_invalid_return(
                 "get_locale_info_ex",
                 format!(
-                "get_locale_info_ex function from Windows API unexpectedly returned NaN \
+                    "get_locale_info_ex function from Windows API unexpectedly returned NaN \
                  string whose length ({} bytes) exceeds maximum currently supported by num-format \
                  ({} bytes).",
-                 s.len(),
-                 NanString::capacity(),
-            ),
+                    s.len(),
+                    NanString::capacity(),
+                ),
             )
         })?
     };
@@ -139,12 +139,12 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             Error::system_invalid_return(
                 "get_locale_info_ex",
                 format!(
-                "get_locale_info_ex function from Windows API unexpectedly returned plus sign \
+                    "get_locale_info_ex function from Windows API unexpectedly returned plus sign \
                  string whose length ({} bytes) exceeds maximum currently supported by num-format \
                  ({} bytes).",
-                 s.len(),
-                 PlusString::capacity(),
-            ),
+                    s.len(),
+                    PlusString::capacity(),
+                ),
             )
         })?
     };
@@ -155,12 +155,12 @@ pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
             Error::system_invalid_return(
                 "get_locale_info_ex",
                 format!(
-                "get_locale_info_ex function from Windows API unexpectedly returned separator \
+                    "get_locale_info_ex function from Windows API unexpectedly returned separator \
                  string whose length ({} bytes) exceeds maximum currently supported by num-format \
                  ({} bytes).",
-                 s.len(),
-                 SepString::capacity(),
-            ),
+                    s.len(),
+                    SepString::capacity(),
+                ),
             )
         })?
     };

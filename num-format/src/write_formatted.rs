@@ -40,7 +40,8 @@ macro_rules! impl_for_fmt_write {
             F: Format,
             N: ToFormattedString,
         {
-            n.read_to_fmt_writer(self, format).map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+            n.read_to_fmt_writer(self, format)
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
         }
     };
 }

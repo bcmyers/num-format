@@ -225,7 +225,7 @@ at your option.
 #![cfg_attr(not(feature = "std"), no_std)]
 #![deny(
     dead_code,
-    deprecated,
+    // deprecated,
     // missing_copy_implementations,
     missing_debug_implementations,
     missing_docs,
