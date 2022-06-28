@@ -22,7 +22,7 @@ travis-ci = { repository = "bcmyers/num-format", branch = "master" }
 arrayvec = { version = "0.4", default-features = false }
 itoa = { version = "0.4", default-features = false, features = ["i128"] }
 lazy_static = { version = "1.2", optional = true }
-num-bigint = { version = "0.2", optional = true }
+num-bigint = { version = "0.4", optional = true }
 serde = { version = "1.0", default-features = false, optional = true }
 
 [target.'cfg(unix)'.dependencies]
