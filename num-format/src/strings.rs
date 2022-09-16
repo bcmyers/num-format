@@ -180,7 +180,7 @@ create_impls!(SeparatorStr, MAX_SEP_LEN);
 macro_rules! create_string {
     ( $name:ident, $visitor:ident, $max_len:expr ) => {
         #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
-        pub(crate) struct $name(ArrayString<[u8; $max_len]>);
+        pub(crate) struct $name(ArrayString<$max_len>);
 
         impl $name {
             #[allow(dead_code)]
@@ -229,7 +229,7 @@ macro_rules! create_string {
             }
         }
 
-        impl From<$name> for ArrayString<[u8; $max_len]> {
+        impl From<$name> for ArrayString<$max_len> {
             fn from(s: $name) -> Self {
                 s.0
             }
