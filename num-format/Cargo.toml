@@ -26,7 +26,7 @@ num-bigint = { version = "0.4", optional = true }
 serde = { version = "1.0", default-features = false, optional = true }
 
 [target.'cfg(unix)'.dependencies]
-cfg-if = { version = "0.1", optional = true }
+cfg-if = { version = "1.0", optional = true }
 encoding_rs = { version = "0.8", optional = true }
 libc = { version = "0.2", optional = true }
 
@@ -43,7 +43,7 @@ with-system-locale = ["cfg-if", "encoding_rs", "lazy_static", "libc", "num-forma
 with-num-bigint = ["num-bigint", "std"]
 
 [dev-dependencies]
-cfg-if = "0.1"
+cfg-if = "1.0"
 lazy_static = "1.2"
 rand = "0.6"
 serde_json = "1.0"
