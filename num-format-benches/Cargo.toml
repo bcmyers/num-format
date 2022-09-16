@@ -12,7 +12,7 @@ num-format = { path = "../num-format" }
 
 [dev-dependencies]
 criterion = "0.2"
-itoa = { version = "0.4", features = ["i128"] }
+itoa = { version = "1.0" }
 
 [[bench]]
 name = "bench_usize"

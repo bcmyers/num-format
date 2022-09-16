@@ -17,18 +17,6 @@ fn bench_usize(c: &mut Criterion) {
                 let s = 10_000usize.to_string();
             })
         })
-        .with_function("itoa/buffer/10_000", |b| {
-            b.iter(|| {
-                let mut bytes = [b'\0'; 40];
-                let n = itoa::write(&mut bytes[..], 10_000usize).unwrap();
-            })
-        })
-        .with_function("itoa/write/10_000", |b| {
-            let mut s = String::new();
-            b.iter(|| {
-                itoa::fmt(&mut s, 10_000usize).unwrap();
-            })
-        })
         .with_function("num-format/buffer/10_000", |b| {
             b.iter(|| {
                 let mut buf = Buffer::default();
@@ -49,18 +37,6 @@ fn bench_usize(c: &mut Criterion) {
         .with_function("std/to_string/MAX", |b| {
             b.iter(|| {
                 let s = std::usize::MAX.to_string();
-            })
-        })
-        .with_function("itoa/buffer/MAX", |b| {
-            b.iter(|| {
-                let mut bytes = [b'\0'; 40];
-                let n = itoa::write(&mut bytes[..], std::usize::MAX).unwrap();
-            })
-        })
-        .with_function("itoa/write/MAX", |b| {
-            let mut s = String::new();
-            b.iter(|| {
-                itoa::fmt(&mut s, std::usize::MAX).unwrap();
             })
         })
         .with_function("num-format/buffer/MAX", |b| {

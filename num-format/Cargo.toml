@@ -20,7 +20,7 @@ travis-ci = { repository = "bcmyers/num-format", branch = "master" }
 
 [dependencies]
 arrayvec = { version = "0.7", default-features = false }
-itoa = { version = "0.4", default-features = false, features = ["i128"] }
+itoa = { version = "1.0" }
 lazy_static = { version = "1.2", optional = true }
 num-bigint = { version = "0.4", optional = true }
 serde = { version = "1.0", default-features = false, optional = true }
@@ -37,7 +37,7 @@ winapi = { version = "0.3", features = ["winnls"], optional = true }
 
 [features]
 default = ["std"]
-std = ["arrayvec/default", "itoa/default", "itoa/i128"]
+std = ["arrayvec/default"]
 with-serde = ["arrayvec/serde", "serde/derive"]
 with-system-locale = ["cfg-if", "encoding_rs", "lazy_static", "libc", "num-format-windows", "std", "widestring", "winapi/winnls"]
 with-num-bigint = ["num-bigint", "std"]
