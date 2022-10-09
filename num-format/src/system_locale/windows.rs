@@ -3,7 +3,6 @@
 use std::borrow::Cow;
 use std::collections::HashSet;
 use std::ffi::CStr;
-use std::mem;
 use std::ptr;
 use std::sync::{Arc, Mutex};
 
@@ -45,7 +44,7 @@ pub(crate) fn available_names() -> Result<HashSet<String>, Error> {
 }
 
 pub(crate) fn new(name: Option<String>) -> Result<SystemLocale, Error> {
-    let name: Cow<str> = match name {
+    let name: Cow<'_, str> = match name {
         Some(name) => name.into(),
         None => (*SYSTEM_DEFAULT).clone()?.into(),
     };
@@ -258,7 +257,7 @@ fn enum_system_locales_ex() -> Result<HashSet<String>, Error> {
         let _ = inner_guard.insert(s);
 
         CONTINUE
-    };
+    }
 
     let set = {
         let outer_guard = OUTER_MUTEX.lock().unwrap();
@@ -346,7 +345,7 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
     let size = inner(locale_name, lpLocaleName, LCType, ptr::null_mut(), 0)?;
 
     // second call to GetLocaleInfoEx to write data into our buffer.
-    let mut buf: [WCHAR; BUF_LEN] = unsafe { mem::uninitialized() };
+    let mut buf: [WCHAR; BUF_LEN] = [0; BUF_LEN];
     let written = inner(locale_name, lpLocaleName, LCType, buf.as_mut_ptr(), size)?;
     if written != size {
         return Err(Error::system_invalid_return(
@@ -355,7 +354,7 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
         ));
     }
 
-    let s = U16CStr::from_slice_with_nul(&buf[..written as usize])
+    let s = U16CStr::from_slice_truncate(&buf[..written as usize])
         .map_err(|_| {
             Error::system_invalid_return(
                 "GetLocaleInfoEx",
