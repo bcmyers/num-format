@@ -11,7 +11,7 @@ pub enum Grouping {
 }
 
 impl Grouping {
-    pub(crate) fn to_ident(&self) -> Ident {
+    pub(crate) fn to_ident(self) -> Ident {
         match self {
             Grouping::Indian => Ident::new("Indian", Span::call_site()),
             Grouping::Standard => Ident::new("Standard", Span::call_site()),
@@ -21,7 +21,7 @@ impl Grouping {
 }
 
 impl fmt::Display for Grouping {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             Grouping::Indian => "#,##,##0.###",
             Grouping::Standard => "#,##0.###",

@@ -8,6 +8,7 @@ use crate::strings::MAX_ERR_LEN;
 
 /// This crate's error kind.
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[allow(missing_copy_implementations)]
 #[cfg_attr(feature = "with-serde", derive(Serialize, Deserialize))]
 pub enum ErrorKind {
     /// Input exceeds buffer capacity.
@@ -66,7 +67,7 @@ pub enum ErrorKind {
 }
 
 impl fmt::Display for ErrorKind {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use self::ErrorKind::*;
         match self {
             Capacity { len, cap } => write!(

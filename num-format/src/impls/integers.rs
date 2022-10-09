@@ -207,7 +207,7 @@ struct Sep<'a> {
 }
 
 #[inline(always)]
-fn write_one_byte(buf: &mut Buffer, sep: &mut Sep, table_index: isize) {
+fn write_one_byte(buf: &mut Buffer, sep: &mut Sep<'_>, table_index: isize) {
     buf.pos -= 1;
     if sep.pos == (buf.pos as isize) {
         buf.pos -= sep.len - 1;
@@ -225,7 +225,7 @@ fn write_one_byte(buf: &mut Buffer, sep: &mut Sep, table_index: isize) {
 }
 
 #[inline(always)]
-fn write_two_bytes(buf: &mut Buffer, sep: &mut Sep, table_index: isize) {
+fn write_two_bytes(buf: &mut Buffer, sep: &mut Sep<'_>, table_index: isize) {
     write_one_byte(buf, sep, table_index + 1);
     write_one_byte(buf, sep, table_index);
 }

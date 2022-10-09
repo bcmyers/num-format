@@ -4,7 +4,7 @@ use crate::format::Format;
 use crate::grouping::Grouping;
 use crate::strings::{DecimalStr, InfinityStr, MinusSignStr, NanStr, PlusSignStr, SeparatorStr};
 use core::str::FromStr;
-const AVAILABLE_NAMES: [&'static str; 538usize] = [
+const AVAILABLE_NAMES: [&str; 538usize] = [
     "af",
     "af-NA",
     "agq",

@@ -1,6 +1,5 @@
 use core::borrow::Borrow;
 use core::fmt;
-use core::mem;
 use core::ops::Deref;
 use core::str;
 
@@ -45,7 +44,7 @@ impl Buffer {
     #[inline(always)]
     pub fn new() -> Buffer {
         Buffer {
-            inner: unsafe { mem::uninitialized() },
+            inner: [0; MAX_BUF_LEN],
             pos: MAX_BUF_LEN,
             end: MAX_BUF_LEN,
         }
@@ -122,7 +121,7 @@ impl Borrow<str> for Buffer {
 }
 
 impl fmt::Debug for Buffer {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.as_str())
     }
 }
@@ -147,7 +146,7 @@ impl Deref for Buffer {
 }
 
 impl fmt::Display for Buffer {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.as_str())
     }
 }
@@ -177,7 +176,7 @@ mod serialization {
             impl<'de> de::Visitor<'de> for BufferVisitor {
                 type Value = Buffer;
 
-                fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     write!(f, "bytes of maximum length {}", MAX_BUF_LEN)
                 }
 
@@ -185,7 +184,7 @@ mod serialization {
                 where
                     V: de::SeqAccess<'de>,
                 {
-                    let mut inner: [u8; MAX_BUF_LEN] = unsafe { mem::uninitialized() };
+                    let mut inner: [u8; MAX_BUF_LEN] = [0; MAX_BUF_LEN];
                     let mut index = 0;
                     while let Some(value) = seq.next_element()? {
                         if index < MAX_BUF_LEN {

@@ -223,22 +223,19 @@ at your option.
 */
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![allow(clippy::needless_doctest_main)]
 #![deny(
     dead_code,
     deprecated,
-    // missing_copy_implementations,
+    future_incompatible,
+    missing_copy_implementations,
     missing_debug_implementations,
     missing_docs,
+    nonstandard_style,
+    rust_2018_idioms,
     trivial_casts,
     trivial_numeric_casts,
-    unused_extern_crates,
-    unused_imports,
-    unused_macros,
-    unused_mut,
-    unused_results,
-    unused_parens,
-    unused_unsafe,
-    unused_variables
+    unused
 )]
 #![doc(html_root_url = "https://docs.rs/num-format/0.4.1")]
 
