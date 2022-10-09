@@ -7,13 +7,13 @@ lazy_static! {
 }
 
 // See https://docs.rs/encoding_rs/0.8.16/encoding_rs/
-static LATIN_1: &'static encoding_rs::Encoding = encoding_rs::WINDOWS_1252;
+static LATIN_1: &encoding_rs::Encoding = encoding_rs::WINDOWS_1252;
 
 #[derive(Copy, Clone, Debug)]
 pub(crate) struct Encoding(&'static encoding_rs::Encoding);
 
 impl Encoding {
-    pub(crate) fn decode<'a>(&self, bytes: &'a [u8]) -> Result<String, Error> {
+    pub(crate) fn decode(&self, bytes: &[u8]) -> Result<String, Error> {
         let (cow, _encoding, is_err) = self.0.decode(bytes);
         if is_err {
             return Err(Error::system_invalid_return(
