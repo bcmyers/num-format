@@ -118,6 +118,17 @@ fn _create_module(data: &IndexMap<String, Format>) -> Result<String, anyhow::Err
             },
         );
         from_strs.push(group);
+        // from_strs: support both - and _ as locale separators (i.e. both de-DE and de_DE)
+        if format.identifier.contains("-") {
+            let key2 = Literal::string(&format.identifier.replace("-", "_"));
+            let group = Group::new(
+                Delimiter::None,
+                quote! {
+                    #key2 => #value,
+                },
+            );
+            from_strs.push(group);
+        }
 
         // names
         let value = Literal::string(&format.identifier);
