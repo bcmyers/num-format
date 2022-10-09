@@ -170,7 +170,7 @@ fn main() -> Result<(), Error> {
 
 ## Requirements
 
-* Rust 1.31 or greater
+* Rust 1.56 or greater
 * If you're using the `with-system-locale` feature **and** you're on Windows, Clang 3.9 or higher
   is also required. See [here](https://rust-lang.github.io/rust-bindgen/requirements.html) for
   installation instructions.
