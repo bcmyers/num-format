@@ -1,3 +1,12 @@
+0.4.2 (2022-10-09)
+==================
+
+* Bump 3rd party dependencies
+* Update [cldr-numbers-full](https://github.com/unicode-cldr/cldr-numbers-full) 
+  git submodule to commit [b52a87048985d3052f12d30d05cfe5423ad92709](https://github.com/unicode-cldr/cldr-numbers-full/commit/b52a87048985d3052f12d30d05cfe5423ad92709)
+* `Locale::from_str` now supports underscore-delimited locales, e.g. "de_DE",
+  in addition to previously supported dash-delimiated locales, e.g "de-DE"
+
 0.4.0 (2019-02-19)
 ==================
 **Breaking changes:**
