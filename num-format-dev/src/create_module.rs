@@ -8,7 +8,7 @@ use crate::utils::Format;
 
 #[cfg(feature = "nightly")]
 /// Takes the map returned from `parse_data` and turns it into a rust module.
-pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Error> {
+pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, anyhow::Error> {
     let s = _create_module(data)?;
     let s = rustfmt(s)?;
     Ok(s)
@@ -16,13 +16,13 @@ pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure:
 
 #[cfg(not(feature = "nightly"))]
 /// Takes the map returned from `parse_data` and turns it into a rust module.
-pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Error> {
+pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, anyhow::Error> {
     let s = _create_module(data)?;
     Ok(s)
 }
 
 /// Takes the map returned from `parse_data` and turns it into a rust module.
-fn _create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Error> {
+fn _create_module(data: &IndexMap<String, Format>) -> Result<String, anyhow::Error> {
     let variant_names = data.keys().map(|s| Ident::new(s, Span::call_site()));
 
     let mut decimals = Vec::new();

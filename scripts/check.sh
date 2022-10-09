@@ -12,3 +12,5 @@ cargo check --manifest-path num-format/Cargo.toml --features "with-num-bigint"
 cargo check --manifest-path num-format/Cargo.toml --features "with-system-locale"
 cargo check --manifest-path num-format/Cargo.toml --features "with-serde with-system-locale"
 cargo check --manifest-path num-format/Cargo.toml --no-default-features --all-features
+
+cargo check --manifest-path num-format-dev/Cargo.toml
