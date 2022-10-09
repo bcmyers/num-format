@@ -2,27 +2,10 @@ use indexmap::IndexMap;
 use proc_macro2::{Delimiter, Group, Ident, Literal, Span};
 use quote::quote;
 
-#[cfg(feature = "nightly")]
-use crate::rustfmt::rustfmt;
 use crate::utils::Format;
 
-#[cfg(feature = "nightly")]
 /// Takes the map returned from `parse_data` and turns it into a rust module.
 pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, anyhow::Error> {
-    let s = _create_module(data)?;
-    let s = rustfmt(s)?;
-    Ok(s)
-}
-
-#[cfg(not(feature = "nightly"))]
-/// Takes the map returned from `parse_data` and turns it into a rust module.
-pub fn create_module(data: &IndexMap<String, Format>) -> Result<String, anyhow::Error> {
-    let s = _create_module(data)?;
-    Ok(s)
-}
-
-/// Takes the map returned from `parse_data` and turns it into a rust module.
-fn _create_module(data: &IndexMap<String, Format>) -> Result<String, anyhow::Error> {
     let variant_names = data.keys().map(|s| Ident::new(s, Span::call_site()));
 
     let mut decimals = Vec::new();
@@ -119,8 +102,8 @@ fn _create_module(data: &IndexMap<String, Format>) -> Result<String, anyhow::Err
         );
         from_strs.push(group);
         // from_strs: support both - and _ as locale separators (i.e. both de-DE and de_DE)
-        if format.identifier.contains("-") {
-            let key2 = Literal::string(&format.identifier.replace("-", "_"));
+        if format.identifier.contains('-') {
+            let key2 = Literal::string(&format.identifier.replace('-', "_"));
             let group = Group::new(
                 Delimiter::None,
                 quote! {
