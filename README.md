@@ -1,6 +1,5 @@
 # num-format
 
-[![Build Status](https://travis-ci.org/bcmyers/num-format.svg?branch=master)](https://travis-ci.org/bcmyers/num-format)
 [![Crates.io](https://img.shields.io/crates/v/num-format.svg)](https://crates.io/crates/num-format)
 [![Documentation](https://docs.rs/num-format/badge.svg)](https://docs.rs/num-format/)
 ![License](https://img.shields.io/crates/l/num_format.svg)
