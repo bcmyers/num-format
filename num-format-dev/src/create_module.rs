@@ -149,7 +149,7 @@ fn _create_module(data: &IndexMap<String, Format>) -> Result<String, failure::Er
             DecimalStr, InfinityStr, MinusSignStr, NanStr, PlusSignStr, SeparatorStr
         };
 
-        const AVAILABLE_NAMES: [&'static str; #names2_len] = [#(#names2),*];
+        const AVAILABLE_NAMES: [&str; #names2_len] = [#(#names2),*];
 
         ///<b><u>A key type</u></b>. Represents formats from the [Unicode Consortium]'s
         ///[Common Locale Data Repository (CLDR)]. Implements [`Format`].

@@ -4,7 +4,6 @@ use std::path::Path;
 
 use indexmap::IndexMap;
 use serde::Deserialize;
-use serde_json;
 use walkdir::WalkDir;
 
 use crate::utils::{Format, Grouping};
@@ -51,7 +50,7 @@ where
             &value["numbers"]["defaultNumberingSystem"].as_str().unwrap();
         let symbols_lookup = format!("symbols-numberSystem-{}", default_numbering_system);
         let symbols = &value["numbers"][&symbols_lookup].to_string();
-        let symbols: Symbols = serde_json::from_str(&symbols).unwrap();
+        let symbols: Symbols = serde_json::from_str(symbols).unwrap();
 
         // Grouping
         let decimal_formats_lookup =

@@ -157,13 +157,13 @@ macro_rules! create_impls {
         }
 
         impl<'a> fmt::Debug for $name<'a> {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 write!(f, "{:?}", self.0)
             }
         }
 
         impl<'a> fmt::Display for $name<'a> {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 write!(f, "{}", self.0)
             }
         }
@@ -224,7 +224,7 @@ macro_rules! create_string {
         }
 
         impl fmt::Display for $name {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 write!(f, "{}", self.0)
             }
         }
@@ -252,7 +252,7 @@ macro_rules! create_string {
         impl<'de> de::Visitor<'de> for $visitor {
             type Value = $name;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
                 write!(formatter, "a string containing at most {} bytes", $max_len)
             }
 
