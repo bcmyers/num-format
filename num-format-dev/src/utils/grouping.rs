@@ -32,14 +32,14 @@ impl fmt::Display for Grouping {
 }
 
 impl FromStr for Grouping {
-    type Err = failure::Error;
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let format = match s {
             "#,##0.###" => Grouping::Standard,
             "0.######" => Grouping::Posix,
             "#,##,##0.###" => Grouping::Indian,
-            _ => return Err(failure::format_err!("Could not parse {} into Grouping", s)),
+            _ => anyhow::bail!("Could not parse {} into Grouping", s),
         };
         Ok(format)
     }

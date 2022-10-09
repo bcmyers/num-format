@@ -12,7 +12,7 @@ const MAX_MIN_LEN: usize = 8;
 const MAX_POS_LEN: usize = 8;
 
 /// Walks a directory containing CLDR json files and collects the data they contain into a map.
-pub fn parse_data<P>(data_dir: P) -> Result<IndexMap<String, Format>, failure::Error>
+pub fn parse_data<P>(data_dir: P) -> Result<IndexMap<String, Format>, anyhow::Error>
 where
     P: AsRef<Path>,
 {
