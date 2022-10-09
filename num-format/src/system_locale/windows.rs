@@ -249,7 +249,7 @@ fn enum_system_locales_ex() -> Result<HashSet<String>, Error> {
             Err(_) => return CONTINUE,
         };
 
-        if &s == "" {
+        if s.is_empty() {
             return CONTINUE;
         }
 
@@ -300,6 +300,7 @@ fn get_locale_info_ex(locale_name: &str, request: Request) -> Result<String, Err
         size: c_int,
     ) -> Result<c_int, Error> {
         let size = unsafe { winnls::GetLocaleInfoEx(lpLocaleName, LCType, buf_ptr, size) };
+        #[allow(clippy::comparison_chain)]
         if size == 0 {
             let err = unsafe { GetLastError() };
             if err == 87 {

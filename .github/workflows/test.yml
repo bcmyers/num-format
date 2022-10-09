@@ -1,0 +1,108 @@
+on:
+  push:
+    branches: [master]
+  pull_request:
+name: test
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} / stable
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Install stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+      - name: cargo install cargo-hack
+        uses: taiki-e/install-action@cargo-hack
+      - name: cargo generate-lockfile --manifest-path num-format/Cargo.toml
+        if: hashFiles('Cargo.lock') == ''
+        uses: actions-rs/cargo@v1
+        with:
+          command: generate-lockfile
+      - name: cargo hack --package num-format --feature-powerset test --locked
+        uses: actions-rs/cargo@v1
+        with:
+          command: hack
+          args: --package num-format --feature-powerset test --locked
+      - name: cargo hack --package num-format-benches --feature-powerset test --locked
+        uses: actions-rs/cargo@v1
+        with:
+          command: hack
+          args: --package num-format-benches --feature-powerset test --locked
+      - name: cargo hack --package num-format-dev --feature-powerset test --locked
+        uses: actions-rs/cargo@v1
+        with:
+          command: hack
+          args: --package num-format-dev --feature-powerset test --locked
+  test-msrv:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} / ${{ matrix.msrv }}
+    # we use a matrix here just because env can't be used in job names
+    # https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+    strategy:
+      fail-fast: false
+      matrix:
+        msrv: [1.58.0]
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Install ${{ matrix.msrv }}
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.msrv }}
+          default: true
+      - name: cargo install cargo-hack
+        uses: taiki-e/install-action@cargo-hack
+      - name: cargo generate-lockfile --manifest-path num-format/Cargo.toml
+        if: hashFiles('Cargo.lock') == ''
+        uses: actions-rs/cargo@v1
+        with:
+          command: generate-lockfile
+          args: --manifest-path num-format/Cargo.toml
+      - name: cargo hack --package num-format --feature-powerset test --locked
+        uses: actions-rs/cargo@v1
+        with:
+          command: hack
+          args: --package num-format --feature-powerset test --locked
+  test-msrv-no-default-features:
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }} / ${{ matrix.msrv }}
+    # we use a matrix here just because env can't be used in job names
+    # https://docs.github.com/en/actions/learn-github-actions/contexts#context-availability
+    strategy:
+      fail-fast: false
+      matrix:
+        msrv: [1.56.0]
+        os: [macos-latest, ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Install ${{ matrix.msrv }}
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.msrv }}
+          default: true
+      - name: cargo generate-lockfile --manifest-path num-format/Cargo.toml
+        if: hashFiles('Cargo.lock') == ''
+        uses: actions-rs/cargo@v1
+        with:
+          command: generate-lockfile
+          args: --manifest-path num-format/Cargo.toml
+      - name: cargo test --package num-format --no-default-features --locked
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --package num-format --no-default-features --locked

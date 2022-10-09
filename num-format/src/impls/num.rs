@@ -126,8 +126,7 @@ where
 
     let mut bytes_written = 0;
     let mut digits_remaining = s.len();
-    let mut iter = s.as_bytes().iter();
-    while let Some(digit) = iter.next() {
+    for digit in s.as_bytes().iter() {
         if bytes_written == sep_next {
             w.write_all(sep_bytes)?;
             bytes_written += sep_len;
@@ -188,8 +187,7 @@ where
     let mut bytes_written = 0;
     let mut chars_written = 0;
     let mut digits_remaining = s.len();
-    let mut iter = s.chars();
-    while let Some(c) = iter.next() {
+    for c in s.chars() {
         if chars_written == sep_next {
             w.write_str(separator)?;
             bytes_written += sep_len;
