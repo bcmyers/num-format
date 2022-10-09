@@ -21,7 +21,7 @@ travis-ci = { repository = "bcmyers/num-format", branch = "master" }
 [dependencies]
 arrayvec = { version = "0.4", default-features = false }
 itoa = { version = "0.4", default-features = false, features = ["i128"] }
-lazy_static = { version = "1.2", optional = true }
+lazy_static = { version = "1.4.0", optional = true }
 num-bigint = { version = "0.2", optional = true }
 serde = { version = "1.0", default-features = false, optional = true }
 
@@ -44,6 +44,6 @@ with-num-bigint = ["num-bigint", "std"]
 
 [dev-dependencies]
 cfg-if = "0.1"
-lazy_static = "1.2"
+lazy_static = "1.4.0"
 rand = "0.6"
 serde_json = "1.0"
