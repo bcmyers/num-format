@@ -14,10 +14,6 @@ publish = true
 readme = "README.md"
 repository = "https://github.com/bcmyers/num-format"
 
-[badges]
-maintenance = { status = "actively-developed" }
-travis-ci = { repository = "bcmyers/num-format", branch = "master" }
-
 [dependencies]
 arrayvec = { version = "0.7.2", default-features = false }
 itoa = { version = "1.0.4", default-features = false }
