@@ -29,7 +29,7 @@ pub enum ErrorKind {
 
     #[cfg(not(feature = "std"))]
     /// Other miscellaneous error.
-    Other(ArrayString<[u8; MAX_ERR_LEN]>),
+    Other(ArrayString<MAX_ERR_LEN>),
 
     #[cfg(feature = "std")]
     /// Failed to parse input into a valid locale.
@@ -37,7 +37,7 @@ pub enum ErrorKind {
 
     #[cfg(not(feature = "std"))]
     /// Failed to parse input into a valid locale.
-    ParseLocale(ArrayString<[u8; MAX_ERR_LEN]>),
+    ParseLocale(ArrayString<MAX_ERR_LEN>),
 
     #[cfg(feature = "std")]
     /// Failed to parse input into a number.
@@ -45,7 +45,7 @@ pub enum ErrorKind {
 
     #[cfg(not(feature = "std"))]
     /// Failed to parse input into a number.
-    ParseNumber(ArrayString<[u8; MAX_ERR_LEN]>),
+    ParseNumber(ArrayString<MAX_ERR_LEN>),
 
     #[cfg(all(feature = "with-system-locale", any(unix, windows)))]
     /// Call to C standard library or Windows API unexpectedly returned invalid data.
