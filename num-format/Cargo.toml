@@ -27,7 +27,7 @@ encoding_rs = { version = "0.8.31", optional = true }
 libc = { version = "0.2.134", optional = true }
 
 [target.'cfg(windows)'.dependencies]
-num-format-windows = { path = "../num-format-windows", optional = true }
+num-format-windows = { version = "0.4.2", optional = true }
 widestring = { version = "1.0.2", optional = true }
 winapi = { version = "0.3.9", features = ["winnls"], optional = true }
 
