@@ -11,7 +11,7 @@
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
 #![allow(non_upper_case_globals)]
-#![doc(html_root_url = "https://docs.rs/num-format-windows/0.4.2")]
+#![doc(html_root_url = "https://docs.rs/num-format-windows/0.4.3")]
 
 #[cfg(windows)]
 include!(concat!(env!("OUT_DIR"), "\\bindings.rs"));
