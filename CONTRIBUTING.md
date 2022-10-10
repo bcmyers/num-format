@@ -19,10 +19,10 @@ problem, any possible alternatives, and any disadvantages.
 development, including the submodule:
 
 ```bash
-$ git clone git@github.com:bcmyers/num-format.git
-$ cd num-format
-$ git submodule init
-$ git submodule update
+git clone git@github.com:bcmyers/num-format.git
+cd num-format
+git submodule init
+git submodule update
 ```
 
 ### Running the test suite
@@ -34,10 +34,22 @@ tests for you.
 
 To run the full test suite:
 
+* Install [just](https://github.com/casey/just) if it is not already installed
+
+```bash
+cargo install just
+```
+
+* Install [cargo-hack](https://github.com/taiki-e/cargo-hack) if it is not already installed
+
+```bash
+cargo install cargo-hack
+```
+
 * Make sure you're in the root directory (the directory with the workspace Cargo.toml), and then...
 
 ```bash
-$ ./scripts/test.sh
+just test
 ```
 
 ### num-format-dev
@@ -55,7 +67,7 @@ To run num-format-dev (thereby re-creating `num-format/src/locale.rs`):
 * Make sure you're in the root directory (the directory with the workspace Cargo.toml), and then...
 
 ```bash
-$ ./scripts/locale.sh
+just locale
 ```
 
 You only need to run num-format-dev if you wish to modify `num-format/src/locale.rs`.
