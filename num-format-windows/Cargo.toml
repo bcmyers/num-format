@@ -18,4 +18,4 @@ build = "build.rs"
 include = ["build.rs", "Cargo.toml", "src/**/*", "wrapper.h"]
 
 [build-dependencies]
-bindgen = "0.60.1"
+bindgen = "0.61.0"
