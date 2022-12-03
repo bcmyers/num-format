@@ -11,7 +11,7 @@ fn main() {
 
     let bindings = Builder::default()
         .header(headers)
-        .rust_target(RustTarget::Stable_1_28)
+        .rust_target(RustTarget::Stable_1_33)
         .allowlist_var("LOCALE_NAME_MAX_LENGTH")
         .allowlist_var("LOCALE_NAME_SYSTEM_DEFAULT")
         .allowlist_var("LOCALE_SDECIMAL")
