@@ -237,7 +237,7 @@ at your option.
     trivial_numeric_casts,
     unused
 )]
-#![doc(html_root_url = "https://docs.rs/num-format/0.4.3")]
+#![doc(html_root_url = "https://docs.rs/num-format/0.4.4")]
 
 #[cfg(all(feature = "with-system-locale", unix))]
 #[macro_use]
