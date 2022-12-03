@@ -1,6 +1,6 @@
 [package]
 name = "num-format-windows"
-version = "0.4.3" # Remember to keep html_root_url in lib.rs in sync!
+version = "0.4.4" # Remember to keep html_root_url in lib.rs in sync!
 
 authors = ["Brian Myers <brian.carl.myers@gmail.com>"]
 categories = []
