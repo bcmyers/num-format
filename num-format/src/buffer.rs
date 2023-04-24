@@ -202,7 +202,7 @@ mod serialization {
                 }
             }
 
-            deserializer.deserialize_bytes(BufferVisitor)
+            deserializer.deserialize_seq(BufferVisitor)
         }
     }
 
@@ -241,6 +241,53 @@ mod serialization {
             if result.is_ok() {
                 panic!("was somehow able to deserialize bytes that were too long")
             }
+        }
+
+        #[test]
+        fn test_buffer_bincode() {
+            // Control constants.
+            const TEST_STR1: &str = "1,000";
+            const TEST_BUFFER1: &[u8] = TEST_STR1.as_bytes(); // [49,44,48,48,48]
+            const TEST_STR2: &str = "10,000";
+            const TEST_BUFFER2: &[u8] = TEST_STR2.as_bytes(); // [49,48,44,48,48,48]
+
+            // Create a struct with some byte padding.
+            #[derive(serde::Serialize, serde::Deserialize)]
+            struct Struct {
+                pad1: [u8; 1],
+                buf1: Buffer,
+                pad2: [u8; 3],
+                buf2: Buffer,
+                pad3: [u8; 5],
+            }
+
+            let mut s = Struct {
+                pad1: [1_u8; 1],
+                buf1: Buffer::new(),
+                pad2: [0_u8; 3],
+                buf2: Buffer::new(),
+                pad3: [1_u8; 5],
+            };
+
+            // Write to buffers.
+            s.buf1.write_formatted(&1_000, &Locale::en);
+            s.buf2.write_formatted(&10_000, &Locale::en);
+
+            // Serialize.
+            let bytes: Vec<u8> = bincode::serialize(&s).unwrap();
+
+            // Deserialize.
+            let s: Struct = bincode::deserialize(&bytes).unwrap();
+
+            // Assert the inner buffers made it through ok.
+            assert_eq!(0, s.buf1.pos);
+            assert_eq!(5, s.buf1.end);
+            assert_eq!(0, s.buf2.pos);
+            assert_eq!(6, s.buf2.end);
+            assert_eq!(TEST_BUFFER1, s.buf1.as_bytes());
+            assert_eq!(TEST_STR1, s.buf1.as_str());
+            assert_eq!(TEST_BUFFER2, s.buf2.as_bytes());
+            assert_eq!(TEST_STR2, s.buf2.as_str());
         }
     }
 }
