@@ -202,7 +202,7 @@ mod serialization {
                 }
             }
 
-            deserializer.deserialize_bytes(BufferVisitor)
+            deserializer.deserialize_seq(BufferVisitor)
         }
     }
 
